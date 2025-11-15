@@ -1,0 +1,22 @@
+{
+  "suites": [
+    {
+      "name": "Agency Data Repository Tests",
+      "script": "test_agency_data.py",
+      "success": true,
+      "exit_code": 0,
+      "duration": 0.038398
+    },
+    {
+      "name": "Comprehensive Integration Tests",
+      "script": "test_comprehensive_integration.py",
+      "success": true,
+      "exit_code": 0,
+      "duration": 0.887626
+    }
+  ],
+  "total_passed": 112,
+  "total_failed": 0,
+  "start_time": "2025-11-15T07:14:12.586800",
+  "end_time": "2025-11-15T07:14:13.513077"
+}

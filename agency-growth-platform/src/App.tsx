@@ -12,14 +12,39 @@ import {
   Activity,
   ArrowRight,
   CheckCircle2,
-  Info
+  Info,
+  Zap,
+  Package
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+
+// V3.0 Enhanced Interfaces
+interface MarketingChannels {
+  referral: number;
+  digital: number;
+  traditional: number;
+  partnerships: number;
+}
+
+interface StaffingComposition {
+  producers: number;
+  serviceStaff: number;
+  adminStaff: number;
+}
+
+interface ProductMix {
+  auto: number;
+  home: number;
+  umbrella: number;
+  cyber: number;
+  commercial: number;
+}
 
 interface StrategyInputs {
   currentPolicies: number;
+  currentCustomers: number; // V3.0: Track customers separately
   currentStaff: number;
-  monthlyLeadSpend: number;
+  monthlyLeadSpend: number; // Keep for backward compatibility
   costPerLead: number;
   additionalLeadSpend: number;
   additionalStaff: number;
@@ -36,6 +61,24 @@ interface StrategyInputs {
   fixedMonthlyCosts: number; // rent, utilities, software, etc.
   fteBenefitsMultiplier: number; // overhead on FTE salary (typically 1.3 = 30%)
   salesRampMonths: number; // months for new sales hire to reach full productivity
+
+  // V3.0: Channel-specific marketing
+  marketing: MarketingChannels;
+
+  // V3.0: Staffing composition
+  staffing: StaffingComposition;
+
+  // V3.0: Product mix
+  products: ProductMix;
+
+  // V3.0: Technology investments
+  eoAutomation: boolean;
+  renewalProgram: boolean;
+  crossSellProgram: boolean;
+
+  // V3.0: Growth stage
+  growthStage: 'mature' | 'growth';
+  commissionStructure: 'independent' | 'captive' | 'hybrid';
 }
 
 interface ScenarioData {
@@ -46,6 +89,10 @@ interface ScenarioData {
   aggressive: number;
   cashFlow?: number; // monthly cash flow for the scenario
   cumulativeCash?: number; // cumulative cash position
+  policiesPerCustomer?: number; // V3.0: Track policies per customer
+  retention?: number; // V3.0: Retention rate
+  ebitda?: number; // V3.0: EBITDA
+  ebitdaMargin?: number; // V3.0: EBITDA margin
 }
 
 interface ScenarioResults {
@@ -59,7 +106,67 @@ interface ScenarioResults {
   ltv?: number; // lifetime value per customer
   cac?: number; // customer acquisition cost
   ltvCacRatio?: number; // LTV:CAC ratio
+  finalCustomers?: number; // V3.0: Final customer count
+  policiesPerCustomer?: number; // V3.0: Policies per customer
+  ebitdaMargin?: number; // V3.0: EBITDA margin
 }
+
+// V3.0: Benchmark metrics interface
+interface BenchmarkMetrics {
+  ruleOf20Score: number;
+  ruleOf20Rating: string;
+  ebitdaMargin: number;
+  ebitdaStatus: string;
+  ltvCacRatio: number;
+  ltvCacStatus: string;
+  revenuePerEmployee: number;
+  rpeRating: string;
+  policiesPerCustomer: number;
+  ppcStatus: string;
+  retentionRate: number;
+  marketingSpendPercent: number;
+  techSpendPercent: number;
+  staffingRatio: number;
+}
+
+// V3.0: Benchmark constants
+const BENCHMARKS = {
+  RULE_OF_20: {
+    TOP_PERFORMER: 25,
+    HEALTHY: 20,
+    NEEDS_IMPROVEMENT: 15
+  },
+  EBITDA: {
+    EXCELLENT: 0.30,
+    TARGET: 0.25,
+    ACCEPTABLE: 0.20
+  },
+  LTV_CAC: {
+    GREAT: 4.0,
+    GOOD: 3.0,
+    UNDERINVESTED: 5.0
+  },
+  RPE: {
+    EXCELLENT: 300000,
+    GOOD: 200000,
+    ACCEPTABLE: 150000
+  },
+  POLICIES_PER_CUSTOMER: {
+    OPTIMAL: 1.8,
+    BUNDLED: 1.5,
+    MONOLINE: 1.0
+  },
+  RETENTION: {
+    OPTIMAL: 0.95,
+    BUNDLED: 0.91,
+    MONOLINE: 0.67
+  },
+  STAFFING_RATIO: {
+    OPTIMAL: 2.8,
+    MIN: 2.0,
+    MAX: 3.5
+  }
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState('methodology');
@@ -67,119 +174,359 @@ function App() {
   const [showCalculationModal, setShowCalculationModal] = useState(false);
   const [calculationComplete, setCalculationComplete] = useState(false);
   const [hasResults, setHasResults] = useState(false);
+  // DERRICK'S AGENCY DATA (Straightlined - A0C6581)
+  // Based on Sep-2025 Production: $4.07M Written Premium/Month
+  // ACTUAL STAFFING: Just Derrick + 1 admin assistant (2 total)
   const [strategyInputs, setStrategyInputs] = useState<StrategyInputs>({
-    currentPolicies: 500,
-    currentStaff: 2.0,
-    monthlyLeadSpend: 2000,
-    costPerLead: 25,
-    additionalLeadSpend: 2000,
-    additionalStaff: 0.5,
+    currentPolicies: 3500, // Estimated from $4M+ premium
+    currentCustomers: 2200, // ~1.59 policies per customer
+    currentStaff: 2.0, // ACTUAL: Derrick + 1 admin = 2 FTE
+    monthlyLeadSpend: 3000, // Keep for backward compatibility
+    costPerLead: 30,
+    additionalLeadSpend: 3000,
+    additionalStaff: 1.0,
     projectionMonths: 24,
-    conciergeService: false,
-    newsletterSystem: false,
-    salesCompensationModel: 'fte',
-    commissionRate: 15, // 15% commission per policy
-    fteSalary: 4000, // $4,000/month salary
-    // New economic defaults
-    monthlyChurnRate: 2.5, // 2.5% monthly churn = ~70% annual retention
-    averagePremium: 1200, // $1,200 average annual premium
-    commissionPayout: 10, // 10% of premium goes to commissions
-    fixedMonthlyCosts: 5000, // $5,000/month overhead (rent, software, etc.)
-    fteBenefitsMultiplier: 1.3, // 30% overhead on FTE salary
-    salesRampMonths: 3 // 3 months to reach full productivity
+    conciergeService: false, // Solo operation
+    newsletterSystem: false, // Minimal systems with just 2 people
+    salesCompensationModel: 'commission',
+    commissionRate: 10, // 10% commission rate for additional sales hires
+    fteSalary: 3500, // Admin salary
+    // Economic parameters calibrated to Derrick's agency
+    monthlyChurnRate: 0.75, // 0.75% monthly = ~91% annual retention (1.59 ppc suggests bundled)
+    averagePremium: 1164, // $4,072,346 / 3,500 policies
+    commissionPayout: 12, // 12% of premium
+    fixedMonthlyCosts: 12000, // Lower overhead for 2-person operation (rent, software, etc.)
+    fteBenefitsMultiplier: 1.3,
+    salesRampMonths: 3,
+
+    // V3.0: Channel-specific marketing (default to zero - only lead buying active)
+    marketing: {
+      referral: 0, // No additional investment in referral programs
+      digital: 0, // No digital marketing spend
+      traditional: 0, // No traditional marketing spend
+      partnerships: 0 // No partnership marketing spend
+    },
+
+    // V3.0: Staffing composition - ACTUAL: Just Derrick + admin
+    staffing: {
+      producers: 1.0, // ACTUAL: Derrick (solo producer with $4M book!)
+      serviceStaff: 0.0, // ACTUAL: No dedicated service staff (admin does front desk)
+      adminStaff: 1.0 // ACTUAL: 1 admin assistant
+    },
+
+    // V3.0: Product mix (estimated from premium volume)
+    products: {
+      auto: 1800, // Largest category
+      home: 1200, // Second largest
+      umbrella: 350, // Opportunity to grow to 440+ (20% penetration)
+      cyber: 100, // Opportunity to grow to 220+ (10% penetration)
+      commercial: 50 // Small commercial book
+    },
+
+    // V3.0: Technology investments (likely has some)
+    eoAutomation: true, // Mature agency likely has E&O protection
+    renewalProgram: true, // Likely has renewal systems
+    crossSellProgram: false, // OPPORTUNITY: Enable to reach 1.8 threshold
+
+    // V3.0: Growth stage and commission structure
+    growthStage: 'mature', // $4M+ premium = mature agency
+    commissionStructure: 'captive' // Straightlined = captive agency
   });
   const [scenarioData, setScenarioData] = useState<ScenarioData[]>([]);
   const [scenarioResults, setScenarioResults] = useState<ScenarioResults[]>([]);
+  const [benchmarkMetrics, setBenchmarkMetrics] = useState<BenchmarkMetrics | null>(null); // V3.0: Benchmark metrics
+
+  // V3.0: Calculate benchmark metrics
+  const calculateBenchmarks = (
+    scenario: ScenarioResults,
+    finalMonthData: ScenarioData,
+    inputs: StrategyInputs
+  ): BenchmarkMetrics => {
+    // Calculate organic growth rate (annualized)
+    const startPolicies = inputs.currentPolicies;
+    const endPolicies = scenario.finalPolicies;
+    const monthsElapsed = inputs.projectionMonths;
+    const organicGrowthRate = ((endPolicies - startPolicies) / startPolicies) * (12 / monthsElapsed) * 100;
+
+    // EBITDA margin (from final month)
+    const ebitdaMargin = finalMonthData.ebitdaMargin || 0;
+
+    // Rule of 20 Score = Organic Growth % + (0.5 × EBITDA Margin %)
+    const ruleOf20Score = organicGrowthRate + (0.5 * ebitdaMargin);
+
+    // Rule of 20 Rating
+    let ruleOf20Rating: string;
+    if (ruleOf20Score >= BENCHMARKS.RULE_OF_20.TOP_PERFORMER) {
+      ruleOf20Rating = 'Top Performer';
+    } else if (ruleOf20Score >= BENCHMARKS.RULE_OF_20.HEALTHY) {
+      ruleOf20Rating = 'Healthy';
+    } else if (ruleOf20Score >= BENCHMARKS.RULE_OF_20.NEEDS_IMPROVEMENT) {
+      ruleOf20Rating = 'Needs Improvement';
+    } else {
+      ruleOf20Rating = 'At Risk';
+    }
+
+    // EBITDA Status
+    let ebitdaStatus: string;
+    if (ebitdaMargin >= BENCHMARKS.EBITDA.EXCELLENT * 100) {
+      ebitdaStatus = 'Excellent';
+    } else if (ebitdaMargin >= BENCHMARKS.EBITDA.TARGET * 100) {
+      ebitdaStatus = 'Target Range';
+    } else if (ebitdaMargin >= BENCHMARKS.EBITDA.ACCEPTABLE * 100) {
+      ebitdaStatus = 'Acceptable';
+    } else {
+      ebitdaStatus = 'Below Target';
+    }
+
+    // LTV:CAC Ratio and Status
+    const ltvCacRatio = scenario.ltvCacRatio || 0;
+    let ltvCacStatus: string;
+    if (ltvCacRatio >= BENCHMARKS.LTV_CAC.UNDERINVESTED) {
+      ltvCacStatus = 'Underinvested in Growth';
+    } else if (ltvCacRatio >= BENCHMARKS.LTV_CAC.GREAT) {
+      ltvCacStatus = 'Great';
+    } else if (ltvCacRatio >= BENCHMARKS.LTV_CAC.GOOD) {
+      ltvCacStatus = 'Good';
+    } else {
+      ltvCacStatus = 'Needs Improvement';
+    }
+
+    // Revenue Per Employee
+    const totalStaff = inputs.staffing.producers + inputs.staffing.serviceStaff + inputs.staffing.adminStaff + inputs.additionalStaff;
+    const annualRevenue = (scenario.totalRevenue / inputs.projectionMonths) * 12;
+    const revenuePerEmployee = totalStaff > 0 ? annualRevenue / totalStaff : 0;
+
+    let rpeRating: string;
+    if (revenuePerEmployee >= BENCHMARKS.RPE.EXCELLENT) {
+      rpeRating = 'Excellent';
+    } else if (revenuePerEmployee >= BENCHMARKS.RPE.GOOD) {
+      rpeRating = 'Good';
+    } else if (revenuePerEmployee >= BENCHMARKS.RPE.ACCEPTABLE) {
+      rpeRating = 'Acceptable';
+    } else {
+      rpeRating = 'Below Target';
+    }
+
+    // Policies Per Customer Status
+    const policiesPerCustomer = scenario.policiesPerCustomer || 0;
+    let ppcStatus: string;
+    if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL) {
+      ppcStatus = 'Optimal (High Retention)';
+    } else if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED) {
+      ppcStatus = 'Bundled (Good Retention)';
+    } else {
+      ppcStatus = 'Monoline (Lower Retention)';
+    }
+
+    // Retention Rate
+    const retentionRate = finalMonthData.retention || 0;
+
+    // Marketing Spend as % of Revenue
+    const totalMarketingSpend = inputs.marketing.referral + inputs.marketing.digital +
+                                inputs.marketing.traditional + inputs.marketing.partnerships;
+    const monthlyRevenue = scenario.totalRevenue / inputs.projectionMonths;
+    const marketingSpendPercent = monthlyRevenue > 0 ? (totalMarketingSpend / monthlyRevenue) * 100 : 0;
+
+    // Technology Spend as % of Revenue
+    const techCosts = (inputs.eoAutomation ? 200 : 0) + (inputs.renewalProgram ? 150 : 0) + (inputs.crossSellProgram ? 100 : 0);
+    const techSpendPercent = monthlyRevenue > 0 ? (techCosts / monthlyRevenue) * 100 : 0;
+
+    // Staffing Ratio (Service:Producer)
+    const staffingRatio = inputs.staffing.producers > 0
+      ? inputs.staffing.serviceStaff / inputs.staffing.producers
+      : 0;
+
+    return {
+      ruleOf20Score,
+      ruleOf20Rating,
+      ebitdaMargin,
+      ebitdaStatus,
+      ltvCacRatio,
+      ltvCacStatus,
+      revenuePerEmployee,
+      rpeRating,
+      policiesPerCustomer,
+      ppcStatus,
+      retentionRate,
+      marketingSpendPercent,
+      techSpendPercent,
+      staffingRatio
+    };
+  };
 
   const generateScenarios = () => {
     const {
       currentPolicies,
+      currentCustomers,
       projectionMonths,
-      additionalLeadSpend,
-      costPerLead,
       conciergeService,
       newsletterSystem,
       salesCompensationModel,
       commissionRate,
       fteSalary,
-      monthlyChurnRate,
-      averagePremium,
       commissionPayout,
       fixedMonthlyCosts,
       fteBenefitsMultiplier,
       salesRampMonths,
-      additionalStaff
+      additionalStaff,
+      marketing,
+      products,
+      eoAutomation,
+      renewalProgram,
+      crossSellProgram
     } = strategyInputs;
 
-    // Calculate key economics
-    const monthlyLeads = additionalLeadSpend / costPerLead;
-    const monthlyChurnDecimal = monthlyChurnRate / 100; // Convert percentage to decimal
-    const baseRetention = 0.92;
-    const retentionBoost = (conciergeService ? 0.02 : 0) + (newsletterSystem ? 0.015 : 0);
+    // V3.0: Calculate channel-specific leads and costs
+    const channelMetrics = {
+      referral: {
+        spend: marketing.referral,
+        cpl: 15, // Cost per lead (referrals are cheaper)
+        conversionRate: 0.35, // Higher conversion
+        leads: marketing.referral / 15
+      },
+      digital: {
+        spend: marketing.digital,
+        cpl: 30, // Standard digital CPL
+        conversionRate: 0.20,
+        leads: marketing.digital / 30
+      },
+      traditional: {
+        spend: marketing.traditional,
+        cpl: 50, // Traditional is more expensive
+        conversionRate: 0.15,
+        leads: marketing.traditional / 50
+      },
+      partnerships: {
+        spend: marketing.partnerships,
+        cpl: 25,
+        conversionRate: 0.25,
+        leads: marketing.partnerships / 25
+      }
+    };
+
+    // V3.0: Calculate product mix metrics
+    const totalProductPolicies = products.auto + products.home + products.umbrella + products.cyber + products.commercial;
+    const productPremiums = {
+      auto: 1200,
+      home: 1500,
+      umbrella: 600,
+      cyber: 2000,
+      commercial: 3500
+    };
+    const averageProductPremium = (
+      (products.auto * productPremiums.auto) +
+      (products.home * productPremiums.home) +
+      (products.umbrella * productPremiums.umbrella) +
+      (products.cyber * productPremiums.cyber) +
+      (products.commercial * productPremiums.commercial)
+    ) / totalProductPolicies;
+
+    // V3.0: Calculate initial policies per customer
+    const initialPoliciesPerCustomer = currentPolicies / currentCustomers;
+
+    // V3.0: Technology impact on retention and cross-sell
+    const techRetentionBoost = (eoAutomation ? 0.02 : 0) + (renewalProgram ? 0.03 : 0);
+    const crossSellBoost = crossSellProgram ? 0.15 : 0; // 15% increase in policies per customer
+
+    const baseRetention = 0.85;
+    const retentionBoost = (conciergeService ? 0.02 : 0) + (newsletterSystem ? 0.015 : 0) + techRetentionBoost;
     const finalRetention = Math.min(baseRetention + retentionBoost, 0.98);
 
     // Sales compensation costs
     const salesCostPerMonth = salesCompensationModel === 'fte'
       ? fteSalary * fteBenefitsMultiplier * additionalStaff
-      : 0; // Commission is per-policy, calculated later
+      : 0;
+
+    // Technology costs
+    const techCosts = (eoAutomation ? 200 : 0) + (renewalProgram ? 150 : 0) + (crossSellProgram ? 100 : 0);
 
     // Marketing and operational costs
-    const baseMonthlyCost = additionalLeadSpend +
+    const totalMarketingSpend = marketing.referral + marketing.digital + marketing.traditional + marketing.partnerships;
+    const baseMonthlyCost = totalMarketingSpend +
                            (conciergeService ? 300 : 0) +
                            (newsletterSystem ? 150 : 0) +
+                           techCosts +
                            fixedMonthlyCosts +
                            salesCostPerMonth;
 
     const data: ScenarioData[] = [];
     const results: ScenarioResults[] = [];
 
-    // Define scenarios with different conversion assumptions
+    // V3.0: Define scenarios with channel-weighted conversion rates
     const scenarios = [
-      { name: 'Conservative', conversionRate: 0.15, retention: 0.90 },
-      { name: 'Moderate', conversionRate: 0.244, retention: 0.92 },
-      { name: 'Aggressive', conversionRate: 0.30, retention: finalRetention }
+      { name: 'Conservative', conversionMultiplier: 0.70, retention: 0.85 },
+      { name: 'Moderate', conversionMultiplier: 1.0, retention: 0.91 },
+      { name: 'Aggressive', conversionMultiplier: 1.20, retention: finalRetention }
     ];
 
     scenarios.forEach(scenario => {
       let policies = currentPolicies;
+      let customers = currentCustomers;
       let cumulativeCash = 0;
       let breakEvenMonth: number | undefined = undefined;
       const monthlyData: ScenarioData[] = [];
+      let totalRevenue = 0;
+      let totalCosts = 0;
 
       // Track month-by-month growth with churn
       for (let month = 0; month <= projectionMonths; month++) {
-        // Calculate sales ramp factor (gradual ramp to full productivity)
-        const rampFactor = month < salesRampMonths
-          ? month / salesRampMonths
-          : 1.0;
+        // Calculate sales ramp factor
+        const rampFactor = month < salesRampMonths ? month / salesRampMonths : 1.0;
 
-        // New policies from sales (adjusted for ramp-up)
-        const newPolicies = monthlyLeads * scenario.conversionRate * rampFactor;
+        // V3.0: Calculate new customers from each channel
+        const newCustomers = (
+          channelMetrics.referral.leads * channelMetrics.referral.conversionRate +
+          channelMetrics.digital.leads * channelMetrics.digital.conversionRate +
+          channelMetrics.traditional.leads * channelMetrics.traditional.conversionRate +
+          channelMetrics.partnerships.leads * channelMetrics.partnerships.conversionRate
+        ) * scenario.conversionMultiplier * rampFactor;
 
-        // Churn: lose a percentage of existing policies
-        const policiesLost = policies * monthlyChurnDecimal;
+        // V3.0: Calculate policies per customer (with cross-sell boost)
+        let policiesPerCustomer = initialPoliciesPerCustomer * (1 + crossSellBoost);
 
-        // Net change in policies
-        const netNewPolicies = newPolicies - policiesLost;
-        policies += netNewPolicies;
-
-        // Calculate monthly cash flow
-        // Revenue: commission on premium for new policies sold
-        const monthlyRevenue = newPolicies * (averagePremium * (commissionPayout / 100));
-
-        // Costs: marketing + fixed + sales compensation
-        let monthlyCosts = baseMonthlyCost;
-
-        // Add commission-based comp if applicable
-        if (salesCompensationModel === 'commission') {
-          monthlyCosts += newPolicies * (averagePremium * (commissionRate / 100));
+        // V3.0: Set retention based on policies per customer threshold
+        let retentionRate: number;
+        if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL) {
+          retentionRate = BENCHMARKS.RETENTION.OPTIMAL;
+        } else if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED) {
+          retentionRate = BENCHMARKS.RETENTION.BUNDLED;
+        } else {
+          retentionRate = BENCHMARKS.RETENTION.MONOLINE;
         }
 
-        // Monthly cash flow
+        // Apply technology and service boosts
+        retentionRate = Math.min(retentionRate + retentionBoost, 0.98);
+
+        // V3.0: New policies = new customers * policies per customer
+        const newPolicies = newCustomers * policiesPerCustomer;
+
+        // Churn
+        const customersLost = customers * (1 - retentionRate);
+        const policiesLost = policies * (1 - retentionRate);
+
+        // Net changes
+        customers += newCustomers - customersLost;
+        policies += newPolicies - policiesLost;
+
+        // V3.0: Calculate revenue using actual product mix
+        const monthlyRevenue = policies * (averageProductPremium / 12) * (commissionPayout / 100);
+        totalRevenue += monthlyRevenue;
+
+        // Costs
+        let monthlyCosts = baseMonthlyCost;
+        if (salesCompensationModel === 'commission') {
+          monthlyCosts += newPolicies * (averageProductPremium * (commissionRate / 100));
+        }
+        totalCosts += monthlyCosts;
+
+        // V3.0: Calculate EBITDA
+        const ebitda = monthlyRevenue - monthlyCosts;
+        const ebitdaMargin = monthlyRevenue > 0 ? (ebitda / monthlyRevenue) * 100 : 0;
+
+        // Cash flow
         const cashFlow = monthlyRevenue - monthlyCosts;
         cumulativeCash += cashFlow;
 
-        // Track break-even point
         if (breakEvenMonth === undefined && cumulativeCash > 0) {
           breakEvenMonth = month;
         }
@@ -191,7 +538,11 @@ function App() {
           moderate: scenario.name === 'Moderate' ? Math.round(policies) : 0,
           aggressive: scenario.name === 'Aggressive' ? Math.round(policies) : 0,
           cashFlow,
-          cumulativeCash
+          cumulativeCash,
+          policiesPerCustomer: customers > 0 ? policies / customers : 0,
+          retention: retentionRate,
+          ebitda,
+          ebitdaMargin
         });
       }
 
@@ -200,57 +551,72 @@ function App() {
         data.push(...monthlyData);
       } else {
         monthlyData.forEach((item, idx) => {
-          if (scenario.name === 'Conservative') data[idx].conservative = item.conservative;
-          if (scenario.name === 'Moderate') data[idx].moderate = item.moderate;
-          if (scenario.name === 'Aggressive') data[idx].aggressive = item.aggressive;
+          if (scenario.name === 'Conservative') {
+            data[idx].conservative = item.conservative;
+          }
+          if (scenario.name === 'Moderate') {
+            data[idx].moderate = item.moderate;
+            data[idx].policiesPerCustomer = item.policiesPerCustomer;
+            data[idx].retention = item.retention;
+            data[idx].ebitda = item.ebitda;
+            data[idx].ebitdaMargin = item.ebitdaMargin;
+          }
+          if (scenario.name === 'Aggressive') {
+            data[idx].aggressive = item.aggressive;
+          }
         });
       }
 
-      // Calculate unit economics
-      const totalNewPolicies = policies - currentPolicies;
-      const totalCost = baseMonthlyCost * projectionMonths;
-      const totalCommissionCosts = salesCompensationModel === 'commission'
-        ? totalNewPolicies * (averagePremium * (commissionRate / 100))
-        : 0;
-      const totalInvestment = totalCost + totalCommissionCosts;
+      // Calculate final metrics
+      const finalPoliciesPerCustomer = customers > 0 ? policies / customers : 0;
+      const finalMonth = monthlyData[monthlyData.length - 1];
 
-      // CAC: Customer Acquisition Cost
-      const cac = totalNewPolicies > 0 ? totalInvestment / totalNewPolicies : 0;
+      // CAC: Customer Acquisition Cost (per customer, not policy)
+      const totalNewCustomers = customers - currentCustomers;
+      const cac = totalNewCustomers > 0 ? totalCosts / totalNewCustomers : 0;
 
-      // LTV: Lifetime Value (simplified: average premium * avg customer lifetime)
-      // Avg lifetime = 1 / monthly churn rate (in months)
-      const avgLifetimeMonths = monthlyChurnDecimal > 0 ? 1 / monthlyChurnDecimal : 36;
-      const ltv = (averagePremium * (commissionPayout / 100)) * avgLifetimeMonths;
+      // LTV: Lifetime Value per customer
+      const avgLifetimeMonths = finalMonth.retention && finalMonth.retention > 0
+        ? 1 / (1 - finalMonth.retention)
+        : 36;
+      const ltv = finalPoliciesPerCustomer * (averageProductPremium * (commissionPayout / 100)) * avgLifetimeMonths;
 
       const ltvCacRatio = cac > 0 ? ltv / cac : 0;
 
-      // Total revenue over projection period
-      const totalRevenue = totalNewPolicies * (averagePremium * (commissionPayout / 100)) * projectionMonths;
-
-      const roi = totalInvestment > 0
-        ? ((totalRevenue - totalInvestment) / totalInvestment) * 100
+      const roi = totalCosts > 0
+        ? ((totalRevenue - totalCosts) / totalCosts) * 100
         : 0;
 
       const paybackMonths = totalRevenue > 0
-        ? Math.round(totalInvestment / (totalRevenue / projectionMonths))
+        ? Math.round(totalCosts / (totalRevenue / projectionMonths))
         : projectionMonths;
 
       results.push({
         name: scenario.name,
         finalPolicies: Math.round(policies),
+        finalCustomers: Math.round(customers),
+        policiesPerCustomer: Math.round(finalPoliciesPerCustomer * 100) / 100,
+        ebitdaMargin: finalMonth.ebitdaMargin || 0,
         roi,
         paybackMonths,
-        totalCost: totalInvestment,
+        totalCost: totalCosts,
         totalRevenue,
         breakEvenMonth,
         ltv: Math.round(ltv),
         cac: Math.round(cac),
-        ltvCacRatio: Math.round(ltvCacRatio * 10) / 10 // Round to 1 decimal
+        ltvCacRatio: Math.round(ltvCacRatio * 10) / 10
       });
     });
 
     setScenarioData(data);
     setScenarioResults(results);
+
+    // V3.0: Calculate benchmarks for the moderate scenario
+    const moderateScenario = results.find(r => r.name === 'Moderate');
+    if (moderateScenario) {
+      const benchmarks = calculateBenchmarks(moderateScenario, data[data.length - 1], strategyInputs);
+      setBenchmarkMetrics(benchmarks);
+    }
   };
 
   const handleCalculate = async () => {
@@ -454,13 +820,13 @@ function App() {
             className="max-w-4xl"
           >
             <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-6">
-              Enterprise Growth Analytics
+              Straightlined Agency | Agent ID: A0C6581
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
-              Agency Growth Modeling Platform
+              Derrick Bealer - Growth Strategy
             </h1>
             <p className="text-lg sm:text-xl text-blue-100 max-w-2xl">
-              Strategic capacity planning and investment analysis powered by data from 500+ insurance agencies
+              Current Premium: $4.07M/month | 3,500 Active Policies | Target: 1.8 Policies/Customer
             </p>
           </motion.div>
 
@@ -558,43 +924,29 @@ function App() {
                         empirical data from 500+ insurance agencies to project growth trajectories and ROI under various investment scenarios.
                       </p>
 
-                      {/* Visual Process Flow */}
-                      <div className="relative">
-                        <div className="flex items-center justify-between gap-4 overflow-x-auto pb-4">
-                          {['Leads', 'Contacts', 'Quotes', 'Binds', 'Policies'].map((stage, idx) => (
-                            <div key={stage} className="flex-shrink-0 flex flex-col items-center min-h-[140px]">
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: idx * 0.15, type: "spring" }}
-                                whileHover={{ scale: 1.05 }}
-                                className={`
-                                  relative w-28 h-28 rounded-2xl flex items-center justify-center text-center
-                                  font-semibold text-sm shadow-lg transition-all duration-300
-                                  ${idx === 0
-                                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-blue-500/30'
-                                    : 'bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-700 shadow-blue-200/50'
-                                  }
-                                `}
-                              >
-                                {stage}
-                                {idx < 4 && (
-                                  <div className="absolute -right-8 top-1/2 -translate-y-1/2">
-                                    <ArrowRight className="w-6 h-6 text-gray-400" />
-                                  </div>
-                                )}
-                              </motion.div>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: idx * 0.15 + 0.3 }}
-                                className="mt-3 text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full"
-                              >
-                                {idx < 4 ? ['75%', '65%', '50%', '100%'][idx] : '\u00A0'}
-                              </motion.div>
+                      {/* Key Metrics Cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        {[
+                          { label: 'Rule of 20', value: 'Growth + EBITDA', target: '20+', icon: Target },
+                          { label: 'LTV:CAC', value: 'Unit Economics', target: '3:1 - 4:1', icon: DollarSign },
+                          { label: 'Policies/Customer', value: 'Bundling', target: '1.8+', icon: Users },
+                          { label: 'EBITDA Margin', value: 'Profitability', target: '25-30%', icon: TrendingUp }
+                        ].map((metric, idx) => (
+                          <motion.div
+                            key={metric.label}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="bg-white rounded-xl p-4 border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <metric.icon className="w-5 h-5 text-blue-600" />
+                              <h3 className="font-semibold text-gray-900 text-sm">{metric.label}</h3>
                             </div>
-                          ))}
-                        </div>
+                            <p className="text-xs text-gray-600 mb-1">{metric.value}</p>
+                            <p className="text-xs font-semibold text-green-600">Target: {metric.target}</p>
+                          </motion.div>
+                        ))}
                       </div>
 
                       {/* Key Features Grid */}
@@ -834,7 +1186,7 @@ function App() {
 
                           <div className="flex items-center justify-center">
                             <div className="text-center px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-semibold">
-                              → Policies in Force (Retained)
+                              → Active Policies (Retained)
                             </div>
                           </div>
                         </div>
@@ -1274,7 +1626,8 @@ function App() {
                           </div>
 
                           {[
-                            { label: 'Policies in Force', field: 'currentPolicies' as keyof StrategyInputs, step: 50 },
+                            { label: 'Active Policies', field: 'currentPolicies' as keyof StrategyInputs, step: 50 },
+                            { label: 'Current Customers', field: 'currentCustomers' as keyof StrategyInputs, step: 25 },
                             { label: 'Current Staff (FTE)', field: 'currentStaff' as keyof StrategyInputs, step: 0.5 },
                             { label: 'Monthly Lead Spend ($)', field: 'monthlyLeadSpend' as keyof StrategyInputs, step: 100 },
                             { label: 'Cost per Lead ($)', field: 'costPerLead' as keyof StrategyInputs, step: 1 }
@@ -1287,7 +1640,7 @@ function App() {
                                 id={`input-${field.field}`}
                                 type="number"
                                 step={field.step}
-                                value={strategyInputs[field.field]}
+                                value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 aria-required="true"
@@ -1319,7 +1672,7 @@ function App() {
                                 id={`input-${field.field}`}
                                 type="number"
                                 step={field.step}
-                                value={strategyInputs[field.field]}
+                                value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 aria-required="true"
@@ -1428,6 +1781,358 @@ function App() {
                         </div>
                       </div>
 
+                      {/* V3.0: Marketing Channels */}
+                      <div className="mt-10 pt-10 border-t-2 border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <TrendingUp className="w-5 h-5 text-blue-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Marketing Channels (V3.0)</h3>
+                            <p className="text-sm text-gray-600">Channel-specific spending with proven conversion rates</p>
+                          </div>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200 text-sm text-slate-700">
+                          <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces CAC by 30%.
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label htmlFor="input-marketing-referral" className="block text-sm font-medium text-gray-700">
+                              Referral Program ($/month) - 60% conversion, $50/lead
+                            </label>
+                            <input
+                              id="input-marketing-referral"
+                              type="number"
+                              step={100}
+                              value={strategyInputs.marketing.referral}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                marketing: { ...prev.marketing, referral: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-marketing-digital" className="block text-sm font-medium text-gray-700">
+                              Digital Marketing ($/month) - 18% conversion, $25/lead
+                            </label>
+                            <input
+                              id="input-marketing-digital"
+                              type="number"
+                              step={100}
+                              value={strategyInputs.marketing.digital}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                marketing: { ...prev.marketing, digital: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-marketing-traditional" className="block text-sm font-medium text-gray-700">
+                              Traditional Marketing ($/month) - 15% conversion, $35/lead
+                            </label>
+                            <input
+                              id="input-marketing-traditional"
+                              type="number"
+                              step={100}
+                              value={strategyInputs.marketing.traditional}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                marketing: { ...prev.marketing, traditional: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-marketing-partnerships" className="block text-sm font-medium text-gray-700">
+                              Strategic Partnerships ($/month) - 25% conversion, $40/lead
+                            </label>
+                            <input
+                              id="input-marketing-partnerships"
+                              type="number"
+                              step={100}
+                              value={strategyInputs.marketing.partnerships}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                marketing: { ...prev.marketing, partnerships: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t text-sm font-medium text-gray-700">
+                          Total Marketing: ${Object.values(strategyInputs.marketing).reduce((a, b) => a + b, 0).toLocaleString()}/month
+                        </div>
+                      </div>
+
+                      {/* V3.0: Staffing Composition */}
+                      <div className="mt-10 pt-10 border-t-2 border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-purple-100 rounded-lg">
+                            <Users className="w-5 h-5 text-purple-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Staffing Composition (V3.0)</h3>
+                            <p className="text-sm text-gray-600">Optimize your team structure for growth</p>
+                          </div>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-purple-50 rounded border border-purple-200 text-sm text-slate-700">
+                          <strong>Optimal Ratio:</strong> 2.8 service staff per producer. Target RPE: $150k-$200k (good), $300k+ (excellent).
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <label htmlFor="input-staffing-producers" className="block text-sm font-medium text-gray-700">
+                              Producers (FTE)
+                            </label>
+                            <input
+                              id="input-staffing-producers"
+                              type="number"
+                              step={0.5}
+                              value={strategyInputs.staffing.producers}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                staffing: { ...prev.staffing, producers: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-staffing-service" className="block text-sm font-medium text-gray-700">
+                              Service Staff (FTE)
+                            </label>
+                            <input
+                              id="input-staffing-service"
+                              type="number"
+                              step={0.5}
+                              value={strategyInputs.staffing.serviceStaff}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                staffing: { ...prev.staffing, serviceStaff: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-staffing-admin" className="block text-sm font-medium text-gray-700">
+                              Admin Staff (FTE)
+                            </label>
+                            <input
+                              id="input-staffing-admin"
+                              type="number"
+                              step={0.5}
+                              value={strategyInputs.staffing.adminStaff}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                staffing: { ...prev.staffing, adminStaff: parseFloat(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t space-y-2 text-sm text-gray-700">
+                          <div className="flex justify-between">
+                            <span className="font-medium">Total FTE:</span>
+                            <span>{(strategyInputs.staffing.producers + strategyInputs.staffing.serviceStaff + strategyInputs.staffing.adminStaff).toFixed(1)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium">Service:Producer Ratio:</span>
+                            <span className="flex items-center gap-2">
+                              {strategyInputs.staffing.producers > 0 ? (strategyInputs.staffing.serviceStaff / strategyInputs.staffing.producers).toFixed(1) : '0.0'}:1
+                              {strategyInputs.staffing.producers > 0 && Math.abs((strategyInputs.staffing.serviceStaff / strategyInputs.staffing.producers) - 2.8) <= 0.3 && (
+                                <span className="text-green-600 flex items-center gap-1">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  Optimal
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* V3.0: Product Mix */}
+                      <div className="mt-10 pt-10 border-t-2 border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <Package className="w-5 h-5 text-green-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Product Mix (V3.0)</h3>
+                            <p className="text-sm text-gray-600">Track policies by product type for retention optimization</p>
+                          </div>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-green-50 rounded border border-green-200 text-sm text-slate-700">
+                          <strong>Critical Threshold:</strong> 1.8 policies per customer = 95% retention. Focus on bundling!
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <label htmlFor="input-products-auto" className="block text-sm font-medium text-gray-700">
+                              Auto Policies
+                            </label>
+                            <input
+                              id="input-products-auto"
+                              type="number"
+                              value={strategyInputs.products.auto}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                products: { ...prev.products, auto: parseInt(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-products-home" className="block text-sm font-medium text-gray-700">
+                              Home Policies
+                            </label>
+                            <input
+                              id="input-products-home"
+                              type="number"
+                              value={strategyInputs.products.home}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                products: { ...prev.products, home: parseInt(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-products-umbrella" className="block text-sm font-medium text-gray-700">
+                              Umbrella Policies <span className="text-green-600">(High Margin)</span>
+                            </label>
+                            <input
+                              id="input-products-umbrella"
+                              type="number"
+                              value={strategyInputs.products.umbrella}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                products: { ...prev.products, umbrella: parseInt(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-products-cyber" className="block text-sm font-medium text-gray-700">
+                              Cyber Policies <span className="text-green-600">(15-25% comm.)</span>
+                            </label>
+                            <input
+                              id="input-products-cyber"
+                              type="number"
+                              value={strategyInputs.products.cyber}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                products: { ...prev.products, cyber: parseInt(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label htmlFor="input-products-commercial" className="block text-sm font-medium text-gray-700">
+                              Commercial Policies
+                            </label>
+                            <input
+                              id="input-products-commercial"
+                              type="number"
+                              value={strategyInputs.products.commercial}
+                              onChange={(e) => setStrategyInputs(prev => ({
+                                ...prev,
+                                products: { ...prev.products, commercial: parseInt(e.target.value) || 0 }
+                              }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t space-y-2 text-sm text-gray-700">
+                          <div className="flex justify-between">
+                            <span className="font-medium">Total Policies:</span>
+                            <span>{Object.values(strategyInputs.products).reduce((a, b) => a + b, 0)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium">Estimated Policies per Customer:</span>
+                            <span className="flex items-center gap-2">
+                              {strategyInputs.currentCustomers > 0 ? (Object.values(strategyInputs.products).reduce((a, b) => a + b, 0) / strategyInputs.currentCustomers).toFixed(2) : '0.00'}
+                              {strategyInputs.currentCustomers > 0 && (Object.values(strategyInputs.products).reduce((a, b) => a + b, 0) / strategyInputs.currentCustomers) >= 1.8 && (
+                                <span className="text-green-600 flex items-center gap-1">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  95% Retention!
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* V3.0: Technology Investments */}
+                      <div className="mt-10 pt-10 border-t-2 border-gray-200">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="p-2 bg-yellow-100 rounded-lg">
+                            <Zap className="w-5 h-5 text-yellow-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Technology Investments (V3.0)</h3>
+                            <p className="text-sm text-gray-600">High-ROI programs with proven returns</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                            <input
+                              type="checkbox"
+                              checked={strategyInputs.eoAutomation}
+                              onChange={(e) => updateInput('eoAutomation', e.target.checked)}
+                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">E&O Certificate Automation ($150/mo)</div>
+                              <div className="text-sm text-gray-600">Prevents 40% of claims | ROI: 733%</div>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                            <input
+                              type="checkbox"
+                              checked={strategyInputs.renewalProgram}
+                              onChange={(e) => updateInput('renewalProgram', e.target.checked)}
+                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">Proactive Renewal Review Program</div>
+                              <div className="text-sm text-gray-600">1.5-2% retention improvement | 5% improvement = 2x profits in 5 years</div>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                            <input
+                              type="checkbox"
+                              checked={strategyInputs.crossSellProgram}
+                              onChange={(e) => updateInput('crossSellProgram', e.target.checked)}
+                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">Cross-Sell Program ($500/mo)</div>
+                              <div className="text-sm text-gray-600">Umbrella & Cyber focus | Drives to 1.8+ policies/customer</div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
                       {/* Economic Assumptions */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
                         <div className="flex items-center gap-3 mb-6">
@@ -1454,7 +2159,7 @@ function App() {
                                 id={`input-${field.field}`}
                                 type="number"
                                 step={field.step}
-                                value={strategyInputs[field.field]}
+                                value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
@@ -1478,7 +2183,7 @@ function App() {
                                 id={`input-${field.field}`}
                                 type="number"
                                 step={field.step}
-                                value={strategyInputs[field.field]}
+                                value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
@@ -1561,7 +2266,7 @@ function App() {
                                 stroke="#6b7280"
                               />
                               <YAxis
-                                label={{ value: 'Policies in Force', angle: -90, position: 'insideLeft' }}
+                                label={{ value: 'Active Policies', angle: -90, position: 'insideLeft' }}
                                 stroke="#6b7280"
                               />
                               <Tooltip
@@ -1669,6 +2374,215 @@ function App() {
                             </BarChart>
                           </ResponsiveContainer>
                         </motion.div>
+
+                        {/* V3.0: Benchmark Metrics Dashboard */}
+                        {benchmarkMetrics && (
+                          <>
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.3 }}
+                              className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                            >
+                              <h2 className="text-2xl font-bold text-gray-900 mb-3">Performance Benchmarks</h2>
+                              <p className="text-gray-700 mb-8">
+                                Industry-standard metrics to assess your agency's financial health and growth trajectory
+                              </p>
+
+                              {/* Rule of 20 - Large Feature Card */}
+                              <div className={`p-8 rounded-2xl mb-6 ${
+                                benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.TOP_PERFORMER
+                                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500'
+                                  : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.HEALTHY
+                                  ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-500'
+                                  : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.NEEDS_IMPROVEMENT
+                                  ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-500'
+                                  : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-500'
+                              }`}>
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Rule of 20 Score</h3>
+                                    <div className="flex items-baseline gap-3">
+                                      <span className="text-5xl font-bold text-gray-900">
+                                        {benchmarkMetrics.ruleOf20Score.toFixed(1)}
+                                      </span>
+                                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                        benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.TOP_PERFORMER
+                                          ? 'bg-green-200 text-green-900'
+                                          : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.HEALTHY
+                                          ? 'bg-blue-200 text-blue-900'
+                                          : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.NEEDS_IMPROVEMENT
+                                          ? 'bg-yellow-200 text-yellow-900'
+                                          : 'bg-red-200 text-red-900'
+                                      }`}>
+                                        {benchmarkMetrics.ruleOf20Rating}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-3">
+                                      Growth Rate + (0.5 × EBITDA Margin). Target: {BENCHMARKS.RULE_OF_20.HEALTHY}+
+                                    </p>
+                                  </div>
+                                  <Target className="w-12 h-12 text-gray-400" />
+                                </div>
+                              </div>
+
+                              {/* Benchmark Metrics Grid */}
+                              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {/* EBITDA Margin */}
+                                <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-700">EBITDA Margin</h4>
+                                    <DollarSign className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <p className="text-3xl font-bold text-gray-900 mb-1">
+                                    {benchmarkMetrics.ebitdaMargin.toFixed(1)}%
+                                  </p>
+                                  <p className={`text-xs font-semibold ${
+                                    benchmarkMetrics.ebitdaMargin >= BENCHMARKS.EBITDA.EXCELLENT * 100
+                                      ? 'text-green-600'
+                                      : benchmarkMetrics.ebitdaMargin >= BENCHMARKS.EBITDA.TARGET * 100
+                                      ? 'text-blue-600'
+                                      : 'text-yellow-600'
+                                  }`}>
+                                    {benchmarkMetrics.ebitdaStatus}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Target: 25-30%
+                                  </p>
+                                </div>
+
+                                {/* LTV:CAC Ratio */}
+                                <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-700">LTV:CAC Ratio</h4>
+                                    <TrendingUp className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <p className="text-3xl font-bold text-gray-900 mb-1">
+                                    {benchmarkMetrics.ltvCacRatio.toFixed(1)}:1
+                                  </p>
+                                  <p className={`text-xs font-semibold ${
+                                    benchmarkMetrics.ltvCacRatio >= BENCHMARKS.LTV_CAC.GREAT
+                                      ? 'text-green-600'
+                                      : benchmarkMetrics.ltvCacRatio >= BENCHMARKS.LTV_CAC.GOOD
+                                      ? 'text-blue-600'
+                                      : 'text-yellow-600'
+                                  }`}>
+                                    {benchmarkMetrics.ltvCacStatus}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Target: 3:1 - 4:1
+                                  </p>
+                                </div>
+
+                                {/* Revenue Per Employee */}
+                                <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-700">Revenue/Employee</h4>
+                                    <Users className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <p className="text-3xl font-bold text-gray-900 mb-1">
+                                    ${(benchmarkMetrics.revenuePerEmployee / 1000).toFixed(0)}k
+                                  </p>
+                                  <p className={`text-xs font-semibold ${
+                                    benchmarkMetrics.revenuePerEmployee >= BENCHMARKS.RPE.EXCELLENT
+                                      ? 'text-green-600'
+                                      : benchmarkMetrics.revenuePerEmployee >= BENCHMARKS.RPE.GOOD
+                                      ? 'text-blue-600'
+                                      : 'text-yellow-600'
+                                  }`}>
+                                    {benchmarkMetrics.rpeRating}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Target: $150k-$200k
+                                  </p>
+                                </div>
+
+                                {/* Policies Per Customer */}
+                                <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="text-sm font-semibold text-gray-700">Policies/Customer</h4>
+                                    <Package className="w-5 h-5 text-gray-400" />
+                                  </div>
+                                  <p className="text-3xl font-bold text-gray-900 mb-1">
+                                    {benchmarkMetrics.policiesPerCustomer.toFixed(2)}
+                                  </p>
+                                  <p className={`text-xs font-semibold ${
+                                    benchmarkMetrics.policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL
+                                      ? 'text-green-600'
+                                      : benchmarkMetrics.policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED
+                                      ? 'text-blue-600'
+                                      : 'text-yellow-600'
+                                  }`}>
+                                    {benchmarkMetrics.ppcStatus}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-2">
+                                    Critical: 1.8+
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+
+                            {/* Policies Per Customer Chart */}
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 }}
+                              className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                            >
+                              <h2 className="text-2xl font-bold text-gray-900 mb-3">Policies Per Customer Trend</h2>
+                              <p className="text-gray-700 mb-8">
+                                Track bundling effectiveness over time. Higher values indicate better retention and revenue per customer.
+                              </p>
+
+                              <ResponsiveContainer width="100%" height={350}>
+                                <LineChart data={scenarioData} aria-label="Line chart showing policies per customer over time">
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                  <XAxis
+                                    dataKey="month"
+                                    label={{ value: 'Month', position: 'insideBottom', offset: -5 }}
+                                    stroke="#6b7280"
+                                  />
+                                  <YAxis
+                                    label={{ value: 'Policies Per Customer', angle: -90, position: 'insideLeft' }}
+                                    stroke="#6b7280"
+                                    domain={[0, 'auto']}
+                                  />
+                                  <Tooltip
+                                    contentStyle={{
+                                      backgroundColor: '#fff',
+                                      border: '1px solid #e5e7eb',
+                                      borderRadius: '12px',
+                                      padding: '12px'
+                                    }}
+                                    formatter={(value: number) => value.toFixed(2)}
+                                  />
+                                  <Legend />
+                                  <ReferenceLine
+                                    y={BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL}
+                                    stroke="#ef4444"
+                                    strokeDasharray="5 5"
+                                    strokeWidth={2}
+                                    label={{
+                                      value: 'Critical Threshold (1.8)',
+                                      position: 'right',
+                                      fill: '#ef4444',
+                                      fontSize: 12,
+                                      fontWeight: 'bold'
+                                    }}
+                                  />
+                                  <Line
+                                    type="monotone"
+                                    dataKey="policiesPerCustomer"
+                                    stroke="#8b5cf6"
+                                    strokeWidth={3}
+                                    name="Policies/Customer"
+                                    dot={{ fill: '#8b5cf6', r: 4 }}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </motion.div>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
