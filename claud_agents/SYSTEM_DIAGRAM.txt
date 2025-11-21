@@ -1,0 +1,279 @@
+═══════════════════════════════════════════════════════════════════════════════
+                 MULTIAGENT FRAMEWORK SYSTEM ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          ORCHESTRATOR AGENT                                  │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │ • Workflow Coordination          • Task Distribution                  │  │
+│  │ • Dependency Management          • System Monitoring                  │  │
+│  │ • Strategic Decision Making      • Performance Optimization           │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────┬───────────────────────────────────────────────────────────┘
+                  │
+    ┌─────────────┼─────────────┬─────────────┬─────────────┬─────────────┐
+    │             │             │             │             │             │
+┌───▼────┐ ┌──────▼──┐   ┌──────▼──┐   ┌──────▼──┐   ┌──────▼──┐   ┌──────▼──┐
+│ Data   │ │Project A│   │Project B│   │Project C│   │Project D│   │ Monitor │
+│Pipeline│ │  Lead   │   │ Invoice │   │  Cancel │   │Concierge│   │& Report │
+│ Agent  │ │ Scoring │   │AutoMail │   │  Watch  │   │  Agent  │   │  Agent  │
+├────────┤ ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤
+│        │ │         │   │         │   │         │   │         │   │         │
+│Validate│ │ Predict │   │Identify │   │ Monitor │   │Generate │   │  Track  │
+│  Data  │ │Conversion│  │Paper    │   │ Risk    │   │Newsletter│  │ Metrics │
+│        │ │         │   │Customers│   │         │   │         │   │         │
+│Enrich  │ │Optimize │   │         │   │  Score  │   │  Life   │   │Generate │
+│Features│ │Variable │   │Generate │   │Saveability│ │  Event  │   │ Reports │
+│        │ │  Comp   │   │Invoices │   │         │   │Messages │   │         │
+│Transform│ │         │   │         │   │Generate │   │         │   │ Alert   │
+│ Format │ │Priority │   │Schedule │   │Outreach │   │Seasonal │   │  Team   │
+│        │ │ Queue   │   │ Mailing │   │ Scripts │   │Reminders│   │         │
+│Quality │ │         │   │         │   │         │   │         │   │Dashboard│
+│  Check │ │Bundling │   │  Track  │   │  Track  │   │  Track  │   │  Data   │
+│        │ │Detection│   │Delivery │   │ Success │   │Engagement│  │         │
+└───┬────┘ └────┬────┘   └────┬────┘   └────┬────┘   └────┬────┘   └─────────┘
+    │           │             │             │             │
+    └───────────┴─────────────┴─────────────┴─────────────┘
+                │
+         ┌──────▼─────────────────────────────────────────────┐
+         │          SHARED MEMORY SYSTEM                       │
+         │  ┌──────────────────────────────────────────────┐  │
+         │  │ State Storage    │ Message Queue            │  │
+         │  │ • Agent contexts │ • Priority handling      │  │
+         │  │ • Task registry  │ • Async delivery         │  │
+         │  │ • Results cache  │ • Correlation tracking   │  │
+         │  └──────────────────────────────────────────────┘  │
+         └────────────────────────────────────────────────────┘
+                │
+         ┌──────▼──────────────────────────────────────────────┐
+         │       CLAUDE CODE INTEGRATION LAYER                 │
+         │  ┌──────────────────────────────────────────────┐  │
+         │  │ High-Level APIs                              │  │
+         │  │ • process_new_leads()                        │  │
+         │  │ • run_cancellation_analysis()                │  │
+         │  │ • generate_monthly_newsletters()             │  │
+         │  │ • launch_social_campaign()                   │  │
+         │  │ • run_invoice_automation()                   │  │
+         │  │ • get_system_status()                        │  │
+         │  │ • get_performance_metrics()                  │  │
+         │  └──────────────────────────────────────────────┘  │
+         └─────────────────────────────────────────────────────┘
+                │
+         ┌──────▼──────────────────────────────────────────────┐
+         │      EXTERNAL INTEGRATIONS                          │
+         │  ┌──────────────────────────────────────────────┐  │
+         │  │ Communication Services                       │  │
+         │  │ • SendGrid (Email)                           │  │
+         │  │ • Twilio (SMS)                               │  │
+         │  │ • Lob (Physical Mail)                        │  │
+         │  ├──────────────────────────────────────────────┤  │
+         │  │ Marketing Platforms                          │  │
+         │  │ • Meta Business API (Facebook/Instagram)     │  │
+         │  │ • Google Ads                                 │  │
+         │  ├──────────────────────────────────────────────┤  │
+         │  │ Data Sources                                 │  │
+         │  │ • CRM (HubSpot/Salesforce)                   │  │
+         │  │ • Policy Management System                   │  │
+         │  │ • Billing System                             │  │
+         │  └──────────────────────────────────────────────┘  │
+         └─────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                         WORKFLOW EXAMPLES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. LEAD PROCESSING WORKFLOW
+───────────────────────────────────────────────────────────────────────────────
+   New Lead Arrives
+         │
+         ▼
+   [Data Pipeline Agent]
+   • Validate data
+   • Enrich with additional info
+   • Transform to standard format
+         │
+         ▼
+   [Lead Scoring Agent]
+   • Extract features
+   • Run ML model
+   • Calculate score (0-100)
+   • Determine priority
+   • Detect bundling potential
+         │
+         ▼
+   [Monitor Agent]
+   • Log lead score
+   • Update conversion metrics
+   • Track by source/demo
+         │
+         ▼
+   [Orchestrator]
+   • Route to appropriate agent
+   • Schedule follow-up
+   • Notify team
+
+
+2. CANCELLATION SAVE WORKFLOW
+───────────────────────────────────────────────────────────────────────────────
+   Cancel Report Received
+         │
+         ▼
+   [Data Pipeline Agent]
+   • Ingest report
+   • Parse cancellations
+   • Categorize by reason
+         │
+         ▼
+   [Cancellation Watch Agent]
+   • Calculate saveability score
+   • Determine priority
+   • Identify save opportunities
+   • Calculate premium at risk
+         │
+         ▼
+   [Cancellation Watch Agent]
+   • Generate personalized scripts
+   • Recommend communication channel
+   • Create talking points
+   • Prepare objection handlers
+         │
+         ▼
+   [Concierge Agent]
+   • Send outreach (email/SMS/call)
+   • Schedule follow-ups
+   • Track outcomes
+         │
+         ▼
+   [Monitor Agent]
+   • Track save success rate
+   • Calculate premium retained
+   • Update dashboard
+
+
+3. NEWSLETTER WORKFLOW
+───────────────────────────────────────────────────────────────────────────────
+   Monthly Trigger
+         │
+         ▼
+   [Data Pipeline Agent]
+   • Segment customers
+   • Analyze engagement history
+   • Identify preferences
+         │
+         ▼
+   [Concierge Agent]
+   • Generate base content
+   • Personalize by segment
+   • Add local Santa Barbara news
+   • Include policy summaries
+   • Add seasonal tips
+         │
+         ▼
+   [Concierge Agent]
+   • Schedule delivery
+   • Send via email
+   • Send via mail (seniors)
+   • Track opens/clicks
+         │
+         ▼
+   [Monitor Agent]
+   • Log engagement metrics
+   • Identify top performers
+   • Optimize future content
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                         KEY ARCHITECTURAL PATTERNS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. MESSAGE PASSING
+───────────────────────────────────────────────────────────────────────────────
+   Agent A                    Agent B
+      │                          │
+      │──── Message ──────────>  │
+      │   {                      │
+      │     from: AgentA,        │
+      │     to: AgentB,          │
+      │     type: "request",     │
+      │     priority: HIGH,      │
+      │     content: {...}       │
+      │   }                      │
+      │                          │
+      │ <──── Response ──────────│
+      
+
+2. TASK DEPENDENCIES
+───────────────────────────────────────────────────────────────────────────────
+   Task A (no deps)     ┐
+   Task B (no deps)     ├─── Run in parallel
+   Task C (no deps)     ┘
+          │
+          ▼
+   Task D (depends on A, B, C) ── Waits for all to complete
+          │
+          ▼
+   Task E (depends on D) ──────── Runs after D
+
+
+3. SHARED STATE
+───────────────────────────────────────────────────────────────────────────────
+   [Agent A]                    [Shared Memory]                [Agent B]
+      │                              │                            │
+      │──── set("key", val) ────────>│                            │
+      │                              │                            │
+      │                              │<──── get("key") ───────────│
+      │                              │                            │
+      │                              │──── return val ───────────>│
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                         DEPLOYMENT ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+Development Environment                  Production Environment
+─────────────────────────────────────  ─────────────────────────────────────
+
+┌─────────────────────────────┐       ┌─────────────────────────────┐
+│ Local Machine               │       │ Cloud Server (AWS/GCP)      │
+│                             │       │                             │
+│  • Python 3.8+              │       │  • Docker Containers        │
+│  • Sample CSV data          │       │  • Load Balancer            │
+│  • Config templates         │       │  • Auto-scaling             │
+│  • Test workflows           │       │  • Monitoring (DataDog)     │
+│                             │       │  • Logging (CloudWatch)     │
+└─────────────────────────────┘       └─────────────────────────────┘
+         │                                       │
+         │                                       │
+         ▼                                       ▼
+┌─────────────────────────────┐       ┌─────────────────────────────┐
+│ Development Database        │       │ Production Database         │
+│  • PostgreSQL               │       │  • PostgreSQL (RDS)         │
+│  • Redis Cache              │       │  • Redis (ElastiCache)      │
+└─────────────────────────────┘       └─────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                         SUCCESS METRICS DASHBOARD
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ LEAD CONVERSION                          CANCELLATION PREVENTION             │
+│ ─────────────────                        ─────────────────────               │
+│ Current:  28% ▲                          Save Rate:    62% ▲                 │
+│ Target:   35%                            Target:       75%                   │
+│ Progress: [███████░░░] 80%               Progress: [████████░] 82%           │
+│                                                                               │
+│ BUNDLING RATE                            MARKETING ROI                       │
+│ ─────────────────                        ─────────────────                   │
+│ Current:  45% ▲                          Cost/Lead:   $42.50 ▼               │
+│ Target:   60%                            Target:      $35.00                 │
+│ Progress: [██████░░░░] 75%               Progress: [███████░░░] 82%          │
+│                                                                               │
+│ MANUAL HOURS SAVED                       VARIABLE COMP TIER                  │
+│ ─────────────────                        ─────────────────                   │
+│ Current:  18.5 hrs/week ▲                Current Tier: 3                     │
+│ Target:   20.0 hrs/week                  Target Tier:  5                     │
+│ Progress: [█████████░] 92%               Progress: [████░░░░░░] 40%          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════

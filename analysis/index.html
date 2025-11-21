@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Performance Dashboard - Brittney's Insurance Sales</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-hover {
+            transition: all 0.2s ease-out;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+        }
+
+        .priority-high { --accent-start: #dc2626; --accent-end: #f87171; }
+        .priority-medium { --accent-start: #f59e0b; --accent-end: #fbbf24; }
+        .priority-good { --accent-start: #10b981; --accent-end: #34d399; }
+        .priority-info { --accent-start: #3b82f6; --accent-end: #60a5fa; }
+
+        .tab-active {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg">
+        Skip to main content
+    </a>
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-slate-900">Lead Analytics</h1>
+                        <p class="text-xs text-slate-500">Insurance Sales Optimization</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-600">Sept 22 - Nov 16, 2025</span>
+                    <button class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Alert Banner -->
+        <div class="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl animate-in" role="alert">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <svg class="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-sm font-semibold text-red-800">Critical Issue Detected</h3>
+                    <p class="text-sm text-red-700 mt-1">
+                        Layne Staley handles 44% of calls but converts at only 0.47% (vs 2.50% for top performer).
+                        This represents an estimated loss of 400+ sales per period.
+                    </p>
+                </div>
+                <button class="text-red-600 hover:text-red-800 p-1" aria-label="Dismiss alert">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <section aria-labelledby="metrics-heading" class="mb-8">
+            <h2 id="metrics-heading" class="sr-only">Key Performance Metrics</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <!-- Total Leads -->
+                <div class="stat-card priority-info bg-white rounded-xl border border-slate-200 p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium text-slate-600">Total Leads</span>
+                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-slate-900">54,332</p>
+                    <p class="text-sm text-slate-500 mt-1">8 weeks of data</p>
+                </div>
+
+                <!-- Total Sales -->
+                <div class="stat-card priority-good bg-white rounded-xl border border-slate-200 p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium text-slate-600">Total Sales</span>
+                        <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-slate-900">504</p>
+                    <p class="text-sm text-slate-500 mt-1">0.93% conversion rate</p>
+                </div>
+
+                <!-- Contact Rate -->
+                <div class="stat-card priority-medium bg-white rounded-xl border border-slate-200 p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium text-slate-600">Contact Rate</span>
+                        <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-slate-900">31.2%</p>
+                    <p class="text-sm text-red-600 mt-1">68.8% never reached</p>
+                </div>
+
+                <!-- Potential Improvement -->
+                <div class="stat-card priority-high bg-white rounded-xl border border-slate-200 p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-medium text-slate-600">Potential Gain</span>
+                        <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl font-bold text-slate-900">+157%</p>
+                    <p class="text-sm text-slate-500 mt-1">If all match top performer</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <nav class="mb-8 border-b border-slate-200" role="tablist" aria-label="Dashboard sections">
+            <div class="flex gap-8">
+                <button role="tab" aria-selected="true" aria-controls="vendors-panel" id="vendors-tab"
+                        class="tab-active pb-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                        onclick="switchTab('vendors')">
+                    Lead Sources
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="agents-panel" id="agents-tab"
+                        class="pb-4 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                        onclick="switchTab('agents')">
+                    Agent Performance
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="timing-panel" id="timing-tab"
+                        class="pb-4 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                        onclick="switchTab('timing')">
+                    Timing Analysis
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="actions-panel" id="actions-tab"
+                        class="pb-4 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                        onclick="switchTab('actions')">
+                    Action Plan
+                </button>
+            </div>
+        </nav>
+
+        <!-- Vendors Panel -->
+        <div id="vendors-panel" role="tabpanel" aria-labelledby="vendors-tab" class="animate-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Vendor Performance Table -->
+                <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200">
+                        <h3 class="text-lg font-semibold text-slate-900">Lead Source Performance</h3>
+                        <p class="text-sm text-slate-600 mt-1">Ranked by conversion rate (leads per sale)</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-slate-50">
+                                    <th scope="col" class="text-left text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Vendor</th>
+                                    <th scope="col" class="text-right text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Leads</th>
+                                    <th scope="col" class="text-right text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Sales</th>
+                                    <th scope="col" class="text-right text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Rate</th>
+                                    <th scope="col" class="text-right text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Leads/Sale</th>
+                                    <th scope="col" class="text-center text-xs font-medium text-slate-500 uppercase tracking-wide px-6 py-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">Lead-Clinic-Live-Transfers</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">35</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">10</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            28.57%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-green-600">3.5</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                            MAX OUT
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">Blue-Wave-Live-Call-Transfer</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">171</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">12</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            7.02%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-green-600">14.3</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                            INCREASE
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">ALM-Internet</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">869</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">27</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            3.11%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right font-medium text-green-600">32.2</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700">
+                                            INCREASE
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-slate-400 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">Lead-Clinic-Internet</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">4,333</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">73</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                                            1.68%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">59.4</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-slate-50 text-slate-600">
+                                            MAINTAIN
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">EverQuote-LCS</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">6,303</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">49</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            0.78%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-red-600">128.6</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-700">
+                                            REDUCE
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors bg-red-50/50">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <span class="font-medium text-slate-900">QuoteWizard-Auto</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-slate-600">35,785</td>
+                                    <td class="px-6 py-4 text-right font-medium text-slate-900">259</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            0.72%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-red-600">138.2</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            CUT 50%
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Vendor Insights -->
+                <div class="space-y-6">
+                    <!-- Key Insight Card -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-4">Key Insight</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                                <p class="text-sm text-amber-800">
+                                    <strong>QuoteWizard-Auto</strong> represents <strong>66%</strong> of all leads but has the <strong>worst conversion rate</strong> (0.72%).
+                                </p>
+                            </div>
+                            <div class="text-sm text-slate-600">
+                                <p>Live Transfers convert at <strong>40x the rate</strong> of internet leads.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quality Issues -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-4">Quality Issues by Vendor</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">QuoteWizard - Bad Phones</span>
+                                    <span class="font-medium text-slate-900">5.5%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-500 rounded-full" style="width: 55%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">EverQuote - No Contact</span>
+                                    <span class="font-medium text-slate-900">64.4%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-500 rounded-full" style="width: 64.4%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">Imported - Never Requested</span>
+                                    <span class="font-medium text-slate-900">4.9%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-amber-500 rounded-full" style="width: 49%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Impact -->
+                    <div class="bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl p-6 text-white">
+                        <h3 class="text-sm font-semibold mb-4">Budget Reallocation Impact</h3>
+                        <p class="text-3xl font-bold mb-2">+2,989</p>
+                        <p class="text-sm text-primary-100">
+                            Potential additional sales if 30% of QuoteWizard budget shifted to Live Transfers
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agents Panel -->
+        <div id="agents-panel" role="tabpanel" aria-labelledby="agents-tab" class="hidden animate-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Agent Performance Cards -->
+                <div class="lg:col-span-2 space-y-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Agent Performance Comparison</h3>
+
+                    <!-- Top Performer -->
+                    <div class="bg-white rounded-xl border-2 border-green-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-green-500 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
+                            TOP PERFORMER
+                        </div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900">Karina Vitela</h4>
+                                <p class="text-sm text-slate-600">6,115 calls</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-green-600">2.50%</p>
+                                <p class="text-sm text-slate-600">154 sales</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-500">Avg Duration</p>
+                                <p class="text-sm font-semibold text-slate-900">39.7s</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Contact Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">49.5%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Quote Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">5.77%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Agents -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900">Amanda Leech</h4>
+                                <p class="text-sm text-slate-600">4,861 calls</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-slate-900">1.38%</p>
+                                <p class="text-sm text-slate-600">67 sales</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-500">Avg Duration</p>
+                                <p class="text-sm font-semibold text-slate-900">31.1s</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Contact Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">43.8%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Quote Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">2.84%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900">Brandon Epperson</h4>
+                                <p class="text-sm text-slate-600">7,045 calls</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-slate-900">1.12%</p>
+                                <p class="text-sm text-slate-600">79 sales</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-500">Avg Duration</p>
+                                <p class="text-sm font-semibold text-slate-900">25.3s</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Contact Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">48.6%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Quote Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">6.37%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Problem Agent -->
+                    <div class="bg-white rounded-xl border-2 border-red-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
+                            NEEDS COACHING
+                        </div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900">Layne Staley</h4>
+                                <p class="text-sm text-slate-600">23,862 calls (44% of volume)</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-red-600">0.47%</p>
+                                <p class="text-sm text-slate-600">112 sales</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-500">Avg Duration</p>
+                                <p class="text-sm font-semibold text-red-600">4.6s</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Contact Rate</p>
+                                <p class="text-sm font-semibold text-red-600">41.0%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Quote Rate</p>
+                                <p class="text-sm font-semibold text-red-600">1.34%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl border-2 border-red-200 p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
+                            NEEDS COACHING
+                        </div>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold text-slate-900">Maicah Pelaez</h4>
+                                <p class="text-sm text-slate-600">6,865 calls</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-red-600">0.26%</p>
+                                <p class="text-sm text-slate-600">18 sales</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-100">
+                            <div>
+                                <p class="text-xs text-slate-500">Avg Duration</p>
+                                <p class="text-sm font-semibold text-red-600">23.5s</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Contact Rate</p>
+                                <p class="text-sm font-semibold text-slate-900">39.2%</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500">Quote Rate</p>
+                                <p class="text-sm font-semibold text-red-600">0.93%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Sidebar -->
+                <div class="space-y-6">
+                    <!-- The Layne Problem -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-4">The Layne Staley Problem</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-red-50 rounded-lg">
+                                <p class="text-sm text-red-800">
+                                    Karina talks <strong>8.6x longer</strong> per call than Layne
+                                </p>
+                            </div>
+                            <div class="text-sm text-slate-600 space-y-2">
+                                <p><strong>Karina:</strong> 39.7s avg call</p>
+                                <p><strong>Layne:</strong> 4.6s avg call</p>
+                            </div>
+                            <p class="text-xs text-slate-500">
+                                4.6 seconds isn't selling - it's rapid dialing with no engagement.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Call Duration Impact -->
+                    <div class="bg-white rounded-xl border border-slate-200 p-6">
+                        <h3 class="text-sm font-semibold text-slate-900 mb-4">Call Duration = Sales</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">0-30 sec</span>
+                                    <span class="font-medium text-red-600">0.57%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-400 rounded-full" style="width: 5.7%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">5-10 min</span>
+                                    <span class="font-medium text-green-600">7.59%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-500 rounded-full" style="width: 75.9%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">10-30 min</span>
+                                    <span class="font-medium text-green-600">20.45%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-600 rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-600">30+ min</span>
+                                    <span class="font-medium text-green-600">48.57%</span>
+                                </div>
+                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-green-700 rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-xs text-slate-500">
+                            If a call gets past 5 minutes, conversion probability jumps 10x.
+                        </p>
+                    </div>
+
+                    <!-- Potential Impact -->
+                    <div class="bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl p-6 text-white">
+                        <h3 class="text-sm font-semibold mb-4">If Layne Matched Karina</h3>
+                        <p class="text-3xl font-bold mb-2">+480</p>
+                        <p class="text-sm text-primary-100">
+                            Additional sales with same volume at 2.5% conversion
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timing Panel -->
+        <div id="timing-panel" role="tabpanel" aria-labelledby="timing-tab" class="hidden animate-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Hour Analysis -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Best Hours to Call</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold text-green-800">5:00 PM</p>
+                                    <p class="text-sm text-green-600">108 calls</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-green-600">8.80%</p>
+                                    <p class="text-xs text-green-600">11 sales</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold text-green-800">7:00 AM</p>
+                                    <p class="text-sm text-green-600">16 calls</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-green-600">8.70%</p>
+                                    <p class="text-xs text-green-600">2 sales</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold text-slate-800">8:00 AM</p>
+                                    <p class="text-sm text-slate-600">2,161 calls</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold text-slate-700">1.34%</p>
+                                    <p class="text-xs text-slate-600">29 sales</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p class="text-sm text-amber-800">
+                            <strong>Problem:</strong> You're making 100x more calls at 10 AM than 5 PM, but 5 PM converts 10x better!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Lead Age Analysis -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Lead Age Decay Pattern</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Manual Dial</span>
+                            <span class="font-semibold text-green-600">12.16%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Inbound</span>
+                            <span class="font-semibold text-green-600">2.81%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Day 1-2</span>
+                            <span class="font-semibold text-slate-600">0.68%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Day 3-5</span>
+                            <span class="font-semibold text-slate-600">0.84%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Day 8-20</span>
+                            <span class="font-semibold text-red-600">0.00%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                            <span class="text-sm font-medium text-slate-900">Day 31-60</span>
+                            <span class="font-semibold text-red-600">0.00%</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p class="text-sm text-red-800">
+                            <strong>Key Insight:</strong> Leads die after Day 7. Stop wasting time on old telemarketing queues.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Geographic Analysis -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Best Area Codes</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">657</span>
+                                <span class="text-sm text-slate-500 ml-2">Orange County</span>
+                            </div>
+                            <span class="font-semibold text-green-600">2.63%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">818</span>
+                                <span class="text-sm text-slate-500 ml-2">San Fernando</span>
+                            </div>
+                            <span class="font-semibold text-green-600">2.18%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">831</span>
+                                <span class="text-sm text-slate-500 ml-2">Monterey</span>
+                            </div>
+                            <span class="font-semibold text-green-600">1.85%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">925</span>
+                                <span class="text-sm text-slate-500 ml-2">East Bay</span>
+                            </div>
+                            <span class="font-semibold text-green-600">1.71%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dead Zones -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-4">Dead Zones - Stop Buying</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">916</span>
+                                <span class="text-sm text-slate-500 ml-2">Sacramento</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold text-red-600">0.00%</span>
+                                <span class="text-xs text-slate-500 ml-2">1,633 leads</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">858</span>
+                                <span class="text-sm text-slate-500 ml-2">San Diego</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold text-red-600">0.00%</span>
+                                <span class="text-xs text-slate-500 ml-2">681 leads</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">669</span>
+                                <span class="text-sm text-slate-500 ml-2">San Jose</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold text-red-600">0.00%</span>
+                                <span class="text-xs text-slate-500 ml-2">526 leads</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-medium text-slate-900">559</span>
+                                <span class="text-sm text-slate-500 ml-2">Fresno</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold text-red-600">0.07%</span>
+                                <span class="text-xs text-slate-500 ml-2">1,516 leads</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-slate-50 rounded-lg">
+                        <p class="text-xs text-slate-600">
+                            Ask vendors to filter OUT these area codes or negotiate lower prices.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Panel -->
+        <div id="actions-panel" role="tabpanel" aria-labelledby="actions-tab" class="hidden animate-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Immediate Actions -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900">Immediate (Today)</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Reduce Layne to 25% volume</p>
+                                <p class="text-xs text-slate-600 mt-1">Redistribute 17,896 calls to Karina & Amanda</p>
+                                <p class="text-xs text-green-600 mt-1">+300 projected sales</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Shift 30% of calls to 5-7 PM</p>
+                                <p class="text-xs text-slate-600 mt-1">5 PM converts 10x better than midday</p>
+                                <p class="text-xs text-green-600 mt-1">+200 projected sales</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Route Live Transfers to Karina</p>
+                                <p class="text-xs text-slate-600 mt-1">She converts at 12.70% vs 2.86%</p>
+                                <p class="text-xs text-green-600 mt-1">+50 projected sales</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This Week -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900">This Week</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Cut QuoteWizard by 50%</p>
+                                <p class="text-xs text-slate-600 mt-1">Worst conversion rate at 0.72%</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold">5</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">MAX OUT Live Transfers</p>
+                                <p class="text-xs text-slate-600 mt-1">Lead-Clinic converts at 28.57%</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold">6</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Kill leads older than 7 days</p>
+                                <p class="text-xs text-slate-600 mt-1">0% conversion after Day 7</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-amber-600 text-white rounded-full flex items-center justify-center text-xs font-bold">7</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Block dead zone area codes</p>
+                                <p class="text-xs text-slate-600 mt-1">916, 858, 669, 650</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This Month -->
+                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900">This Month</h3>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">8</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Set agent performance standards</p>
+                                <p class="text-xs text-slate-600 mt-1">Min 1.5% sale rate, 25s avg duration</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">9</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Implement lead scoring</p>
+                                <p class="text-xs text-slate-600 mt-1">Route best leads to best agents</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
+                            <span class="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">10</span>
+                            <div>
+                                <p class="text-sm font-medium text-slate-900">Weekly performance reviews</p>
+                                <p class="text-xs text-slate-600 mt-1">Track by agent and vendor</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projected Impact Summary -->
+            <div class="mt-8 bg-gradient-to-r from-primary-600 to-indigo-600 rounded-xl p-8 text-white">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <p class="text-sm text-primary-100">Current Sales</p>
+                        <p class="text-3xl font-bold mt-1">504</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-100">Projected Sales</p>
+                        <p class="text-3xl font-bold mt-1">1,100+</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-100">Improvement</p>
+                        <p class="text-3xl font-bold mt-1">+119%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-primary-100">Additional Sales</p>
+                        <p class="text-3xl font-bold mt-1">+600</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200 bg-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-slate-500">
+                    Analysis generated from 54,332 lead records (Sept 22 - Nov 16, 2025)
+                </p>
+                <p class="text-sm text-slate-500">
+                    Last updated: November 21, 2025
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Live Region for Screen Reader Announcements -->
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" id="announcer"></div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all panels
+            const panels = ['vendors', 'agents', 'timing', 'actions'];
+            panels.forEach(panel => {
+                document.getElementById(`${panel}-panel`).classList.add('hidden');
+                document.getElementById(`${panel}-tab`).classList.remove('tab-active');
+                document.getElementById(`${panel}-tab`).classList.add('text-slate-600');
+                document.getElementById(`${panel}-tab`).setAttribute('aria-selected', 'false');
+            });
+
+            // Show selected panel
+            document.getElementById(`${tabName}-panel`).classList.remove('hidden');
+            document.getElementById(`${tabName}-tab`).classList.add('tab-active');
+            document.getElementById(`${tabName}-tab`).classList.remove('text-slate-600');
+            document.getElementById(`${tabName}-tab`).setAttribute('aria-selected', 'true');
+
+            // Announce to screen readers
+            const announcer = document.getElementById('announcer');
+            const tabNames = {
+                'vendors': 'Lead Sources',
+                'agents': 'Agent Performance',
+                'timing': 'Timing Analysis',
+                'actions': 'Action Plan'
+            };
+            announcer.textContent = `${tabNames[tabName]} tab selected`;
+        }
+
+        // Keyboard navigation for tabs
+        document.querySelectorAll('[role="tab"]').forEach((tab, index, tabs) => {
+            tab.addEventListener('keydown', (e) => {
+                let newIndex;
+                if (e.key === 'ArrowRight') {
+                    newIndex = (index + 1) % tabs.length;
+                } else if (e.key === 'ArrowLeft') {
+                    newIndex = (index - 1 + tabs.length) % tabs.length;
+                } else {
+                    return;
+                }
+                tabs[newIndex].focus();
+                tabs[newIndex].click();
+            });
+        });
+
+        // Dismiss alert
+        document.querySelector('[aria-label="Dismiss alert"]').addEventListener('click', function() {
+            this.closest('[role="alert"]').remove();
+        });
+    </script>
+</body>
+</html>

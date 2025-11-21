@@ -14,8 +14,14 @@ import {
   CheckCircle2,
   Info,
   Zap,
-  Package
+  Package,
+  Award,
+  BookOpen,
+  Search
 } from 'lucide-react';
+import CompensationDashboard from './components/CompensationDashboard';
+import BookOfBusinessDashboard from './components/BookOfBusinessDashboard';
+import LeadAnalysisDashboard from './components/LeadAnalysisDashboard';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 // V3.0 Enhanced Interfaces
@@ -656,6 +662,9 @@ function App() {
   const tabItems = [
     { id: 'methodology', label: 'Methodology', icon: TrendingUp },
     { id: 'model', label: 'Model Details', icon: Info },
+    { id: 'book', label: 'Book of Business', icon: BookOpen },
+    { id: 'leads', label: 'Lead Analysis', icon: Search },
+    { id: 'compensation', label: 'Compensation', icon: Award },
     { id: 'strategy', label: 'Strategy Builder', icon: Settings },
     { id: 'scenarios', label: 'Scenario Analysis', icon: BarChart3 },
     { id: 'results', label: 'Results', icon: Lightbulb }
@@ -798,75 +807,31 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* Premium Header with Gradient */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white overflow-hidden"
-        role="banner"
-        aria-label="Agency Growth Modeling Platform Header"
-      >
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzBoLTZWMGg2djMwem0wIDMwaDZWMzBoLTZ2MzB6TTAgMzBoNnYzMEgwVjMwem0zMCAwaDZ2MzBoLTZWMzB6Ii8+PC9nPjwvZz48L3N2Zz4=')] bg-repeat"></div>
-        </div>
-
-        <div className="relative container mx-auto px-6 lg:px-12 py-12">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-            className="max-w-4xl"
-          >
-            <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-6">
-              Straightlined Agency | Agent ID: A0C6581
+      {/* Compact Header */}
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white" role="banner">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-base font-semibold">
+                Derrick Bealer Agency
+              </h1>
+              <p className="text-xs text-blue-100">
+                A0C6581 • $4.07M/mo • 3,500 policies
+              </p>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
-              Derrick Bealer - Growth Strategy
-            </h1>
-            <p className="text-lg sm:text-xl text-blue-100 max-w-2xl">
-              Current Premium: $4.07M/month | 3,500 Active Policies | Target: 1.8 Policies/Customer
-            </p>
-          </motion.div>
-
-          {/* Premium Metrics Grid */}
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, staggerChildren: 0.1 }}
-          >
-            {metrics.map((metric, index) => (
-              <motion.div
-                key={metric.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-                whileHover={{ scale: 1.03, y: -4 }}
-                className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 transition-all duration-300 hover:bg-white/15 hover:shadow-xl hover:shadow-blue-500/20"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-3 bg-white/20 rounded-xl group-hover:bg-white/30 transition-all duration-300">
-                    <metric.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-xs text-green-300 font-medium px-2 py-1 bg-green-500/20 rounded-full">
-                    {metric.trend}
-                  </span>
-                </div>
-                <p className="text-sm text-blue-100 mb-1">{metric.label}</p>
-                <p className="text-3xl font-bold text-white">{metric.value}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+            <div className="text-right hidden sm:block">
+              <p className="text-xs text-blue-200">Target</p>
+              <p className="text-sm font-semibold">1.8 policies/customer</p>
+            </div>
+          </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Sleek Navigation */}
-      <nav className="sticky top-0 z-50 bg-gray-100 border-b-4 border-gray-400 shadow-xl" role="navigation" aria-label="Main navigation">
-        <div className="container mx-auto px-6 lg:px-12">
+      {/* Navigation - Clean & Accessible */}
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" role="navigation" aria-label="Main navigation">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-            <Tabs.List className="flex space-x-3 overflow-x-auto py-2" role="tablist" aria-label="Platform sections">
+            <Tabs.List className="flex gap-1 overflow-x-auto py-3 -mb-px scrollbar-hide" role="tablist" aria-label="Platform sections">
               {tabItems.map((item) => (
                 <Tabs.Trigger
                   key={item.id}
@@ -875,16 +840,24 @@ function App() {
                   aria-selected={activeTab === item.id}
                   aria-controls={`tabpanel-${item.id}`}
                   className={`
-                    group relative flex items-center gap-3 px-8 py-5 text-base font-bold whitespace-nowrap
-                    transition-all duration-300 rounded-lg border-2
+                    group relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap
+                    transition-all duration-200 rounded-md
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
                     ${activeTab === item.id
-                      ? 'text-white bg-gradient-to-r from-emerald-600 to-teal-600 shadow-2xl border-emerald-700 transform scale-105'
-                      : 'text-gray-900 bg-white hover:bg-gray-50 hover:text-emerald-700 border-gray-300 hover:border-emerald-500 shadow-md'
+                      ? 'text-emerald-700 bg-emerald-50 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }
                   `}
                 >
-                  <item.icon className={`w-6 h-6 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} aria-hidden="true" />
-                  <span className="font-bold">{item.label}</span>
+                  <item.icon className={`w-4 h-4 transition-colors duration-200 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600'}`} aria-hidden="true" />
+                  <span>{item.label}</span>
+                  {activeTab === item.id && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 rounded-full"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </Tabs.Trigger>
               ))}
             </Tabs.List>
@@ -897,15 +870,15 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="py-12"
+                className="py-6 sm:py-8"
               >
                 <Tabs.Content value="methodology" role="tabpanel" id="tabpanel-methodology" aria-labelledby="tab-methodology">
-                  <div className="space-y-8 max-w-7xl mx-auto">
+                  <div className="space-y-6 max-w-7xl mx-auto">
                     {/* Main Content Card */}
                     <motion.section
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="card-lg p-6 sm:p-8"
                     >
                       <div className="flex items-start gap-4 mb-6">
                         <div className="p-3 bg-blue-50 rounded-xl">
@@ -1601,17 +1574,44 @@ function App() {
                   </div>
                 </Tabs.Content>
 
+                <Tabs.Content value="book" role="tabpanel" id="tabpanel-book" aria-labelledby="tab-book">
+                  <div className="max-w-7xl mx-auto">
+                    <BookOfBusinessDashboard />
+                  </div>
+                </Tabs.Content>
+
+                <Tabs.Content value="leads" role="tabpanel" id="tabpanel-leads" aria-labelledby="tab-leads">
+                  <div className="max-w-7xl mx-auto">
+                    <LeadAnalysisDashboard />
+                  </div>
+                </Tabs.Content>
+
+                <Tabs.Content value="compensation" role="tabpanel" id="tabpanel-compensation" aria-labelledby="tab-compensation">
+                  <div className="max-w-7xl mx-auto">
+                    <CompensationDashboard
+                      currentPBR={38.5}
+                      currentPG={-200}
+                      writtenPremium={strategyInputs.averagePremium * strategyInputs.currentPolicies}
+                      isElite={false}
+                      onTargetUpdate={(targets) => {
+                        // Integration point for projection model
+                        console.log('Compensation targets updated:', targets);
+                      }}
+                    />
+                  </div>
+                </Tabs.Content>
+
                 <Tabs.Content value="strategy" role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy">
                   <div className="max-w-6xl mx-auto">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="card-lg p-6 sm:p-8"
                     >
-                      <div className="mb-10">
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Configure Your Growth Strategy</h2>
-                        <p className="text-lg text-gray-700">
-                          Adjust parameters to model different scenarios and optimize your agency's growth trajectory
+                      <div className="mb-8">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Configure Your Growth Strategy</h2>
+                        <p className="text-gray-600">
+                          Adjust parameters to model different scenarios and optimize growth
                         </p>
                       </div>
 
@@ -1632,8 +1632,8 @@ function App() {
                             { label: 'Monthly Lead Spend ($)', field: 'monthlyLeadSpend' as keyof StrategyInputs, step: 100 },
                             { label: 'Cost per Lead ($)', field: 'costPerLead' as keyof StrategyInputs, step: 1 }
                           ].map((field) => (
-                            <div key={field.label} className="space-y-2">
-                              <label htmlFor={`input-${field.field}`} className="block text-sm font-medium text-gray-700">
+                            <div key={field.label}>
+                              <label htmlFor={`input-${field.field}`} className="form-label">
                                 {field.label}
                               </label>
                               <input
@@ -1644,7 +1644,7 @@ function App() {
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 aria-required="true"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                className="form-input"
                               />
                             </div>
                           ))}
@@ -1664,8 +1664,8 @@ function App() {
                             { label: 'Additional Staff (FTE)', field: 'additionalStaff' as keyof StrategyInputs, step: 0.5 },
                             { label: 'Projection Period (months)', field: 'projectionMonths' as keyof StrategyInputs, step: 6 }
                           ].map((field) => (
-                            <div key={field.label} className="space-y-2">
-                              <label htmlFor={`input-${field.field}`} className="block text-sm font-medium text-gray-700">
+                            <div key={field.label}>
+                              <label htmlFor={`input-${field.field}`} className="form-label">
                                 {field.label}
                               </label>
                               <input
@@ -1676,75 +1676,73 @@ function App() {
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
                                 aria-required="true"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                className="form-input"
                               />
                             </div>
                           ))}
 
                           <div className="space-y-3 pt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                            <span className="form-label">
                               Retention Systems
-                            </label>
+                            </span>
                             {[
                               { label: 'Concierge Service', field: 'conciergeService' as keyof StrategyInputs, cost: '$300/mo' },
                               { label: 'Newsletter System', field: 'newsletterSystem' as keyof StrategyInputs, cost: '$150/mo' }
                             ].map((system) => (
-                              <label key={system.label} htmlFor={`checkbox-${system.field}`} className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                              <label key={system.label} htmlFor={`checkbox-${system.field}`} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                                 <input
                                   id={`checkbox-${system.field}`}
                                   type="checkbox"
                                   checked={strategyInputs[system.field] as boolean}
                                   onChange={(e) => updateInput(system.field, e.target.checked)}
                                   aria-label={`Enable ${system.label} for ${system.cost}`}
-                                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                                 />
-                                <span className="flex-1 font-medium text-gray-700">{system.label}</span>
-                                <span className="text-sm text-gray-500">{system.cost}</span>
+                                <span className="flex-1 text-sm font-medium text-gray-700">{system.label}</span>
+                                <span className="text-xs text-gray-500">{system.cost}</span>
                               </label>
                             ))}
                           </div>
 
                           {/* Sales Compensation Model */}
                           <div className="space-y-3 pt-6 border-t border-gray-200 mt-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                            <span className="form-label">
                               New Salesperson Compensation
-                            </label>
+                            </span>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-2">
                               <button
                                 type="button"
                                 onClick={() => updateInput('salesCompensationModel', 'fte')}
-                                className={`p-4 border-2 rounded-xl font-medium transition-all duration-200 ${
-                                  strategyInputs.salesCompensationModel === 'fte'
+                                className={`p-3 border rounded-lg text-sm font-medium transition-all duration-200 text-left
+                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
+                                  ${strategyInputs.salesCompensationModel === 'fte'
                                     ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:border-emerald-400'
-                                }`}
+                                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                  }`}
                               >
-                                <div className="text-left">
-                                  <div className="font-bold mb-1">Full-Time (FTE)</div>
-                                  <div className="text-xs opacity-75">Fixed monthly salary</div>
-                                </div>
+                                <div className="font-semibold mb-0.5">Full-Time (FTE)</div>
+                                <div className="text-xs text-gray-500">Fixed monthly salary</div>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => updateInput('salesCompensationModel', 'commission')}
-                                className={`p-4 border-2 rounded-xl font-medium transition-all duration-200 ${
-                                  strategyInputs.salesCompensationModel === 'commission'
+                                className={`p-3 border rounded-lg text-sm font-medium transition-all duration-200 text-left
+                                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
+                                  ${strategyInputs.salesCompensationModel === 'commission'
                                     ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:border-emerald-400'
-                                }`}
+                                    : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                  }`}
                               >
-                                <div className="text-left">
-                                  <div className="font-bold mb-1">Commission-Only</div>
-                                  <div className="text-xs opacity-75">Pay per policy sold</div>
-                                </div>
+                                <div className="font-semibold mb-0.5">Commission-Only</div>
+                                <div className="text-xs text-gray-500">Pay per policy sold</div>
                               </button>
                             </div>
 
                             {strategyInputs.salesCompensationModel === 'fte' ? (
-                              <div className="space-y-2 mt-4">
-                                <label htmlFor="input-fteSalary" className="block text-sm font-medium text-gray-700">
+                              <div className="mt-4">
+                                <label htmlFor="input-fteSalary" className="form-label">
                                   Monthly FTE Salary ($)
                                 </label>
                                 <input
@@ -1754,13 +1752,13 @@ function App() {
                                   value={strategyInputs.fteSalary}
                                   onChange={(e) => updateInput('fteSalary', parseFloat(e.target.value))}
                                   aria-label="Monthly FTE Salary"
-                                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                  className="form-input"
                                 />
                                 <p className="text-xs text-gray-500">Typical range: $3,000 - $6,000/month</p>
                               </div>
                             ) : (
-                              <div className="space-y-2 mt-4">
-                                <label htmlFor="input-commissionRate" className="block text-sm font-medium text-gray-700">
+                              <div className="mt-4">
+                                <label htmlFor="input-commissionRate" className="form-label">
                                   Commission Rate (% per policy)
                                 </label>
                                 <input
@@ -1772,9 +1770,9 @@ function App() {
                                   value={strategyInputs.commissionRate}
                                   onChange={(e) => updateInput('commissionRate', parseFloat(e.target.value))}
                                   aria-label="Commission Rate Percentage"
-                                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                  className="form-input"
                                 />
-                                <p className="text-xs text-gray-500">Typical range: 10% - 25% per policy sold</p>
+                                <p className="text-xs text-gray-500 mt-1">Typical range: 10% - 25% per policy sold</p>
                               </div>
                             )}
                           </div>
@@ -1797,10 +1795,10 @@ function App() {
                           <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces CAC by 30%.
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label htmlFor="input-marketing-referral" className="block text-sm font-medium text-gray-700">
-                              Referral Program ($/month) - 60% conversion, $50/lead
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="input-marketing-referral" className="form-label">
+                              Referral Program ($/mo)
                             </label>
                             <input
                               id="input-marketing-referral"
@@ -1811,13 +1809,14 @@ function App() {
                                 ...prev,
                                 marketing: { ...prev.marketing, referral: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
+                            <p className="text-xs text-gray-500 mt-1">60% conv, $50/lead</p>
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-marketing-digital" className="block text-sm font-medium text-gray-700">
-                              Digital Marketing ($/month) - 18% conversion, $25/lead
+                          <div>
+                            <label htmlFor="input-marketing-digital" className="form-label">
+                              Digital Marketing ($/mo)
                             </label>
                             <input
                               id="input-marketing-digital"
@@ -1828,13 +1827,14 @@ function App() {
                                 ...prev,
                                 marketing: { ...prev.marketing, digital: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
+                            <p className="text-xs text-gray-500 mt-1">18% conv, $25/lead</p>
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-marketing-traditional" className="block text-sm font-medium text-gray-700">
-                              Traditional Marketing ($/month) - 15% conversion, $35/lead
+                          <div>
+                            <label htmlFor="input-marketing-traditional" className="form-label">
+                              Traditional Marketing ($/mo)
                             </label>
                             <input
                               id="input-marketing-traditional"
@@ -1845,13 +1845,14 @@ function App() {
                                 ...prev,
                                 marketing: { ...prev.marketing, traditional: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
+                            <p className="text-xs text-gray-500 mt-1">15% conv, $35/lead</p>
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-marketing-partnerships" className="block text-sm font-medium text-gray-700">
-                              Strategic Partnerships ($/month) - 25% conversion, $40/lead
+                          <div>
+                            <label htmlFor="input-marketing-partnerships" className="form-label">
+                              Partnerships ($/mo)
                             </label>
                             <input
                               id="input-marketing-partnerships"
@@ -1862,8 +1863,9 @@ function App() {
                                 ...prev,
                                 marketing: { ...prev.marketing, partnerships: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
+                            <p className="text-xs text-gray-500 mt-1">25% conv, $40/lead</p>
                           </div>
                         </div>
 
@@ -1888,9 +1890,9 @@ function App() {
                           <strong>Optimal Ratio:</strong> 2.8 service staff per producer. Target RPE: $150k-$200k (good), $300k+ (excellent).
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <div className="space-y-2">
-                            <label htmlFor="input-staffing-producers" className="block text-sm font-medium text-gray-700">
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label htmlFor="input-staffing-producers" className="form-label">
                               Producers (FTE)
                             </label>
                             <input
@@ -1902,12 +1904,12 @@ function App() {
                                 ...prev,
                                 staffing: { ...prev.staffing, producers: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-staffing-service" className="block text-sm font-medium text-gray-700">
+                          <div>
+                            <label htmlFor="input-staffing-service" className="form-label">
                               Service Staff (FTE)
                             </label>
                             <input
@@ -1919,12 +1921,12 @@ function App() {
                                 ...prev,
                                 staffing: { ...prev.staffing, serviceStaff: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-staffing-admin" className="block text-sm font-medium text-gray-700">
+                          <div>
+                            <label htmlFor="input-staffing-admin" className="form-label">
                               Admin Staff (FTE)
                             </label>
                             <input
@@ -1936,7 +1938,7 @@ function App() {
                                 ...prev,
                                 staffing: { ...prev.staffing, adminStaff: parseFloat(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
                         </div>
@@ -1977,9 +1979,9 @@ function App() {
                           <strong>Critical Threshold:</strong> 1.8 policies per customer = 95% retention. Focus on bundling!
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <div className="space-y-2">
-                            <label htmlFor="input-products-auto" className="block text-sm font-medium text-gray-700">
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label htmlFor="input-products-auto" className="form-label">
                               Auto Policies
                             </label>
                             <input
@@ -1990,12 +1992,12 @@ function App() {
                                 ...prev,
                                 products: { ...prev.products, auto: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-products-home" className="block text-sm font-medium text-gray-700">
+                          <div>
+                            <label htmlFor="input-products-home" className="form-label">
                               Home Policies
                             </label>
                             <input
@@ -2006,13 +2008,13 @@ function App() {
                                 ...prev,
                                 products: { ...prev.products, home: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-products-umbrella" className="block text-sm font-medium text-gray-700">
-                              Umbrella Policies <span className="text-green-600">(High Margin)</span>
+                          <div>
+                            <label htmlFor="input-products-umbrella" className="form-label">
+                              Umbrella <span className="text-emerald-600">(High Margin)</span>
                             </label>
                             <input
                               id="input-products-umbrella"
@@ -2022,13 +2024,13 @@ function App() {
                                 ...prev,
                                 products: { ...prev.products, umbrella: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-products-cyber" className="block text-sm font-medium text-gray-700">
-                              Cyber Policies <span className="text-green-600">(15-25% comm.)</span>
+                          <div>
+                            <label htmlFor="input-products-cyber" className="form-label">
+                              Cyber <span className="text-emerald-600">(15-25% comm)</span>
                             </label>
                             <input
                               id="input-products-cyber"
@@ -2038,13 +2040,13 @@ function App() {
                                 ...prev,
                                 products: { ...prev.products, cyber: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
 
-                          <div className="space-y-2">
-                            <label htmlFor="input-products-commercial" className="block text-sm font-medium text-gray-700">
-                              Commercial Policies
+                          <div>
+                            <label htmlFor="input-products-commercial" className="form-label">
+                              Commercial
                             </label>
                             <input
                               id="input-products-commercial"
@@ -2054,7 +2056,7 @@ function App() {
                                 ...prev,
                                 products: { ...prev.products, commercial: parseInt(e.target.value) || 0 }
                               }))}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                              className="form-input"
                             />
                           </div>
                         </div>
@@ -2091,43 +2093,43 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="space-y-4">
-                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                             <input
                               type="checkbox"
                               checked={strategyInputs.eoAutomation}
                               onChange={(e) => updateInput('eoAutomation', e.target.checked)}
-                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">E&O Certificate Automation ($150/mo)</div>
-                              <div className="text-sm text-gray-600">Prevents 40% of claims | ROI: 733%</div>
+                              <div className="text-sm font-medium text-gray-900">E&O Certificate Automation ($150/mo)</div>
+                              <div className="text-xs text-gray-500">Prevents 40% of claims | ROI: 733%</div>
                             </div>
                           </label>
 
-                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                             <input
                               type="checkbox"
                               checked={strategyInputs.renewalProgram}
                               onChange={(e) => updateInput('renewalProgram', e.target.checked)}
-                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">Proactive Renewal Review Program</div>
-                              <div className="text-sm text-gray-600">1.5-2% retention improvement | 5% improvement = 2x profits in 5 years</div>
+                              <div className="text-sm font-medium text-gray-900">Proactive Renewal Review Program</div>
+                              <div className="text-xs text-gray-500">1.5-2% retention improvement | 5% = 2x profits in 5 years</div>
                             </div>
                           </label>
 
-                          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200">
+                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                             <input
                               type="checkbox"
                               checked={strategyInputs.crossSellProgram}
                               onChange={(e) => updateInput('crossSellProgram', e.target.checked)}
-                              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">Cross-Sell Program ($500/mo)</div>
-                              <div className="text-sm text-gray-600">Umbrella & Cyber focus | Drives to 1.8+ policies/customer</div>
+                              <div className="text-sm font-medium text-gray-900">Cross-Sell Program ($500/mo)</div>
+                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | Drives to 1.8+ policies/customer</div>
                             </div>
                           </label>
                         </div>
@@ -2145,14 +2147,14 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-6">
+                        <div className="grid md:grid-cols-3 gap-4">
                           {[
                             { label: 'Monthly Churn Rate (%)', field: 'monthlyChurnRate' as keyof StrategyInputs, step: 0.5, help: 'Typical: 2-4%' },
-                            { label: 'Average Premium ($/year)', field: 'averagePremium' as keyof StrategyInputs, step: 50, help: 'Per policy annually' },
+                            { label: 'Average Premium ($/yr)', field: 'averagePremium' as keyof StrategyInputs, step: 50, help: 'Per policy annually' },
                             { label: 'Commission Payout (%)', field: 'commissionPayout' as keyof StrategyInputs, step: 1, help: 'Of premium' }
                           ].map((field) => (
-                            <div key={field.label} className="space-y-2">
-                              <label htmlFor={`input-${field.field}`} className="block text-sm font-medium text-gray-700">
+                            <div key={field.label}>
+                              <label htmlFor={`input-${field.field}`} className="form-label">
                                 {field.label}
                               </label>
                               <input
@@ -2162,21 +2164,21 @@ function App() {
                                 value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                className="form-input"
                               />
-                              <p className="text-xs text-gray-500">{field.help}</p>
+                              <p className="text-xs text-gray-500 mt-1">{field.help}</p>
                             </div>
                           ))}
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-6 mt-6">
+                        <div className="grid md:grid-cols-3 gap-4 mt-4">
                           {[
                             { label: 'Fixed Monthly Costs ($)', field: 'fixedMonthlyCosts' as keyof StrategyInputs, step: 500, help: 'Rent, software, etc.' },
                             { label: 'FTE Benefits Multiplier', field: 'fteBenefitsMultiplier' as keyof StrategyInputs, step: 0.1, help: '1.3 = 30% overhead' },
                             { label: 'Sales Ramp (months)', field: 'salesRampMonths' as keyof StrategyInputs, step: 1, help: 'Time to full productivity' }
                           ].map((field) => (
-                            <div key={field.label} className="space-y-2">
-                              <label htmlFor={`input-${field.field}`} className="block text-sm font-medium text-gray-700">
+                            <div key={field.label}>
+                              <label htmlFor={`input-${field.field}`} className="form-label">
                                 {field.label}
                               </label>
                               <input
@@ -2186,34 +2188,34 @@ function App() {
                                 value={strategyInputs[field.field] as number}
                                 onChange={(e) => updateInput(field.field, parseFloat(e.target.value))}
                                 aria-label={field.label}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white"
+                                className="form-input"
                               />
-                              <p className="text-xs text-gray-500">{field.help}</p>
+                              <p className="text-xs text-gray-500 mt-1">{field.help}</p>
                             </div>
                           ))}
                         </div>
                       </div>
 
                       <motion.button
-                        whileHover={{ scale: isCalculating ? 1 : 1.02 }}
-                        whileTap={{ scale: isCalculating ? 1 : 0.98 }}
+                        whileHover={{ scale: isCalculating ? 1 : 1.01 }}
+                        whileTap={{ scale: isCalculating ? 1 : 0.99 }}
                         onClick={handleCalculate}
                         disabled={isCalculating}
                         aria-label="Calculate growth scenarios based on your inputs"
                         aria-busy={isCalculating}
-                        className={`mt-10 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 ${
+                        className={`mt-8 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-6 rounded-lg font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 ${
                           isCalculating ? 'opacity-70 cursor-not-allowed' : ''
                         }`}
                       >
                         {isCalculating ? (
                           <>
-                            <span className="inline-block animate-spin mr-2">⚙️</span>
+                            <span className="inline-block animate-spin">⚙️</span>
                             Calculating...
                           </>
                         ) : (
                           <>
                             Calculate Growth Scenarios
-                            <ArrowRight className="inline-block ml-2 w-5 h-5" />
+                            <ArrowRight className="w-4 h-4" />
                           </>
                         )}
                       </motion.button>
@@ -2222,26 +2224,32 @@ function App() {
                 </Tabs.Content>
 
                 <Tabs.Content value="scenarios" role="tabpanel" id="tabpanel-scenarios" aria-labelledby="tab-scenarios">
-                  <div className="max-w-7xl mx-auto space-y-8">
+                  <div className="max-w-7xl mx-auto space-y-6">
                     {!hasResults ? (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                        className="card-lg p-8"
                       >
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Scenario Comparison</h2>
-                        <p className="text-lg text-gray-700 mb-10">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Scenario Comparison</h2>
+                        <p className="text-gray-600 mb-8">
                           Compare multiple growth strategies to find the optimal balance of risk and return
                         </p>
 
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-12 text-center border border-blue-100">
-                          <BarChart3 className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                          <p className="text-gray-700 text-lg">
-                            Interactive charts and scenario analysis will be displayed here
+                        <div className="bg-gray-50 rounded-xl p-8 text-center border border-gray-200">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <BarChart3 className="w-6 h-6 text-gray-400" />
+                          </div>
+                          <p className="text-gray-600 font-medium mb-1">No scenarios generated yet</p>
+                          <p className="text-sm text-gray-500">
+                            Configure your strategy in the Strategy Builder tab and click Calculate
                           </p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            Configure your strategy and click Calculate to see detailed projections
-                          </p>
+                          <button
+                            onClick={() => setActiveTab('strategy')}
+                            className="mt-4 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                          >
+                            Go to Strategy Builder →
+                          </button>
                         </div>
                       </motion.div>
                     ) : (
@@ -2250,10 +2258,10 @@ function App() {
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                          className="card-lg p-6"
                         >
-                          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Policy Growth Trajectories</h2>
-                          <p className="text-gray-700 mb-8">
+                          <h2 className="text-lg font-semibold text-gray-900 mb-1">Policy Growth Trajectories</h2>
+                          <p className="text-sm text-gray-600 mb-6">
                             Projected growth over {strategyInputs.projectionMonths} months under different scenarios
                           </p>
 
