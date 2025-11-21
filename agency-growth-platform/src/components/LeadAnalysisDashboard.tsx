@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { TrendingUp, Users, Phone, Target, AlertTriangle, CheckCircle, Info, Lightbulb } from 'lucide-react';
+import { TrendingUp, Users, Phone, Target, AlertTriangle, CheckCircle, Info, Lightbulb, Database, Code, FileText } from 'lucide-react';
 
 interface LeadAnalysisData {
   summary: {
@@ -208,13 +208,33 @@ interface LeadAnalysisData {
     best_hours: number[];
     best_days: string[];
   };
+  data_overview?: {
+    columns: Record<string, {
+      description: string;
+      sample_values: (string | number)[];
+      interpretation: string;
+      data_type: string;
+    }>;
+    status_classification: Record<string, {
+      example_statuses: string[];
+      meaning: string;
+      funnel_stage: string;
+    }>;
+    calculated_metrics: Array<{
+      metric: string;
+      formula: string;
+      purpose: string;
+    }>;
+    data_notes: string[];
+    methodology_summary: string;
+  };
 }
 
 export default function LeadAnalysisDashboard() {
   const [data, setData] = useState<LeadAnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'overview' | 'diagnostics' | 'vendors' | 'agents' | 'timing'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'diagnostics' | 'vendors' | 'agents' | 'timing' | 'data'>('overview');
 
   useEffect(() => {
     fetch('/data/lead_analysis.json')
@@ -256,6 +276,7 @@ export default function LeadAnalysisDashboard() {
     { id: 'vendors', label: 'Vendors' },
     { id: 'agents', label: 'Agents' },
     { id: 'timing', label: 'Timing' },
+    { id: 'data', label: 'Data' },
   ] as const;
 
   return (
@@ -1181,6 +1202,160 @@ export default function LeadAnalysisDashboard() {
                   <Bar dataKey="sale_rate" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeView === 'data' && data.data_overview && (
+        <>
+          {/* Data Overview Header */}
+          <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-5">
+            <div className="flex gap-3">
+              <Database className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Data Transparency</h3>
+                <p className="text-sm text-gray-700">
+                  {data.data_overview.methodology_summary}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Summary Stats */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Dataset Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {data.data_overview.data_notes.map((note, i) => (
+                <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                  {note}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Column Definitions */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-gray-600" />
+                Raw Data Columns
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Each row in the source data represents one call to a potential customer
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {Object.entries(data.data_overview.columns).map(([columnName, info]) => (
+                <div key={columnName} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{columnName}</h4>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                      {info.data_type}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{info.description}</p>
+
+                  <div className="bg-gray-50 rounded p-2 mb-2">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Sample Values:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {info.sample_values.slice(0, 5).map((val, i) => (
+                        <code key={i} className="text-xs bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-700">
+                          {String(val).length > 40 ? String(val).substring(0, 40) + '...' : String(val)}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-600">
+                      <span className="font-medium">How we use it:</span> {info.interpretation}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Status Classification */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Code className="w-5 h-5 text-gray-600" />
+                Status Classification Logic
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                How raw &quot;Current Status&quot; values are interpreted and classified
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500">Category</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500">Example Raw Values</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500">Meaning</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500">Funnel Stage</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {Object.entries(data.data_overview.status_classification).map(([category, info]) => (
+                    <tr key={category}>
+                      <td className="px-3 py-2 font-medium text-gray-900">{category}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-wrap gap-1">
+                          {info.example_statuses.slice(0, 2).map((status, i) => (
+                            <code key={i} className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
+                              {status}
+                            </code>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-gray-600">{info.meaning}</td>
+                      <td className="px-3 py-2">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          info.funnel_stage === 'Sale' ? 'bg-emerald-100 text-emerald-700' :
+                          info.funnel_stage === 'Hot' ? 'bg-orange-100 text-orange-700' :
+                          info.funnel_stage === 'Quoted' ? 'bg-amber-100 text-amber-700' :
+                          info.funnel_stage.includes('Lost') ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {info.funnel_stage}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Calculated Metrics */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Calculated Metrics</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                How key performance indicators are derived from raw data
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {data.data_overview.calculated_metrics.map((metric, i) => (
+                <div key={i} className="border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-start justify-between">
+                    <h4 className="font-medium text-gray-900">{metric.metric}</h4>
+                  </div>
+                  <div className="mt-2 bg-gray-50 rounded p-2">
+                    <code className="text-xs text-gray-700">{metric.formula}</code>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-600">
+                    <span className="font-medium">Purpose:</span> {metric.purpose}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </>

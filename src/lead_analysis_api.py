@@ -779,6 +779,156 @@ def generate_action_plan(data, vendor_data, agent_data):
         'best_days': [d['day'] for d in best_days]
     }
 
+def generate_data_overview(data):
+    """Generate transparent overview of raw data structure and interpretation"""
+
+    # Column definitions with interpretations
+    column_info = {
+        'Date': {
+            'description': 'Timestamp when the call was made',
+            'sample_values': data['Date'].head(3).astype(str).tolist(),
+            'interpretation': 'Used to analyze timing patterns (hour, day of week) for optimal call scheduling',
+            'data_type': 'datetime'
+        },
+        'Full name': {
+            'description': 'Name of the lead (potential customer)',
+            'sample_values': ['[REDACTED]', '[REDACTED]', '[REDACTED]'],  # Privacy
+            'interpretation': 'Used for record identification only, not in analysis',
+            'data_type': 'string'
+        },
+        'User': {
+            'description': 'Sales agent who made the call',
+            'sample_values': data['User'].head(3).tolist() if 'User' in data.columns else [],
+            'interpretation': 'Grouped to calculate agent-level performance metrics (sale rate, contact rate)',
+            'data_type': 'string'
+        },
+        'Call Duration In Seconds': {
+            'description': 'Length of the call in seconds',
+            'sample_values': data['Call Duration In Seconds'].head(5).tolist() if 'Call Duration In Seconds' in data.columns else [],
+            'interpretation': 'Aggregated per agent to calculate total talk time (hours on phone)',
+            'data_type': 'integer'
+        },
+        'Current Status': {
+            'description': 'Final outcome status of the lead',
+            'sample_values': data['Current Status'].value_counts().head(5).index.tolist(),
+            'interpretation': 'Classified into outcome categories (SOLD, QUOTED, CONTACTED, NO_CONTACT, etc.) to track funnel progression',
+            'data_type': 'string'
+        },
+        'Call Type': {
+            'description': 'Type/source of the call',
+            'sample_values': data['Call Type'].value_counts().head(5).index.tolist() if 'Call Type' in data.columns else [],
+            'interpretation': 'Categorized into Live Transfer, Inbound, Telemarketing, etc. to compare lead source quality',
+            'data_type': 'string'
+        },
+        'Vendor Name': {
+            'description': 'Lead vendor/source that provided the lead',
+            'sample_values': data['Vendor Name'].value_counts().head(5).index.tolist() if 'Vendor Name' in data.columns else [],
+            'interpretation': 'Used to calculate ROI, CPL, and conversion rates per vendor to optimize budget allocation',
+            'data_type': 'string'
+        }
+    }
+
+    # Status classification mapping examples
+    status_classification = {
+        'SOLD / Customer': {
+            'example_statuses': ['4.2 SOLD - AF Customer', '4.0 SOLD', '4.1 SOLD - New Customer'],
+            'meaning': 'Lead purchased a policy - counted as a sale',
+            'funnel_stage': 'Sale'
+        },
+        'HOT_PROSPECT': {
+            'example_statuses': ['3.5 HOT - Following up', '3.5 HOT'],
+            'meaning': 'Highly interested, likely to buy soon',
+            'funnel_stage': 'Hot'
+        },
+        'QUOTED': {
+            'example_statuses': ['3.0 QUOTED', '3.1 QUOTED - Thinking About It'],
+            'meaning': 'Received a quote but hasnt decided',
+            'funnel_stage': 'Quoted'
+        },
+        'CONTACTED - Not Interested': {
+            'example_statuses': ['2.1 CONTACTED - Not Interested'],
+            'meaning': 'Spoke with lead but they declined',
+            'funnel_stage': 'Contacted (Lost)'
+        },
+        'NO_CONTACT': {
+            'example_statuses': ['1.0 NO CONTACT', '1.1 CALLED - No Answer'],
+            'meaning': 'Could not reach the lead',
+            'funnel_stage': 'Lost Before Contact'
+        },
+        'BAD_PHONE': {
+            'example_statuses': ['1.2 CALLED - Bad Phone #'],
+            'meaning': 'Phone number invalid or disconnected',
+            'funnel_stage': 'Lost Before Contact'
+        }
+    }
+
+    # Calculated metrics explanation
+    calculated_metrics = [
+        {
+            'metric': 'Is_Contacted',
+            'formula': 'Status contains "CONTACTED", "QUOTED", "HOT", "SOLD", or "TRANSFERRED"',
+            'purpose': 'Determines if we successfully reached the lead'
+        },
+        {
+            'metric': 'Is_Quoted',
+            'formula': 'Status contains "QUOTED", "HOT", or "SOLD"',
+            'purpose': 'Determines if lead received a price quote'
+        },
+        {
+            'metric': 'Is_Sale',
+            'formula': 'Status contains "SOLD" or "CUSTOMER"',
+            'purpose': 'Determines if lead purchased a policy'
+        },
+        {
+            'metric': 'Sale Rate',
+            'formula': '(Number of Sales / Total Leads) × 100',
+            'purpose': 'Primary performance metric - what % of leads become customers'
+        },
+        {
+            'metric': 'Contact Rate',
+            'formula': '(Number Contacted / Total Leads) × 100',
+            'purpose': 'Measures lead quality - can we reach them?'
+        },
+        {
+            'metric': 'CPL (Cost Per Lead)',
+            'formula': 'Actual cost paid to vendor per lead',
+            'purpose': 'Input cost for ROI calculation'
+        },
+        {
+            'metric': 'CPB (Cost Per Bind)',
+            'formula': 'Total Spend / Number of Sales',
+            'purpose': 'True customer acquisition cost'
+        },
+        {
+            'metric': 'ROI %',
+            'formula': '((Estimated Revenue - Total Spend) / Total Spend) × 100',
+            'purpose': 'Is this vendor profitable? Above 0% = making money'
+        }
+    ]
+
+    # Data quality notes
+    data_notes = [
+        f"Total records loaded: {len(data):,}",
+        f"Date range: {data['Date'].min().strftime('%Y-%m-%d')} to {data['Date'].max().strftime('%Y-%m-%d')}",
+        f"Unique agents: {data['User'].nunique() if 'User' in data.columns else 'N/A'}",
+        f"Unique vendors: {data['Vendor Name'].nunique() if 'Vendor Name' in data.columns else 'N/A'}",
+        f"Records with valid status: {data['Current Status'].notna().sum():,} ({data['Current Status'].notna().mean()*100:.1f}%)"
+    ]
+
+    return {
+        'columns': column_info,
+        'status_classification': status_classification,
+        'calculated_metrics': calculated_metrics,
+        'data_notes': data_notes,
+        'methodology_summary': (
+            "This analysis interprets call center lead data to measure sales performance. "
+            "Each row represents one call to a potential customer. The 'Current Status' field "
+            "is classified into outcome categories (SOLD, QUOTED, NO_CONTACT, etc.) to build "
+            "a sales funnel. Metrics are calculated by grouping data by agent, vendor, and time "
+            "to identify what drives conversions. Vendor costs are applied to calculate true ROI."
+        )
+    }
+
 def generate_analysis():
     """Generate complete analysis JSON"""
     print("Loading lead data...")
@@ -805,6 +955,10 @@ def generate_analysis():
     call_attempts = analyze_call_attempts(data)
     agent_vendor_match = analyze_agent_vendor_match(data)
     action_plan = generate_action_plan(data, vendor_data, agent_data)
+
+    # Generate data overview for transparency
+    print("Generating data overview...")
+    data_overview = generate_data_overview(data)
 
     # Summary stats
     summary = {
@@ -836,7 +990,8 @@ def generate_analysis():
             'call_attempts': call_attempts,
             'agent_vendor_match': agent_vendor_match
         },
-        'action_plan': action_plan
+        'action_plan': action_plan,
+        'data_overview': data_overview
     }
 
     return result
