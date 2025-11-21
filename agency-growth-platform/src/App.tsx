@@ -188,7 +188,7 @@ function App() {
     currentCustomers: 2200, // ~1.59 policies per customer
     currentStaff: 2.0, // ACTUAL: Derrick + 1 admin = 2 FTE
     monthlyLeadSpend: 3000, // Keep for backward compatibility
-    costPerLead: 30,
+    costPerLead: 55, // Live transfer cost from Brittany's agency benchmark
     additionalLeadSpend: 3000,
     additionalStaff: 1.0,
     projectionMonths: 24,
@@ -398,9 +398,9 @@ function App() {
       },
       traditional: {
         spend: marketing.traditional,
-        cpl: 50, // Traditional is more expensive
-        conversionRate: 0.15,
-        leads: marketing.traditional / 50
+        cpl: 55, // Live transfer cost from Brittany's benchmark
+        conversionRate: 0.10, // 10% conversion rate from Brittany's benchmark
+        leads: marketing.traditional / 55
       },
       partnerships: {
         spend: marketing.partnerships,
@@ -1630,7 +1630,7 @@ function App() {
                             { label: 'Current Customers', field: 'currentCustomers' as keyof StrategyInputs, step: 25 },
                             { label: 'Current Staff (FTE)', field: 'currentStaff' as keyof StrategyInputs, step: 0.5 },
                             { label: 'Monthly Lead Spend ($)', field: 'monthlyLeadSpend' as keyof StrategyInputs, step: 100 },
-                            { label: 'Cost per Lead ($)', field: 'costPerLead' as keyof StrategyInputs, step: 1 }
+                            { label: 'Cost per Lead ($)', field: 'costPerLead' as keyof StrategyInputs, step: 1, hint: 'Live transfer benchmark from Brittany agency' }
                           ].map((field) => (
                             <div key={field.label}>
                               <label htmlFor={`input-${field.field}`} className="form-label">
@@ -1646,6 +1646,9 @@ function App() {
                                 aria-required="true"
                                 className="form-input"
                               />
+                              {field.hint && (
+                                <p className="text-xs text-gray-500 mt-1">{field.hint}</p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -1834,7 +1837,7 @@ function App() {
 
                           <div>
                             <label htmlFor="input-marketing-traditional" className="form-label">
-                              Traditional Marketing ($/mo)
+                              Live Transfers ($/mo)
                             </label>
                             <input
                               id="input-marketing-traditional"
@@ -1847,7 +1850,7 @@ function App() {
                               }))}
                               className="form-input"
                             />
-                            <p className="text-xs text-gray-500 mt-1">15% conv, $35/lead</p>
+                            <p className="text-xs text-gray-500 mt-1">10% conv, $55/lead (Brittany benchmark)</p>
                           </div>
 
                           <div>
