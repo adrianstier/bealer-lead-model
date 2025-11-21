@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Lead Analysis for Brittney's Insurance Sales Optimization
+Comprehensive Lead Analysis for Brittany's Insurance Sales Optimization
 Analyzes lead data from multiple agencies to identify what works best
 """
 

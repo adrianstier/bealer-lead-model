@@ -366,7 +366,7 @@ def analyze_lead_quality(data):
         'by_vendor': vendor_quality
     }
 
-# Actual vendor lead costs (from Brittney's agency)
+# Actual vendor lead costs (from Brittany's agency)
 VENDOR_COSTS = {
     'Blue Wave': 55,           # Live transfer - now closed
     'Lead Clinic': 10,

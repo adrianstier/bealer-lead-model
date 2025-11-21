@@ -70,3 +70,17 @@ venv/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Test outputs
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!src/**/*.json
+
+# Cache
+.pytest_cache/
+.cache/
+
+# Archive (keep but don't track changes frequently)
+# archive/

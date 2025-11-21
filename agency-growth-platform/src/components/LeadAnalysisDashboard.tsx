@@ -266,7 +266,7 @@ export default function LeadAnalysisDashboard() {
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Lead Analysis</h2>
             <p className="text-sm text-gray-500">
-              Brittney's Agency Benchmark Data • {data.summary.total_records.toLocaleString()} records
+              Brittany's Agency Benchmark Data • {data.summary.total_records.toLocaleString()} records
             </p>
             <p className="text-xs text-blue-600 mt-1">
               Use these insights to inform your lead vendor and agent strategy
@@ -299,7 +299,7 @@ export default function LeadAnalysisDashboard() {
               <div>
                 <h3 className="font-semibold text-blue-900 mb-2">What am I looking at?</h3>
                 <p className="text-sm text-blue-800 mb-3">
-                  This is <strong>8 weeks of lead data</strong> from Brittney's agency showing how different lead sources
+                  This is <strong>8 weeks of lead data</strong> from Brittany's agency showing how different lead sources
                   and agents performed. Use this to understand which vendors are worth investing in and what
                   conversion rates to expect.
                 </p>
