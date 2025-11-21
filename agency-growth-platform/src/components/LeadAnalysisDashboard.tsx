@@ -117,7 +117,9 @@ interface LeadAnalysisData {
       }>;
     };
     roi_metrics: {
-      assumed_cpl: number;
+      vendor_costs: Record<string, number>;
+      avg_cpl: number;
+      total_spend: number;
       assumed_avg_premium: number;
       by_vendor: Array<{
         vendor: string;
@@ -629,8 +631,20 @@ export default function LeadAnalysisDashboard() {
               <h3 className="text-lg font-semibold text-gray-900">ROI by Vendor</h3>
               <p className="text-sm text-gray-500 mt-1">
                 Cost per Quote (CPQ) and Cost per Bind (CPB) tell you the real cost of each vendor.
-                <span className="text-xs ml-1">(Assuming ${data.diagnostics.roi_metrics.assumed_cpl}/lead)</span>
+                <span className="text-xs ml-1">(Avg ${data.diagnostics.roi_metrics.avg_cpl}/lead • Total spend: ${data.diagnostics.roi_metrics.total_spend.toLocaleString()})</span>
               </p>
+            </div>
+
+            {/* Vendor Costs Reference */}
+            <div className="mb-4 bg-gray-50 rounded-lg p-3">
+              <p className="text-xs font-medium text-gray-700 mb-2">Actual Lead Costs Used:</p>
+              <div className="flex flex-wrap gap-3 text-xs">
+                {Object.entries(data.diagnostics.roi_metrics.vendor_costs).map(([vendor, cost]) => (
+                  <span key={vendor} className="bg-white px-2 py-1 rounded border border-gray-200">
+                    {vendor}: <strong>${cost}</strong>
+                  </span>
+                ))}
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -638,6 +652,7 @@ export default function LeadAnalysisDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="text-left px-3 py-2 text-xs font-medium text-gray-500">Vendor</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500">CPL</th>
                     <th className="text-right px-3 py-2 text-xs font-medium text-gray-500">Spend</th>
                     <th className="text-right px-3 py-2 text-xs font-medium text-gray-500">Sales</th>
                     <th className="text-right px-3 py-2 text-xs font-medium text-gray-500">Cost/Quote</th>
@@ -650,6 +665,7 @@ export default function LeadAnalysisDashboard() {
                   {data.diagnostics.roi_metrics.by_vendor.map((v, i) => (
                     <tr key={i} className={v.roi_percent > 0 ? 'bg-emerald-50' : v.roi_percent < -50 ? 'bg-red-50' : ''}>
                       <td className="px-3 py-2 font-medium">{v.vendor}</td>
+                      <td className="px-3 py-2 text-right text-gray-600">${v.cpl}</td>
                       <td className="px-3 py-2 text-right text-gray-600">${v.total_spend.toLocaleString()}</td>
                       <td className="px-3 py-2 text-right text-gray-600">{v.sales}</td>
                       <td className="px-3 py-2 text-right text-gray-600">{v.cpq ? `$${v.cpq}` : '-'}</td>

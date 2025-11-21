@@ -366,9 +366,44 @@ def analyze_lead_quality(data):
         'by_vendor': vendor_quality
     }
 
-def analyze_roi_metrics(data, assumed_cpl=25, assumed_avg_premium=1200):
-    """Calculate ROI metrics - CPL, CPQ, CPB for each vendor"""
+# Actual vendor lead costs (from Brittney's agency)
+VENDOR_COSTS = {
+    'Blue Wave': 55,           # Live transfer - now closed
+    'Lead Clinic': 10,
+    'QuoteWizard': 4,
+    'EverQuote': 7,
+    'Allstate Lead Manager': 12,
+}
+
+def get_vendor_cost(vendor_name):
+    """Get the cost per lead for a vendor, with fuzzy matching"""
+    vendor_upper = vendor_name.upper()
+
+    # Direct matches first
+    for known_vendor, cost in VENDOR_COSTS.items():
+        if known_vendor.upper() in vendor_upper or vendor_upper in known_vendor.upper():
+            return cost
+
+    # Fuzzy matches for common variations
+    if 'BLUE' in vendor_upper and 'WAVE' in vendor_upper:
+        return 55
+    if 'CLINIC' in vendor_upper:
+        return 10
+    if 'WIZARD' in vendor_upper or 'QUOTEWIZARD' in vendor_upper:
+        return 4
+    if 'EVER' in vendor_upper or 'EVERQUOTE' in vendor_upper:
+        return 7
+    if 'ALLSTATE' in vendor_upper or 'ALM' in vendor_upper:
+        return 12
+
+    # Default fallback for unknown vendors
+    return 10  # Conservative estimate
+
+def analyze_roi_metrics(data, assumed_avg_premium=1200):
+    """Calculate ROI metrics - CPL, CPQ, CPB for each vendor using actual costs"""
     roi_data = []
+    total_spend_all = 0
+    total_leads_all = 0
 
     for vendor in data['Vendor Name'].unique():
         v_data = data[data['Vendor Name'] == vendor]
@@ -380,8 +415,14 @@ def analyze_roi_metrics(data, assumed_cpl=25, assumed_avg_premium=1200):
         quoted = v_data['Is_Quoted'].sum()
         sold = v_data['Is_Sale'].sum()
 
+        # Get actual cost per lead for this vendor
+        cpl = get_vendor_cost(vendor)
+
         # Calculate costs
-        total_spend = v_total * assumed_cpl
+        total_spend = v_total * cpl
+        total_spend_all += total_spend
+        total_leads_all += v_total
+
         cpq = total_spend / quoted if quoted > 0 else 0
         cpb = total_spend / sold if sold > 0 else 0
 
@@ -394,7 +435,7 @@ def analyze_roi_metrics(data, assumed_cpl=25, assumed_avg_premium=1200):
             'total_leads': v_total,
             'total_spend': round(total_spend, 2),
             'sales': int(sold),
-            'cpl': assumed_cpl,
+            'cpl': cpl,
             'cpq': round(cpq, 2) if cpq > 0 else None,
             'cpb': round(cpb, 2) if cpb > 0 else None,
             'leads_per_sale': round(v_total / sold, 1) if sold > 0 else None,
@@ -405,8 +446,13 @@ def analyze_roi_metrics(data, assumed_cpl=25, assumed_avg_premium=1200):
     # Sort by ROI
     roi_data = sorted(roi_data, key=lambda x: x['roi_percent'], reverse=True)
 
+    # Calculate weighted average CPL
+    avg_cpl = round(total_spend_all / total_leads_all, 2) if total_leads_all > 0 else 0
+
     return {
-        'assumed_cpl': assumed_cpl,
+        'vendor_costs': VENDOR_COSTS,
+        'avg_cpl': avg_cpl,
+        'total_spend': round(total_spend_all, 2),
         'assumed_avg_premium': assumed_avg_premium,
         'by_vendor': roi_data
     }
