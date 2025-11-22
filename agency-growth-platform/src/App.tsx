@@ -205,12 +205,12 @@ function App() {
     fteBenefitsMultiplier: 1.3,
     salesRampMonths: 3,
 
-    // V3.0: Channel-specific marketing (default to zero - only lead buying active)
+    // V3.0: Channel-specific marketing - allocate lead spend to channels
     marketing: {
-      referral: 0, // No additional investment in referral programs
-      digital: 0, // No digital marketing spend
-      traditional: 0, // No traditional marketing spend
-      partnerships: 0 // No partnership marketing spend
+      referral: 500, // Referral program investment
+      digital: 1000, // Digital marketing (SEO, PPC)
+      traditional: 1500, // Live transfers (primary lead source at $55/lead)
+      partnerships: 0 // Partnership marketing spend
     },
 
     // V3.0: Staffing composition - ACTUAL: Just Derrick + admin
@@ -434,9 +434,7 @@ function App() {
     const techRetentionBoost = (eoAutomation ? 0.02 : 0) + (renewalProgram ? 0.03 : 0);
     const crossSellBoost = crossSellProgram ? 0.15 : 0; // 15% increase in policies per customer
 
-    const baseRetention = 0.85;
     const retentionBoost = (conciergeService ? 0.02 : 0) + (newsletterSystem ? 0.015 : 0) + techRetentionBoost;
-    const finalRetention = Math.min(baseRetention + retentionBoost, 0.98);
 
     // Sales compensation costs
     const salesCostPerMonth = salesCompensationModel === 'fte'
@@ -459,10 +457,11 @@ function App() {
     const results: ScenarioResults[] = [];
 
     // V3.0: Define scenarios with channel-weighted conversion rates
+    // Each scenario has different conversion effectiveness and retention assumptions
     const scenarios = [
-      { name: 'Conservative', conversionMultiplier: 0.70, retention: 0.85 },
-      { name: 'Moderate', conversionMultiplier: 1.0, retention: 0.91 },
-      { name: 'Aggressive', conversionMultiplier: 1.20, retention: finalRetention }
+      { name: 'Conservative', conversionMultiplier: 0.70, retentionMultiplier: 0.97 }, // Lower retention assumption
+      { name: 'Moderate', conversionMultiplier: 1.0, retentionMultiplier: 1.0 },        // Base case
+      { name: 'Aggressive', conversionMultiplier: 1.20, retentionMultiplier: 1.03 }     // Higher retention with better service
     ];
 
     scenarios.forEach(scenario => {
@@ -502,6 +501,9 @@ function App() {
 
         // Apply technology and service boosts to annual retention
         annualRetention = Math.min(annualRetention + retentionBoost, 0.98);
+
+        // Apply scenario-specific retention multiplier
+        annualRetention = Math.min(annualRetention * scenario.retentionMultiplier, 0.99);
 
         // Convert annual retention to monthly retention rate
         // Monthly retention = Annual retention ^ (1/12)
