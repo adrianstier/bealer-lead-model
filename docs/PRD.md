@@ -2,7 +2,7 @@
 
 ## AI Growth System for Allstate Santa Barbara Agency
 
-**Version:** 1.0
+**Version:** 5.3
 **Date:** November 2025
 **Author:** Adrian
 **Client:** Derrick Bealer, Allstate Santa Barbara
@@ -131,7 +131,7 @@ AI-powered lead scoring and marketing optimization system that predicts conversi
 
 #### Success Metrics
 - Lead conversion rate improvement: 20-30%
-- Marketing ROI improvement: 15%+
+- Marketing return on investment improvement: 15%+
 - Model accuracy: 80%+
 
 #### Timeline
@@ -321,7 +321,7 @@ AI-powered social media advertising system using customer data to build lookalik
 **FR-E1: Audience Building**
 - System shall create custom audiences from customer list
 - System shall generate lookalike audiences based on:
-  - Best customers (high LTV, bundled, long tenure)
+  - Best customers (high lifetime value, bundled, long tenure)
   - Recent converters
   - High referral sources
 - Audiences shall be segmented by product type
@@ -351,7 +351,7 @@ AI-powered social media advertising system using customer data to build lookalik
 - Dashboard shall show:
   - Cost per lead by platform
   - Conversion rate by audience
-  - ROAS by campaign
+  - Return on ad spend by campaign
   - Creative performance
 - System shall attribute conversions to campaigns
 
@@ -689,12 +689,14 @@ The following items are explicitly out of scope for this initial implementation:
 
 ### A. Glossary
 
-- **CAC** - Customer Acquisition Cost
-- **LTV** - Lifetime Value
-- **Variable Comp** - Performance-based compensation tiers
-- **Bundling** - Multiple policies per customer
-- **Saveability** - Likelihood of retaining at-risk customer
-- **Lookalike Audience** - Social media targeting based on similar customers
+- **Customer Acquisition Cost (CAC)** - Total marketing spend divided by number of new customers acquired
+- **Lifetime Value (LTV)** - Total commission revenue expected from a customer over their relationship
+- **Variable Compensation** - Performance-based compensation tiers based on policy counts and growth
+- **Bundling** - Multiple policies per customer (e.g., auto + home)
+- **Saveability** - Likelihood of retaining an at-risk customer through outreach
+- **Lookalike Audience** - Social media targeting based on similar customer profiles
+- **Return on Ad Spend (ROAS)** - Revenue generated per dollar spent on advertising
+- **Policies Per Customer (PPC)** - Average number of policies held by each customer
 
 ### B. Technical Architecture
 
@@ -777,6 +779,7 @@ Customer Segment → Content Selection → Personalization → Delivery → Enga
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | November 2025 | Adrian | Initial PRD |
+| 5.3 | November 2025 | Adrian | Removed acronyms from user-facing text; updated terminology to use full terms; added glossary entries for return on ad spend and policies per customer |
 
 ---
 

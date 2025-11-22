@@ -17,11 +17,16 @@ import {
   Package,
   Award,
   BookOpen,
-  Search
+  Search,
+  AlertTriangle,
+  Rocket,
+  User
 } from 'lucide-react';
 import CompensationDashboard from './components/CompensationDashboard';
 import BookOfBusinessDashboard from './components/BookOfBusinessDashboard';
 import LeadAnalysisDashboard from './components/LeadAnalysisDashboard';
+import CustomerLookupDashboard from './components/CustomerLookupDashboard';
+import BealerPlanningSection from './components/BealerPlanningSection';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 // V3.0 Enhanced Interfaces
@@ -85,6 +90,13 @@ interface StrategyInputs {
   // V3.0: Growth stage
   growthStage: 'mature' | 'growth';
   commissionStructure: 'independent' | 'captive' | 'hybrid';
+
+  // V5.1: Interactive slider controls
+  targetRetentionRate: number; // Target annual retention rate (0-100)
+  targetConversionRate: number; // Target bound conversion rate (0-100)
+
+  // V5.4: Walk-in/organic sales
+  organicSalesPerMonth: number; // Policies sold from walk-ins (not paid leads)
 }
 
 interface ScenarioData {
@@ -163,9 +175,12 @@ const BENCHMARKS = {
     MONOLINE: 1.0
   },
   RETENTION: {
-    OPTIMAL: 0.95,
-    BUNDLED: 0.91,
-    MONOLINE: 0.67
+    // V5.4 FIX: Corrected based on actual loss pattern (avg 3/mo, range 0-6)
+    // 88.84% in report was likely a snapshot anomaly, not steady-state
+    // ~3 policies/mo lost out of 1687 = 97.8% annual retention
+    OPTIMAL: 0.99, // Elite retention (0-1 loss/month)
+    BUNDLED: 0.978, // ACTUAL based on loss pattern: ~3/mo avg
+    MONOLINE: 0.96 // Higher churn for auto-only (4-6/mo in bad months)
   },
   STAFFING_RATIO: {
     OPTIMAL: 2.8,
@@ -175,21 +190,21 @@ const BENCHMARKS = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('methodology');
+  const [activeTab, setActiveTab] = useState('planning');
   const [isCalculating, setIsCalculating] = useState(false);
   const [showCalculationModal, setShowCalculationModal] = useState(false);
   const [calculationComplete, setCalculationComplete] = useState(false);
   const [hasResults, setHasResults] = useState(false);
   // DERRICK'S AGENCY DATA (Straightlined - A0C6581)
-  // Based on Sep-2025 Production: $4.07M Written Premium/Month
-  // ACTUAL STAFFING: Just Derrick + 1 admin assistant (2 total)
+  // ACTUAL DATA from All Purpose Audit (Nov 14, 2025)
+  // 12MM Written Premium: $4,218,886 | Policies In Force: 1,424
   const [strategyInputs, setStrategyInputs] = useState<StrategyInputs>({
-    currentPolicies: 3500, // Estimated from $4M+ premium
-    currentCustomers: 2200, // ~1.59 policies per customer
+    currentPolicies: 1424, // ACTUAL from All Purpose Audit Nov 14, 2025
+    currentCustomers: 876, // ACTUAL unique customers = 1.63 PPC
     currentStaff: 2.0, // ACTUAL: Derrick + 1 admin = 2 FTE
-    monthlyLeadSpend: 3000, // Keep for backward compatibility
+    monthlyLeadSpend: 0, // Keep for backward compatibility
     costPerLead: 55, // Live transfer cost from Brittany's agency benchmark
-    additionalLeadSpend: 3000,
+    additionalLeadSpend: 0, // Currently $0 - use slider to model ROI of investing in live transfers
     additionalStaff: 1.0,
     projectionMonths: 24,
     conciergeService: false, // Solo operation
@@ -198,19 +213,23 @@ function App() {
     commissionRate: 10, // 10% commission rate for additional sales hires
     fteSalary: 3500, // Admin salary
     // Economic parameters calibrated to Derrick's agency
-    monthlyChurnRate: 0.75, // 0.75% monthly = ~91% annual retention (1.59 ppc suggests bundled)
-    averagePremium: 1164, // $4,072,346 / 3,500 policies
-    commissionPayout: 12, // 12% of premium
+    // Actual loss pattern: avg ~3 policies/month, range 0-6
+    // (not 16/mo from 88.84% report - that was likely a data anomaly)
+    monthlyChurnRate: 0.21, // ~3 policies/month = 0.21% of 1424 = 97.5% annual retention
+    averagePremium: 2963, // $4,218,886 / 1,424 policies = $2,963/policy
+    commissionPayout: 10, // 7% base + ~3% avg bonus = 10% effective (data shows $12K/mo bonus)
     fixedMonthlyCosts: 12000, // Lower overhead for 2-person operation (rent, software, etc.)
     fteBenefitsMultiplier: 1.3,
     salesRampMonths: 3,
 
     // V3.0: Channel-specific marketing - allocate lead spend to channels
+    // V5.3: Current state - Derrick only spends on live transfers (additionalLeadSpend)
+    // Framework allows future exploration of referral programs, digital, partnerships
     marketing: {
-      referral: 500, // Referral program investment
-      digital: 1000, // Digital marketing (SEO, PPC)
-      traditional: 1500, // Live transfers (primary lead source at $55/lead)
-      partnerships: 0 // Partnership marketing spend
+      referral: 0, // Currently $0 - can explore referral program ROI
+      digital: 0, // Currently $0 - can explore digital marketing ROI
+      traditional: 0, // Set to 0 - additionalLeadSpend covers live transfers
+      partnerships: 0 // Currently $0 - can explore partnership opportunities
     },
 
     // V3.0: Staffing composition - ACTUAL: Just Derrick + admin
@@ -220,13 +239,14 @@ function App() {
       adminStaff: 1.0 // ACTUAL: 1 admin assistant
     },
 
-    // V3.0: Product mix (estimated from premium volume)
+    // V5.4: Product mix from ACTUAL All Purpose Audit (Nov 14, 2025)
+    // Total P&C In Force: 1,424 policies
     products: {
-      auto: 1800, // Largest category
-      home: 1200, // Second largest
-      umbrella: 350, // Opportunity to grow to 440+ (20% penetration)
-      cyber: 100, // Opportunity to grow to 220+ (10% penetration)
-      commercial: 50 // Small commercial book
+      auto: 620, // Private Passenger (585) + Special (35)
+      home: 721, // Homeowners (369) + Renters (168) + Condo (124) + Landlords (60)
+      umbrella: 74, // Personal Umbrella
+      cyber: 0, // Not in P&C report
+      commercial: 9 // Boat Owners
     },
 
     // V3.0: Technology investments (likely has some)
@@ -236,7 +256,16 @@ function App() {
 
     // V3.0: Growth stage and commission structure
     growthStage: 'mature', // $4M+ premium = mature agency
-    commissionStructure: 'captive' // Straightlined = captive agency
+    commissionStructure: 'captive', // Straightlined = captive agency
+
+    // V5.1: Interactive slider controls - default to actual values
+    // ~3 policies lost/month = 36/year out of 1424 = 97.5% retention
+    targetRetentionRate: 97.5, // Based on actual loss pattern: avg 3/mo, range 0-6
+    targetConversionRate: 10.0, // 10% bound rate - 1 in 10 live leads = policy
+
+    // V5.4: Walk-in/organic sales (not from paid leads)
+    // Derrick sells 12-15 policies/month from walk-ins and organic sources
+    organicSalesPerMonth: 13.5 // Average of 12-15 walk-in sales per month
   });
   const [scenarioData, setScenarioData] = useState<ScenarioData[]>([]);
   const [scenarioResults, setScenarioResults] = useState<ScenarioResults[]>([]);
@@ -382,48 +411,55 @@ function App() {
       products,
       eoAutomation,
       renewalProgram,
-      crossSellProgram
+      crossSellProgram,
+      organicSalesPerMonth
     } = strategyInputs;
 
     // V3.0: Calculate channel-specific leads and costs
     // Add additionalLeadSpend to traditional channel (live transfers at costPerLead)
     const totalTraditionalSpend = marketing.traditional + additionalLeadSpend;
 
+    // V5.2: Lead type-specific conversion rates
+    // IMPORTANT: Distinguish between lead types!
+    // - Internet leads/robocalls: ~0.5-2% (the bulk data we analyzed)
+    // - Live transfers: 10% (pre-screened, on phone, ready to quote)
+    // Derrick primarily buys LIVE TRANSFERS at $55/lead
     const channelMetrics = {
       referral: {
         spend: marketing.referral,
         cpl: 15, // Cost per lead (referrals are cheaper)
-        conversionRate: 0.35, // Higher conversion
+        conversionRate: 0.08, // 8% - trust factor, warm introduction
         leads: marketing.referral / 15
       },
       digital: {
         spend: marketing.digital,
         cpl: 30, // Standard digital CPL
-        conversionRate: 0.20,
+        conversionRate: 0.005, // 0.5% - internet leads, robocalls, very low intent
         leads: marketing.digital / 30
       },
       traditional: {
         spend: totalTraditionalSpend,
-        cpl: costPerLead, // Use user's costPerLead setting
-        conversionRate: 0.10, // 10% conversion rate from Brittany's benchmark
+        cpl: costPerLead, // $55 for live transfers
+        conversionRate: 0.10, // 10% - LIVE TRANSFERS (1 in 10 = policy)
         leads: totalTraditionalSpend / costPerLead
       },
       partnerships: {
         spend: marketing.partnerships,
         cpl: 25,
-        conversionRate: 0.25,
+        conversionRate: 0.06, // 6% - pre-qualified, better than digital
         leads: marketing.partnerships / 25
       }
     };
 
     // V3.0: Calculate product mix metrics
+    // V5.0 FIX: Updated premiums from product_economics.csv data
     const totalProductPolicies = products.auto + products.home + products.umbrella + products.cyber + products.commercial;
     const productPremiums = {
-      auto: 1200,
-      home: 1500,
-      umbrella: 600,
-      cyber: 2000,
-      commercial: 3500
+      auto: 1400, // Data shows $1,400 (was 1200)
+      home: 1500, // Data shows $1,200-1,800
+      umbrella: 225, // Data shows $150-300 (was 600 - WAY too high!)
+      cyber: 2000, // Estimate (not in source data)
+      commercial: 3500 // Data shows $2,000-5,000
     };
     const averageProductPremium = (
       (products.auto * productPremiums.auto) +
@@ -460,18 +496,24 @@ function App() {
                            salesCostPerMonth;
 
     // V4.0: Staff capacity constraints
-    // Industry benchmark: ~400 policies per staff with automation, ~300 without
-    // But mature agencies can stretch this with good systems - up to 800-1000/person
-    // Derrick's 3500 policies / 2 staff = 1750 per person (very stretched)
-    const policiesPerStaff = eoAutomation ? 800 : 600; // Higher for mature agencies with systems
+    // V5.0 FIX: Benchmarks are for SERVICE staff (450-550/person), not producers
+    // Producer capacity is much higher - top performers manage $1M+ premium solo
+    // Derrick: $4M premium / 1 producer = manageable with good systems
+    // Admin handles ~1000-1500 policies of paperwork
+    const producerCapacity = eoAutomation ? 2500 : 2000; // Premium/producer benchmark
+    const adminCapacity = eoAutomation ? 1500 : 1000; // Policies admin can support
     const totalStaff = currentStaff + additionalStaff;
-    const maxCapacity = totalStaff * policiesPerStaff;
+
+    // Calculate capacity based on staff composition
+    const producerCount = strategyInputs.staffing?.producers || 1;
+    const adminCount = strategyInputs.staffing?.adminStaff || 1;
+    const maxCapacity = (producerCount * producerCapacity) + (adminCount * adminCapacity);
 
     // Service quality degradation when over-capacity
-    // Above optimal capacity, conversion and retention suffer
-    const optimalCapacity = totalStaff * (eoAutomation ? 450 : 350);
+    // Above optimal capacity (80% of max), conversion and retention suffer
+    const optimalCapacity = maxCapacity * 0.8;
     const capacityStrain = currentPolicies > optimalCapacity
-      ? Math.min(0.15, (currentPolicies - optimalCapacity) / optimalCapacity * 0.2)
+      ? Math.min(0.10, (currentPolicies - optimalCapacity) / optimalCapacity * 0.15)
       : 0;
 
     // V4.0: Referral flywheel rate - satisfied customers refer others
@@ -518,12 +560,19 @@ function App() {
         // V4.0: Calculate new customers from each channel with efficiency factor
         // Apply capacity strain penalty to conversion (over-stretched staff = slower follow-up)
         const conversionPenalty = 1 - capacityStrain;
-        const paidChannelCustomers = (
-          channelMetrics.referral.leads * channelMetrics.referral.conversionRate +
+
+        // V5.3: Separate paid channel customers by source for accurate policy calculation
+        // Lead-generated customers (digital, traditional, partnerships) typically buy 1 policy
+        // Referral customers may bundle more (trust factor)
+        const referralCustomers = channelMetrics.referral.leads * channelMetrics.referral.conversionRate
+          * scenario.conversionMultiplier * rampFactor * spendEfficiency * conversionPenalty;
+        const leadGenCustomers = (
           channelMetrics.digital.leads * channelMetrics.digital.conversionRate +
           channelMetrics.traditional.leads * channelMetrics.traditional.conversionRate +
           channelMetrics.partnerships.leads * channelMetrics.partnerships.conversionRate
         ) * scenario.conversionMultiplier * rampFactor * spendEfficiency * conversionPenalty;
+
+        const paidChannelCustomers = referralCustomers + leadGenCustomers;
 
         // V4.0: Referral flywheel - existing customers generate referrals
         const organicReferrals = customers * referralRate * scenario.conversionMultiplier;
@@ -565,12 +614,21 @@ function App() {
         // Monthly retention = Annual retention ^ (1/12)
         const retentionRate = Math.pow(annualRetention, 1/12);
 
-        // V3.0: New policies = new customers * policies per customer
-        const newPolicies = newCustomers * policiesPerCustomer;
+        // V5.4: New policies calculated differently by source
+        // Lead-generated customers (live transfers, digital) buy 1 policy initially
+        // Referral customers bundle more (1.2x PPC due to trust)
+        // Organic referrals from existing customers also bundle better
+        // Walk-in sales are additional organic policies (not from paid leads)
+        const leadGenPolicies = leadGenCustomers * 1.0; // 1 policy per lead (typically auto)
+        const referralPolicies = (referralCustomers + organicReferrals) * Math.min(policiesPerCustomer, 1.3); // Referrals bundle better
+        const walkInPolicies = organicSalesPerMonth; // V5.4: Direct walk-in sales (12-15/mo for Derrick)
+        const newPolicies = leadGenPolicies + referralPolicies + walkInPolicies;
 
-        // Churn
+        // Churn - customers leave, taking all their policies with them
+        // V5.1 FIX: Policies lost = customers lost × their policies per customer
         const customersLost = customers * (1 - retentionRate);
-        const policiesLost = policies * (1 - retentionRate);
+        const currentPPC = customers > 0 ? policies / customers : policiesPerCustomer;
+        const policiesLost = customersLost * currentPPC;
 
         // Net changes
         customers += newCustomers - customersLost;
@@ -583,7 +641,9 @@ function App() {
         // Costs
         let monthlyCosts = baseMonthlyCost;
         if (salesCompensationModel === 'commission') {
-          monthlyCosts += newPolicies * (averageProductPremium * (commissionRate / 100));
+          // V5.1 FIX: Commission is on annual premium, but paid upfront
+          // First-year commission typically 7-10% of annual premium
+          monthlyCosts += newPolicies * averageProductPremium * (commissionRate / 100);
         }
         totalCosts += monthlyCosts;
 
@@ -640,14 +700,22 @@ function App() {
       const finalMonth = monthlyData[monthlyData.length - 1];
 
       // CAC: Customer Acquisition Cost (per customer, not policy)
+      // V5.0 FIX: Use only marketing/acquisition costs, not all costs
       const totalNewCustomers = customers - currentCustomers;
-      const cac = totalNewCustomers > 0 ? totalCosts / totalNewCustomers : 0;
+      const totalMarketingCost = totalMarketingSpend * projectionMonths;
+      const cac = totalNewCustomers > 0 ? totalMarketingCost / totalNewCustomers : 0;
 
       // LTV: Lifetime Value per customer
-      const avgLifetimeMonths = finalMonth.retention && finalMonth.retention > 0
-        ? 1 / (1 - finalMonth.retention)
-        : 36;
-      const ltv = finalPoliciesPerCustomer * (averageProductPremium * (commissionPayout / 100)) * avgLifetimeMonths;
+      // V5.1 FIX: Use annual retention for lifetime calculation
+      // finalMonth.retention is MONTHLY, need to convert to annual first
+      const monthlyRetention = finalMonth.retention || 0.9988;
+      const annualRetentionCalc = Math.pow(monthlyRetention, 12);
+      // Lifetime in years = 1 / (1 - annual retention)
+      const avgLifetimeYears = annualRetentionCalc < 1 ? 1 / (1 - annualRetentionCalc) : 10;
+      // Cap at 10 years for very high retention rates
+      const cappedLifetimeYears = Math.min(avgLifetimeYears, 10);
+      // LTV = policies × annual premium × commission rate × years
+      const ltv = finalPoliciesPerCustomer * averageProductPremium * (commissionPayout / 100) * cappedLifetimeYears;
 
       const ltvCacRatio = cac > 0 ? ltv / cac : 0;
 
@@ -715,9 +783,11 @@ function App() {
   };
 
   const tabItems = [
+    { id: 'planning', label: 'AI Blueprint', icon: Rocket },
     { id: 'methodology', label: 'Methodology', icon: TrendingUp },
     { id: 'model', label: 'Model Details', icon: Info },
     { id: 'book', label: 'Book of Business', icon: BookOpen },
+    { id: 'lookup', label: 'Customer Lookup', icon: User },
     { id: 'leads', label: 'Lead Analysis', icon: Search },
     { id: 'compensation', label: 'Compensation', icon: Award },
     { id: 'strategy', label: 'Strategy Builder', icon: Settings },
@@ -927,6 +997,13 @@ function App() {
                 transition={{ duration: 0.3 }}
                 className="py-6 sm:py-8"
               >
+                {/* AI Blueprint / Planning Tab */}
+                <Tabs.Content value="planning" role="tabpanel" id="tabpanel-planning" aria-labelledby="tab-planning">
+                  <div className="max-w-7xl mx-auto">
+                    <BealerPlanningSection />
+                  </div>
+                </Tabs.Content>
+
                 <Tabs.Content value="methodology" role="tabpanel" id="tabpanel-methodology" aria-labelledby="tab-methodology">
                   <div className="space-y-6 max-w-7xl mx-auto">
                     {/* Main Content Card */}
@@ -955,10 +1032,10 @@ function App() {
                       {/* Key Metrics Cards */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         {[
-                          { label: 'Rule of 20', value: 'Growth + EBITDA', target: '20+', icon: Target },
-                          { label: 'LTV:CAC', value: 'Unit Economics', target: '3:1 - 4:1', icon: DollarSign },
+                          { label: 'Rule of 20', value: 'Growth + Operating Margin', target: '20+', icon: Target },
+                          { label: 'Lifetime Value : Acquisition Cost', value: 'Unit Economics', target: '3:1 - 4:1', icon: DollarSign },
                           { label: 'Policies/Customer', value: 'Bundling', target: '1.8+', icon: Users },
-                          { label: 'EBITDA Margin', value: 'Profitability', target: '25-30%', icon: TrendingUp }
+                          { label: 'Operating Margin', value: 'Profitability', target: '25-30%', icon: TrendingUp }
                         ].map((metric, idx) => (
                           <motion.div
                             key={metric.label}
@@ -1148,7 +1225,7 @@ function App() {
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-gray-500">Monthly Input</p>
-                              <p className="font-bold text-gray-900">= Spend ÷ CPL</p>
+                              <p className="font-bold text-gray-900">= Spend ÷ Cost Per Lead</p>
                             </div>
                           </div>
 
@@ -1568,7 +1645,7 @@ function App() {
                             <div>
                               <h4 className="font-semibold text-gray-900 mb-1">Lead Quality Variance</h4>
                               <p className="text-sm text-gray-700">
-                                CPL assumes consistent lead source quality. Switching channels or markets may require 2-3 month recalibration.
+                                Cost per lead assumes consistent lead source quality. Switching channels or markets may require 2-3 month recalibration.
                               </p>
                             </div>
                           </div>
@@ -1635,6 +1712,12 @@ function App() {
                   </div>
                 </Tabs.Content>
 
+                <Tabs.Content value="lookup" role="tabpanel" id="tabpanel-lookup" aria-labelledby="tab-lookup">
+                  <div className="max-w-7xl mx-auto">
+                    <CustomerLookupDashboard />
+                  </div>
+                </Tabs.Content>
+
                 <Tabs.Content value="leads" role="tabpanel" id="tabpanel-leads" aria-labelledby="tab-leads">
                   <div className="max-w-7xl mx-auto">
                     <LeadAnalysisDashboard />
@@ -1658,7 +1741,7 @@ function App() {
 
                 <Tabs.Content value="strategy" role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy">
                   <div className="max-w-6xl mx-auto space-y-6">
-                    {/* Key Driver Alert - PPC Tracker */}
+                    {/* Key Driver Alert - Policies Per Customer Tracker */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1684,7 +1767,7 @@ function App() {
                               <span className="text-4xl font-bold text-gray-900">
                                 {strategyInputs.currentCustomers > 0 ? (strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(2) : '0.00'}
                               </span>
-                              <span className="text-lg text-gray-600 ml-1">PPC</span>
+                              <span className="text-lg text-gray-600 ml-1">policies per customer</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <span className="text-gray-500">→</span>
@@ -1773,6 +1856,7 @@ function App() {
                           {[
                             { label: 'Active Policies', field: 'currentPolicies' as keyof StrategyInputs, step: 50 },
                             { label: 'Current Customers', field: 'currentCustomers' as keyof StrategyInputs, step: 25 },
+                            { label: 'Walk-in Sales (policies/mo)', field: 'organicSalesPerMonth' as keyof StrategyInputs, step: 1, hint: 'Organic sales from walk-ins, not paid leads (avg 12-15/mo)' },
                             { label: 'Current Staff (FTE)', field: 'currentStaff' as keyof StrategyInputs, step: 0.5 },
                             { label: 'Monthly Lead Spend ($)', field: 'monthlyLeadSpend' as keyof StrategyInputs, step: 100 },
                             { label: 'Cost per Lead ($)', field: 'costPerLead' as keyof StrategyInputs, step: 1, hint: 'Live transfer benchmark from Brittany agency' }
@@ -1940,7 +2024,7 @@ function App() {
                         </div>
 
                         <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200 text-sm text-slate-700">
-                          <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces CAC by 30%.
+                          <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces acquisition cost by 30%.
                         </div>
 
                         {/* Marketing ROI Summary */}
@@ -1968,7 +2052,7 @@ function App() {
                               </div>
                             </div>
                             <div className="bg-white p-2 rounded border">
-                              <div className="text-gray-500">Blended CPL</div>
+                              <div className="text-gray-500">Blended Cost/Lead</div>
                               <div className="font-bold text-gray-900">
                                 ${Math.round(
                                   (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
@@ -1977,7 +2061,7 @@ function App() {
                               </div>
                             </div>
                             <div className="bg-white p-2 rounded border">
-                              <div className="text-gray-500">Est. CAC</div>
+                              <div className="text-gray-500">Est. Acquisition Cost</div>
                               <div className="font-bold text-green-600">
                                 ${Math.round(
                                   (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
@@ -2085,7 +2169,7 @@ function App() {
                         </div>
 
                         <div className="mb-4 p-3 bg-purple-50 rounded border border-purple-200 text-sm text-slate-700">
-                          <strong>Optimal Ratio:</strong> 2.8 service staff per producer. Target RPE: $150k-$200k (good), $300k+ (excellent).
+                          <strong>Optimal Ratio:</strong> 2.8 service staff per producer. Target revenue per employee: $150k-$200k (good), $300k+ (excellent).
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-4">
@@ -2332,7 +2416,7 @@ function App() {
                                 <span className="text-sm font-medium text-gray-900">Cross-Sell Program ($500/mo)</span>
                                 <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">#1 Driver</span>
                               </div>
-                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | +15% PPC | Unlocks 95% retention tier</div>
+                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | +15% policies per customer | Unlocks 95% retention tier</div>
                             </div>
                           </label>
                         </div>
@@ -2397,6 +2481,929 @@ function App() {
                             </div>
                           ))}
                         </div>
+                      </div>
+
+                      {/* V5.0: Reality Check - Show actual acquisition economics */}
+                      <div className="card p-6 mt-6 bg-amber-50 border-amber-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                            <AlertTriangle className="w-5 h-5 text-amber-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Reality Check: Acquisition Economics</h3>
+                            <p className="text-sm text-gray-600">Based on actual lead data analysis (not industry benchmarks)</p>
+                          </div>
+                        </div>
+
+                        {(() => {
+                          // Calculate realistic acquisition metrics
+                          const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
+                          const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
+                          const realisticConversionRate = 0.04; // 4% actual bound rate from data
+                          const newCustomersPerMonth = monthlyLeads * realisticConversionRate;
+                          const newPoliciesPerMonth = newCustomersPerMonth * (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
+                          const actualCAC = newCustomersPerMonth > 0 ? totalLeadSpend / newCustomersPerMonth : 0;
+
+                          // Calculate churn - V5.0 FIX: Use ACTUAL retention from Nov 2025 Business Metrics
+                          // Total P&C Retention: 88.84% annually
+                          const annualRetention = 0.8884; // ACTUAL from business report
+                          const monthlyRetention = Math.pow(annualRetention, 1/12);
+                          const monthlyChurnPolicies = strategyInputs.currentPolicies * (1 - monthlyRetention);
+
+                          // Break-even calculation
+                          const breakEvenPolicies = Math.ceil(monthlyChurnPolicies);
+                          const breakEvenCustomers = breakEvenPolicies / (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
+                          const breakEvenLeadSpend = (breakEvenCustomers / realisticConversionRate) * strategyInputs.costPerLead;
+
+                          // Growth projection
+                          const netPoliciesPerMonth = newPoliciesPerMonth - monthlyChurnPolicies;
+                          const isGrowing = netPoliciesPerMonth > 0;
+
+                          return (
+                            <div className="grid md:grid-cols-3 gap-4">
+                              <div className="bg-white p-4 rounded-lg">
+                                <div className="text-sm text-gray-600">Actual Acquisition Cost</div>
+                                <div className={`text-2xl font-bold ${actualCAC > 1200 ? 'text-red-600' : actualCAC > 800 ? 'text-amber-600' : 'text-green-600'}`}>
+                                  ${Math.round(actualCAC).toLocaleString()}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Industry target: $487-$900
+                                  {actualCAC > 900 && <span className="text-red-600 font-medium"> (Above range!)</span>}
+                                </div>
+                              </div>
+
+                              <div className="bg-white p-4 rounded-lg">
+                                <div className="text-sm text-gray-600">Monthly Net Growth</div>
+                                <div className={`text-2xl font-bold ${isGrowing ? 'text-green-600' : 'text-red-600'}`}>
+                                  {isGrowing ? '+' : ''}{Math.round(netPoliciesPerMonth)} policies
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  +{newPoliciesPerMonth.toFixed(1)} new, -{monthlyChurnPolicies.toFixed(1)} churned
+                                </div>
+                              </div>
+
+                              <div className="bg-white p-4 rounded-lg">
+                                <div className="text-sm text-gray-600">Break-Even Lead Spend</div>
+                                <div className={`text-2xl font-bold ${totalLeadSpend >= breakEvenLeadSpend ? 'text-green-600' : 'text-red-600'}`}>
+                                  ${Math.round(breakEvenLeadSpend).toLocaleString()}/mo
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Need {breakEvenPolicies} policies/mo to offset churn
+                                  {totalLeadSpend < breakEvenLeadSpend && <span className="text-red-600 font-medium"> (Under-investing!)</span>}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        <div className="mt-4 p-3 bg-amber-100 rounded-lg text-sm text-amber-800">
+                          <strong>Key Insight:</strong> Industry benchmarks use quote conversion rates (10-15%), not bound rates.
+                          Actual data shows only ~4% of leads convert to customers. This dramatically affects acquisition cost and break-even calculations.
+                        </div>
+                      </div>
+
+                      {/* Interactive Growth Levers */}
+                      <div className="card p-6 mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Zap className="w-5 h-5 text-blue-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Growth Levers Simulator</h3>
+                            <p className="text-sm text-gray-600">See real-time impact of improving key metrics</p>
+                          </div>
+                        </div>
+
+                        {(() => {
+                          // Current state calculations
+                          const currentPolicies = strategyInputs.currentPolicies;
+                          const currentCustomers = strategyInputs.currentCustomers;
+                          const ppc = currentPolicies / currentCustomers;
+
+                          // Current retention (98.6% based on loss pattern: 1-2/mo avg, 0-6 range)
+                          const currentRetention = 0.986;
+                          // V5.1 FIX: Churn = customers leaving × their PPC
+                          const monthlyChurn = currentCustomers * (1 - Math.pow(currentRetention, 1/12)) * ppc;
+
+                          // Current new business
+                          const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
+                          const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
+                          const currentConversion = 0.10; // 10% - 1 in 10 leads = policy
+                          const currentNewCustomers = monthlyLeads * currentConversion;
+                          const currentNewPolicies = currentNewCustomers * ppc;
+
+                          // Net monthly change
+                          const currentNetChange = currentNewPolicies - monthlyChurn;
+
+                          // Calculate what-if scenarios
+                          const scenarios = [
+                            {
+                              name: 'Elite Retention (99%)',
+                              description: 'Reduce losses to 0-1/month via bundling',
+                              newRetention: 0.99,
+                              newConversion: currentConversion,
+                              newLeadSpend: totalLeadSpend,
+                              color: 'emerald'
+                            },
+                            {
+                              name: 'Double Conversion to 8%',
+                              description: 'Better lead quality & follow-up',
+                              newRetention: currentRetention,
+                              newConversion: 0.08,
+                              newLeadSpend: totalLeadSpend,
+                              color: 'blue'
+                            },
+                            {
+                              name: 'Increase Lead Spend to $10K',
+                              description: 'More aggressive marketing',
+                              newRetention: currentRetention,
+                              newConversion: currentConversion,
+                              newLeadSpend: 10000,
+                              color: 'purple'
+                            },
+                            {
+                              name: 'Combined: All Three',
+                              description: 'Maximum growth strategy',
+                              newRetention: 0.99,
+                              newConversion: 0.08,
+                              newLeadSpend: 10000,
+                              color: 'amber'
+                            }
+                          ];
+
+                          return (
+                            <div className="space-y-4">
+                              {/* Current State */}
+                              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                <div className="text-sm font-medium text-gray-700 mb-2">Current State</div>
+                                <div className="grid grid-cols-4 gap-4 text-center">
+                                  <div>
+                                    <div className="text-lg font-bold text-gray-900">{currentRetention * 100}%</div>
+                                    <div className="text-xs text-gray-500">Retention</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-lg font-bold text-gray-900">{(currentConversion * 100).toFixed(0)}%</div>
+                                    <div className="text-xs text-gray-500">Conversion</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-lg font-bold text-gray-900">${(totalLeadSpend/1000).toFixed(1)}K</div>
+                                    <div className="text-xs text-gray-500">Lead Spend</div>
+                                  </div>
+                                  <div>
+                                    <div className={`text-lg font-bold ${currentNetChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {currentNetChange >= 0 ? '+' : ''}{currentNetChange.toFixed(1)}
+                                    </div>
+                                    <div className="text-xs text-gray-500">Net/Month</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Scenario Comparisons */}
+                              <div className="grid md:grid-cols-2 gap-3">
+                                {scenarios.map((scenario) => {
+                                  // V5.1 FIX: Churn = customers leaving × their PPC
+                                  const newMonthlyChurn = currentCustomers * (1 - Math.pow(scenario.newRetention, 1/12)) * ppc;
+                                  const newLeads = scenario.newLeadSpend / strategyInputs.costPerLead;
+                                  const newNewPolicies = newLeads * scenario.newConversion * ppc;
+                                  const newNetChange = newNewPolicies - newMonthlyChurn;
+                                  const improvement = newNetChange - currentNetChange;
+                                  const annualGrowth = newNetChange * 12;
+                                  const growthRate = (annualGrowth / currentPolicies) * 100;
+
+                                  return (
+                                    <div key={scenario.name} className={`bg-white p-4 rounded-lg border-2 border-${scenario.color}-200 hover:border-${scenario.color}-400 transition-colors`}>
+                                      <div className={`text-sm font-semibold text-${scenario.color}-700 mb-1`}>{scenario.name}</div>
+                                      <div className="text-xs text-gray-500 mb-3">{scenario.description}</div>
+
+                                      <div className="flex justify-between items-center">
+                                        <div>
+                                          <div className={`text-2xl font-bold ${newNetChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {newNetChange >= 0 ? '+' : ''}{newNetChange.toFixed(1)}
+                                          </div>
+                                          <div className="text-xs text-gray-500">policies/month</div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className={`text-lg font-semibold ${improvement > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                            {improvement > 0 ? '+' : ''}{improvement.toFixed(1)}
+                                          </div>
+                                          <div className="text-xs text-gray-500">vs current</div>
+                                        </div>
+                                      </div>
+
+                                      <div className="mt-3 pt-3 border-t border-gray-100">
+                                        <div className="flex justify-between text-xs">
+                                          <span className="text-gray-500">Annual growth:</span>
+                                          <span className={`font-medium ${growthRate > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {growthRate > 0 ? '+' : ''}{growthRate.toFixed(1)}%
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between text-xs mt-1">
+                                          <span className="text-gray-500">Year-end policies:</span>
+                                          <span className="font-medium">{Math.round(currentPolicies + annualGrowth).toLocaleString()}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Key Insight */}
+                              <div className="p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
+                                <strong>Key Insight:</strong> With 98.6% retention (~2 losses/mo), focus on conversion improvement
+                                has the biggest ROI. Doubling from 4% to 8% adds more new policies than any other single lever!
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Custom Scenario Builder with Sliders */}
+                      <div className="card p-6 mt-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Settings className="w-5 h-5 text-purple-700" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Build Your Growth Plan</h3>
+                            <p className="text-sm text-gray-600">Adjust sliders to see projected outcomes</p>
+                          </div>
+                        </div>
+
+                        {(() => {
+                          // Use state from strategyInputs for interactivity
+                          const currentPolicies = strategyInputs.currentPolicies;
+                          const currentCustomers = strategyInputs.currentCustomers;
+                          const ppc = currentPolicies / currentCustomers;
+
+                          // Get values from inputs - use new slider values
+                          const targetRetention = strategyInputs.targetRetentionRate / 100;
+                          const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
+                          const conversionRate = strategyInputs.targetConversionRate / 100;
+
+                          // Calculate projections
+                          // V5.1 FIX: Churn is customers leaving × their policies
+                          const monthlyCustomerChurn = currentCustomers * (1 - Math.pow(targetRetention, 1/12));
+                          const monthlyPolicyChurn = monthlyCustomerChurn * ppc;
+                          const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
+                          const newCustomers = monthlyLeads * conversionRate;
+                          const newPolicies = newCustomers * ppc;
+                          const netChange = newPolicies - monthlyPolicyChurn;
+                          const annualChange = netChange * 12;
+                          const yearEndPolicies = currentPolicies + annualChange;
+                          const growthRate = (annualChange / currentPolicies) * 100;
+
+                          // Premium calculations
+                          const currentPremium = currentPolicies * strategyInputs.averagePremium;
+                          const yearEndPremium = yearEndPolicies * strategyInputs.averagePremium;
+                          const premiumChange = yearEndPremium - currentPremium;
+
+                          // Commission impact
+                          const currentCommission = currentPremium * (strategyInputs.commissionPayout / 100);
+                          const yearEndCommission = yearEndPremium * (strategyInputs.commissionPayout / 100);
+                          const commissionChange = yearEndCommission - currentCommission;
+
+                          return (
+                            <div className="space-y-6">
+                              {/* Sliders */}
+                              <div className="grid md:grid-cols-2 gap-6">
+                                {/* Lead Spend Slider */}
+                                <div>
+                                  <div className="flex justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">Monthly Lead Investment</label>
+                                    <span className="text-sm font-bold text-purple-600">${totalLeadSpend.toLocaleString()}</span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="20000"
+                                    step="500"
+                                    value={totalLeadSpend}
+                                    onChange={(e) => {
+                                      const newSpend = parseInt(e.target.value);
+                                      const traditionalPortion = Math.min(newSpend, 1500);
+                                      const additionalPortion = newSpend - traditionalPortion;
+                                      setStrategyInputs(prev => ({
+                                        ...prev,
+                                        marketing: { ...prev.marketing, traditional: traditionalPortion },
+                                        additionalLeadSpend: additionalPortion
+                                      }));
+                                    }}
+                                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                  />
+                                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>$0</span>
+                                    <span>$20K</span>
+                                  </div>
+                                </div>
+
+                                {/* Cost Per Lead Slider */}
+                                <div>
+                                  <div className="flex justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">Cost Per Lead</label>
+                                    <span className="text-sm font-bold text-purple-600">${strategyInputs.costPerLead}</span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="20"
+                                    max="150"
+                                    step="5"
+                                    value={strategyInputs.costPerLead}
+                                    onChange={(e) => setStrategyInputs(prev => ({
+                                      ...prev,
+                                      costPerLead: parseInt(e.target.value)
+                                    }))}
+                                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                  />
+                                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>$20 (Shared)</span>
+                                    <span>$150 (Exclusive)</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Second Row: Retention and Conversion Sliders */}
+                              <div className="grid md:grid-cols-2 gap-6">
+                                {/* Retention Rate Slider */}
+                                <div>
+                                  <div className="flex justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">Annual Retention Rate</label>
+                                    <span className="text-sm font-bold text-purple-600">{strategyInputs.targetRetentionRate.toFixed(1)}%</span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="80"
+                                    max="98"
+                                    step="0.5"
+                                    value={strategyInputs.targetRetentionRate}
+                                    onChange={(e) => setStrategyInputs(prev => ({
+                                      ...prev,
+                                      targetRetentionRate: parseFloat(e.target.value)
+                                    }))}
+                                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                  />
+                                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>80% (Poor)</span>
+                                    <span className="text-green-600">98.6%</span>
+                                    <span>99% (Elite)</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Current: ~2/mo avg | Monthly loss: {(currentCustomers * (1 - Math.pow(targetRetention, 1/12)) * ppc).toFixed(1)} policies (range: 0-6)
+                                  </div>
+                                </div>
+
+                                {/* Conversion Rate Slider */}
+                                <div>
+                                  <div className="flex justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">Lead-to-Bound Conversion</label>
+                                    <span className="text-sm font-bold text-purple-600">{strategyInputs.targetConversionRate.toFixed(1)}%</span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min="2"
+                                    max="15"
+                                    step="0.5"
+                                    value={strategyInputs.targetConversionRate}
+                                    onChange={(e) => setStrategyInputs(prev => ({
+                                      ...prev,
+                                      targetConversionRate: parseFloat(e.target.value)
+                                    }))}
+                                    className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                  />
+                                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>2% (Cold)</span>
+                                    <span className="text-green-600">10%</span>
+                                    <span>15% (Hot)</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    {monthlyLeads.toFixed(0)} leads × {conversionRate * 100}% = {(monthlyLeads * conversionRate).toFixed(1)} customers/mo
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Results */}
+                              <div className="bg-white p-4 rounded-lg border border-purple-200">
+                                <div className="text-sm font-medium text-gray-700 mb-3">Projected Outcomes (12 Months)</div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                  <div className="text-center">
+                                    <div className={`text-xl font-bold ${netChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {netChange >= 0 ? '+' : ''}{netChange.toFixed(1)}
+                                    </div>
+                                    <div className="text-xs text-gray-500">Net/Month</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className={`text-xl font-bold ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
+                                    </div>
+                                    <div className="text-xs text-gray-500">Annual Growth</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="text-xl font-bold text-gray-900">
+                                      {Math.round(yearEndPolicies).toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-gray-500">Year-End Policies</div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className={`text-xl font-bold ${commissionChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {commissionChange >= 0 ? '+' : ''}${Math.round(commissionChange / 1000)}K
+                                    </div>
+                                    <div className="text-xs text-gray-500">Commission Change</div>
+                                  </div>
+                                </div>
+
+                                {/* Additional metrics */}
+                                <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">{Math.round(monthlyLeads)}</div>
+                                    <div className="text-xs text-gray-500">Leads/Month</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">{Math.round(newPolicies * 10) / 10}</div>
+                                    <div className="text-xs text-gray-500">New Policies/Mo</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">{Math.round(monthlyPolicyChurn * 10) / 10}</div>
+                                    <div className="text-xs text-gray-500">Lost to Churn/Mo</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Recommendation */}
+                              <div className={`p-3 rounded-lg text-sm ${netChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                {netChange >= 0 ? (
+                                  <>
+                                    <strong>Growth Path:</strong> At this investment level, you'll add {Math.round(annualChange)} policies by year-end,
+                                    generating an additional ${Math.round(commissionChange / 1000)}K in annual commission.
+                                  </>
+                                ) : (
+                                  <>
+                                    <strong>Warning:</strong> Current settings result in {Math.round(Math.abs(annualChange))} policy loss.
+                                    Increase lead spend to ${Math.round((monthlyPolicyChurn / (conversionRate * ppc)) * strategyInputs.costPerLead / 100) * 100}/mo or improve conversion/retention to break even.
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Break-Even Analysis */}
+                              <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                                <div className="text-sm font-medium text-gray-700 mb-3">Break-Even Analysis</div>
+
+                                {(() => {
+                                  // Calculate break-even requirements
+                                  const breakEvenLeadSpend = (monthlyPolicyChurn / (conversionRate * ppc)) * strategyInputs.costPerLead;
+                                  const breakEvenConversion = (monthlyPolicyChurn / (monthlyLeads * ppc)) * 100;
+                                  const breakEvenRetention = Math.pow(1 - (newPolicies / currentPolicies), 12) * 100;
+
+                                  // Calculate CAC for current settings
+                                  const cac = totalLeadSpend / (monthlyLeads * conversionRate);
+
+                                  return (
+                                    <div className="space-y-3">
+                                      {/* Break-even metrics */}
+                                      <div className="grid grid-cols-3 gap-3 text-center">
+                                        <div className="p-2 bg-gray-50 rounded">
+                                          <div className="text-lg font-bold text-gray-900">${Math.round(breakEvenLeadSpend).toLocaleString()}</div>
+                                          <div className="text-xs text-gray-500">Break-even spend</div>
+                                        </div>
+                                        <div className="p-2 bg-gray-50 rounded">
+                                          <div className="text-lg font-bold text-gray-900">{Math.min(breakEvenConversion, 15).toFixed(1)}%</div>
+                                          <div className="text-xs text-gray-500">Break-even conversion</div>
+                                        </div>
+                                        <div className="p-2 bg-gray-50 rounded">
+                                          <div className="text-lg font-bold text-gray-900">${Math.round(cac).toLocaleString()}</div>
+                                          <div className="text-xs text-gray-500">Cost per customer</div>
+                                        </div>
+                                      </div>
+
+                                      {/* Visual progress bar */}
+                                      <div>
+                                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                          <span>Current vs Break-even</span>
+                                          <span>{((newPolicies / monthlyPolicyChurn) * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                          <div
+                                            className={`h-2 rounded-full ${newPolicies >= monthlyPolicyChurn ? 'bg-green-500' : 'bg-amber-500'}`}
+                                            style={{ width: `${Math.min((newPolicies / monthlyPolicyChurn) * 100, 100)}%` }}
+                                          />
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                          <span>0%</span>
+                                          <span className="text-green-600">100% (Break-even)</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              {/* Growth Path Recommendations */}
+                              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                <div className="text-sm font-medium text-blue-800 mb-3">Recommended Actions</div>
+
+                                {(() => {
+                                  // Generate contextual recommendations based on current slider values
+                                  const recommendations = [];
+
+                                  // Check retention - with 98.6% baseline, only flag if significantly worse
+                                  if (strategyInputs.targetRetentionRate < 97) {
+                                    recommendations.push({
+                                      priority: 'high',
+                                      action: 'Restore retention to 98%+',
+                                      impact: `Saves ${Math.round(currentPolicies * (Math.pow(0.98, 1/12) - Math.pow(targetRetention, 1/12)) * 12)} policies/year`,
+                                      how: 'Bundle auto+home, renewal outreach at 60 days'
+                                    });
+                                  }
+
+                                  // Check conversion
+                                  if (strategyInputs.targetConversionRate < 6) {
+                                    recommendations.push({
+                                      priority: 'medium',
+                                      action: 'Increase conversion to 6%+',
+                                      impact: `Adds ${Math.round(monthlyLeads * (0.06 - conversionRate) * ppc * 12)} policies/year`,
+                                      how: 'Better lead sources, faster follow-up (<5 min)'
+                                    });
+                                  }
+
+                                  // Check lead volume
+                                  if (totalLeadSpend < 5000) {
+                                    recommendations.push({
+                                      priority: netChange < 0 ? 'high' : 'medium',
+                                      action: 'Increase lead investment',
+                                      impact: `$5K/mo at ${(conversionRate * 100).toFixed(0)}% = ${Math.round((5000 / strategyInputs.costPerLead) * conversionRate * ppc)} new policies/mo`,
+                                      how: 'Scale proven channels, test new sources'
+                                    });
+                                  }
+
+                                  // Check cost per lead
+                                  if (strategyInputs.costPerLead > 80) {
+                                    recommendations.push({
+                                      priority: 'medium',
+                                      action: 'Reduce cost per lead',
+                                      impact: `$55/lead = ${Math.round(totalLeadSpend / 55)} leads vs ${Math.round(monthlyLeads)} at $${strategyInputs.costPerLead}`,
+                                      how: 'Referral program, digital marketing, shared leads'
+                                    });
+                                  }
+
+                                  if (recommendations.length === 0) {
+                                    recommendations.push({
+                                      priority: 'success',
+                                      action: 'Strong foundation established',
+                                      impact: `On track for ${growthRate.toFixed(1)}% annual growth`,
+                                      how: 'Monitor monthly, optimize top-performing channels'
+                                    });
+                                  }
+
+                                  return (
+                                    <div className="space-y-2">
+                                      {recommendations.slice(0, 3).map((rec, idx) => (
+                                        <div key={idx} className="flex items-start gap-2">
+                                          <div className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 ${
+                                            rec.priority === 'high' ? 'bg-red-500' :
+                                            rec.priority === 'medium' ? 'bg-amber-500' :
+                                            'bg-green-500'
+                                          }`} />
+                                          <div className="flex-1">
+                                            <div className="text-sm font-medium text-gray-900">{rec.action}</div>
+                                            <div className="text-xs text-blue-700">{rec.impact}</div>
+                                            <div className="text-xs text-gray-500">{rec.how}</div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Growth Strategy & Global Sensitivity Analysis */}
+                      <div className="card p-6 mt-6 bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Growth Strategy & Sensitivity Analysis</h3>
+                            <p className="text-sm text-gray-600">Impact of each lever on annual policy growth</p>
+                          </div>
+                        </div>
+
+                        {(() => {
+                          // Base calculations
+                          const currentPolicies = strategyInputs.currentPolicies;
+                          const currentCustomers = strategyInputs.currentCustomers;
+                          const ppc = currentPolicies / currentCustomers;
+
+                          // Current values
+                          const baseRetention = 0.986; // 98.6%
+                          const baseConversion = 0.10; // 10% - 1 in 10 leads = policy
+                          const baseLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
+                          const baseCPL = strategyInputs.costPerLead;
+
+                          // Calculate base annual net change
+                          // V5.1 FIX: Churn is customers leaving × their PPC
+                          const baseMonthlyCustomerChurn = currentCustomers * (1 - Math.pow(baseRetention, 1/12));
+                          const baseMonthlyPolicyChurn = baseMonthlyCustomerChurn * ppc;
+                          const baseMonthlyLeads = baseLeadSpend / baseCPL;
+                          const baseNewPolicies = baseMonthlyLeads * baseConversion * ppc;
+                          const baseNetMonthly = baseNewPolicies - baseMonthlyPolicyChurn;
+                          const baseAnnualNet = baseNetMonthly * 12;
+
+                          // Sensitivity analysis - test each lever independently
+                          const sensitivities = [
+                            {
+                              lever: 'Retention Rate',
+                              unit: '%',
+                              baseValue: baseRetention * 100,
+                              testValues: [96, 97, 98, 98.6, 99],
+                              calculate: (val: number) => {
+                                const customerChurn = currentCustomers * (1 - Math.pow(val/100, 1/12));
+                                const policyChurn = customerChurn * ppc;
+                                return (baseNewPolicies - policyChurn) * 12;
+                              },
+                              color: 'emerald',
+                              insight: 'Each 1% retention = ~17 fewer losses/year'
+                            },
+                            {
+                              lever: 'Conversion Rate',
+                              unit: '%',
+                              baseValue: baseConversion * 100,
+                              testValues: [2, 4, 6, 8, 10],
+                              calculate: (val: number) => {
+                                const newPols = baseMonthlyLeads * (val/100) * ppc;
+                                return (newPols - baseMonthlyPolicyChurn) * 12;
+                              },
+                              color: 'blue',
+                              insight: 'Each 1% conversion = ~20 more policies/year'
+                            },
+                            {
+                              lever: 'Lead Spend',
+                              unit: '$',
+                              baseValue: baseLeadSpend,
+                              testValues: [2000, 4500, 7000, 10000, 15000],
+                              calculate: (val: number) => {
+                                const leads = val / baseCPL;
+                                const newPols = leads * baseConversion * ppc;
+                                return (newPols - baseMonthlyPolicyChurn) * 12;
+                              },
+                              color: 'purple',
+                              insight: 'Each $1K spend = ~1.1 policies/year at 4%'
+                            },
+                            {
+                              lever: 'Cost Per Lead',
+                              unit: '$',
+                              baseValue: baseCPL,
+                              testValues: [30, 45, 55, 75, 100],
+                              calculate: (val: number) => {
+                                const leads = baseLeadSpend / val;
+                                const newPols = leads * baseConversion * ppc;
+                                return (newPols - baseMonthlyPolicyChurn) * 12;
+                              },
+                              color: 'amber',
+                              insight: 'Lower cost per lead = more leads for same budget'
+                            }
+                          ];
+
+                          return (
+                            <div className="space-y-6">
+                              {/* Executive Summary */}
+                              <div className="bg-white p-4 rounded-lg border border-slate-200">
+                                <div className="text-sm font-medium text-gray-700 mb-3">Executive Summary: Derrick's Growth Levers</div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Current Position</div>
+                                    <ul className="text-sm space-y-1">
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Policies in Force:</span>
+                                        <span className="font-medium">{currentPolicies.toLocaleString()}</span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Annual Retention:</span>
+                                        <span className="font-medium text-green-600">98.6% (~2 lost/mo)</span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Bound Conversion:</span>
+                                        <span className="font-medium">4%</span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Monthly Lead Spend:</span>
+                                        <span className="font-medium">${baseLeadSpend.toLocaleString()}</span>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Projected Trajectory</div>
+                                    <ul className="text-sm space-y-1">
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Monthly New Policies:</span>
+                                        <span className="font-medium text-blue-600">+{baseNewPolicies.toFixed(1)}</span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Monthly Churn:</span>
+                                        <span className="font-medium text-red-600">-{baseMonthlyPolicyChurn.toFixed(1)}</span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Net Monthly Change:</span>
+                                        <span className={`font-bold ${baseNetMonthly >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                          {baseNetMonthly >= 0 ? '+' : ''}{baseNetMonthly.toFixed(1)}
+                                        </span>
+                                      </li>
+                                      <li className="flex justify-between">
+                                        <span className="text-gray-600">Year-End Forecast:</span>
+                                        <span className="font-bold">{Math.round(currentPolicies + baseAnnualNet).toLocaleString()}</span>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Sensitivity Analysis Grid */}
+                              <div>
+                                <div className="text-sm font-medium text-gray-700 mb-3">Global Sensitivity Analysis</div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  {sensitivities.map((sens) => (
+                                    <div key={sens.lever} className={`bg-white p-4 rounded-lg border border-${sens.color}-200`}>
+                                      <div className={`text-sm font-semibold text-${sens.color}-700 mb-2`}>{sens.lever}</div>
+
+                                      {/* Value table */}
+                                      <div className="overflow-x-auto">
+                                        <table className="w-full text-xs">
+                                          <thead>
+                                            <tr className="border-b border-gray-200">
+                                              <th className="text-left py-1 text-gray-500">{sens.unit === '$' ? 'Spend' : 'Rate'}</th>
+                                              <th className="text-right py-1 text-gray-500">Annual Net</th>
+                                              <th className="text-right py-1 text-gray-500">Δ vs Base</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {sens.testValues.map((val) => {
+                                              const result = sens.calculate(val);
+                                              const delta = result - baseAnnualNet;
+                                              const isBase = Math.abs(val - sens.baseValue) < 1;
+                                              return (
+                                                <tr key={val} className={isBase ? `bg-${sens.color}-50 font-medium` : ''}>
+                                                  <td className="py-1">
+                                                    {sens.unit === '$' ? `$${val.toLocaleString()}` : `${val}%`}
+                                                    {isBase && <span className="text-gray-400 ml-1">(now)</span>}
+                                                  </td>
+                                                  <td className={`text-right py-1 ${result >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {result >= 0 ? '+' : ''}{Math.round(result)}
+                                                  </td>
+                                                  <td className={`text-right py-1 ${delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-600' : 'text-gray-400'}`}>
+                                                    {delta > 0 ? '+' : ''}{Math.round(delta)}
+                                                  </td>
+                                                </tr>
+                                              );
+                                            })}
+                                          </tbody>
+                                        </table>
+                                      </div>
+
+                                      <div className="mt-2 text-xs text-gray-500 italic">{sens.insight}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Strategic Recommendations */}
+                              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-lg border border-emerald-200">
+                                <div className="text-sm font-semibold text-emerald-800 mb-3">Strategic Priority Ranking</div>
+
+                                {(() => {
+                                  // Calculate ROI for each lever improvement
+                                  const leverImpacts = [
+                                    {
+                                      rank: 1,
+                                      lever: 'Improve Conversion (4% → 8%)',
+                                      impact: sensitivities[1].calculate(8) - baseAnnualNet,
+                                      cost: 'Low-Medium',
+                                      difficulty: 'Medium',
+                                      timeframe: '3-6 months',
+                                      actions: ['Speed-to-lead (<5 min)', 'Better lead sources', 'Sales training']
+                                    },
+                                    {
+                                      rank: 2,
+                                      lever: 'Increase Lead Spend ($4.5K → $10K)',
+                                      impact: sensitivities[2].calculate(10000) - baseAnnualNet,
+                                      cost: 'High (+$5.5K/mo)',
+                                      difficulty: 'Low',
+                                      timeframe: 'Immediate',
+                                      actions: ['Scale proven channels', 'Test new sources', 'Track ROI by channel']
+                                    },
+                                    {
+                                      rank: 3,
+                                      lever: 'Reduce Cost/Lead ($55 → $35)',
+                                      impact: sensitivities[3].calculate(35) - baseAnnualNet,
+                                      cost: 'Low',
+                                      difficulty: 'Medium-High',
+                                      timeframe: '6-12 months',
+                                      actions: ['Referral program', 'Digital marketing', 'Partnerships']
+                                    },
+                                    {
+                                      rank: 4,
+                                      lever: 'Elite Retention (98.6% → 99%)',
+                                      impact: sensitivities[0].calculate(99) - baseAnnualNet,
+                                      cost: 'Low',
+                                      difficulty: 'Low',
+                                      timeframe: '3 months',
+                                      actions: ['Increase bundling', '60-day renewal calls', 'Claims follow-up']
+                                    }
+                                  ].sort((a, b) => b.impact - a.impact);
+
+                                  return (
+                                    <div className="space-y-3">
+                                      {leverImpacts.map((item, idx) => (
+                                        <div key={item.lever} className="bg-white p-3 rounded border border-gray-100">
+                                          <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                                idx === 0 ? 'bg-emerald-100 text-emerald-700' :
+                                                idx === 1 ? 'bg-blue-100 text-blue-700' :
+                                                'bg-gray-100 text-gray-700'
+                                              }`}>
+                                                {idx + 1}
+                                              </div>
+                                              <div>
+                                                <div className="text-sm font-medium text-gray-900">{item.lever}</div>
+                                                <div className="text-xs text-gray-500">
+                                                  {item.timeframe} | {item.difficulty} difficulty | {item.cost} cost
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div className="text-right">
+                                              <div className={`text-lg font-bold ${item.impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {item.impact >= 0 ? '+' : ''}{Math.round(item.impact)}
+                                              </div>
+                                              <div className="text-xs text-gray-500">policies/year</div>
+                                            </div>
+                                          </div>
+                                          <div className="mt-2 flex flex-wrap gap-1">
+                                            {item.actions.map((action) => (
+                                              <span key={action} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                                                {action}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              {/* Combined Strategy Impact */}
+                              <div className="bg-slate-800 text-white p-4 rounded-lg">
+                                <div className="text-sm font-semibold mb-3">Combined Strategy Impact (All Levers)</div>
+
+                                {(() => {
+                                  // Best case: all improvements
+                                  const bestRetention = 0.99;
+                                  const bestConversion = 0.08;
+                                  const bestSpend = 10000;
+                                  const bestCPL = 35;
+
+                                  // V5.1 FIX: Churn = customers leaving × their PPC
+                                  const bestChurn = currentCustomers * (1 - Math.pow(bestRetention, 1/12)) * ppc;
+                                  const bestLeads = bestSpend / bestCPL;
+                                  const bestNew = bestLeads * bestConversion * ppc;
+                                  const bestNet = (bestNew - bestChurn) * 12;
+
+                                  const improvement = bestNet - baseAnnualNet;
+                                  const yearEndPolicies = currentPolicies + bestNet;
+                                  const growthRate = (bestNet / currentPolicies) * 100;
+
+                                  return (
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-emerald-400">+{Math.round(improvement)}</div>
+                                        <div className="text-xs text-slate-400">Additional policies/year</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-blue-400">{Math.round(yearEndPolicies).toLocaleString()}</div>
+                                        <div className="text-xs text-slate-400">Year-end policies</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-purple-400">{growthRate.toFixed(1)}%</div>
+                                        <div className="text-xs text-slate-400">Annual growth rate</div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="text-2xl font-bold text-amber-400">
+                                          +${Math.round((bestNet - baseAnnualNet) * strategyInputs.averagePremium * strategyInputs.commissionPayout / 100 / 1000)}K
+                                        </div>
+                                        <div className="text-xs text-slate-400">Added commission/year</div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+
+                                <div className="mt-3 pt-3 border-t border-slate-600 text-xs text-slate-400">
+                                  Assumes: 99% retention, 8% conversion, $10K/mo spend, $35/lead
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <motion.button
@@ -2640,10 +3647,10 @@ function App() {
                               </h3>
                               <div className="space-y-3">
                                 {[
-                                  { label: '$35 CPL', cpl: 35 },
-                                  { label: '$45 CPL', cpl: 45 },
-                                  { label: `$${strategyInputs.costPerLead} CPL (current)`, cpl: strategyInputs.costPerLead },
-                                  { label: '$75 CPL', cpl: 75 },
+                                  { label: '$35/lead', cpl: 35 },
+                                  { label: '$45/lead', cpl: 45 },
+                                  { label: `$${strategyInputs.costPerLead}/lead (current)`, cpl: strategyInputs.costPerLead },
+                                  { label: '$75/lead', cpl: 75 },
                                 ].map(({ label, cpl }) => {
                                   // Calculate leads at different CPL with same budget
                                   const monthlyLeads = strategyInputs.monthlyLeadSpend / cpl;
@@ -2655,7 +3662,7 @@ function App() {
                                       <div className="text-right">
                                         <p className="text-sm font-semibold text-gray-900">{Math.round(monthlyLeads)} leads/mo</p>
                                         <p className="text-xs text-gray-600">
-                                          CAC: ${Math.round(effectiveCAC)}
+                                          Acquisition Cost: ${Math.round(effectiveCAC)}
                                         </p>
                                       </div>
                                     </div>
@@ -2802,7 +3809,7 @@ function App() {
                                       </span>
                                     </div>
                                     <p className="text-sm text-gray-600 mt-3">
-                                      Growth Rate + (0.5 × EBITDA Margin). Target: {BENCHMARKS.RULE_OF_20.HEALTHY}+
+                                      Growth Rate + (0.5 × Operating Margin). Target: {BENCHMARKS.RULE_OF_20.HEALTHY}+
                                     </p>
                                   </div>
                                   <Target className="w-12 h-12 text-gray-400" />
@@ -2811,10 +3818,10 @@ function App() {
 
                               {/* Benchmark Metrics Grid */}
                               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {/* EBITDA Margin */}
+                                {/* Operating Margin (EBITDA) */}
                                 <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
                                   <div className="flex items-start justify-between mb-2">
-                                    <h4 className="text-sm font-semibold text-gray-700">EBITDA Margin</h4>
+                                    <h4 className="text-sm font-semibold text-gray-700">Operating Margin</h4>
                                     <DollarSign className="w-5 h-5 text-gray-400" />
                                   </div>
                                   <p className="text-3xl font-bold text-gray-900 mb-1">
@@ -2834,10 +3841,10 @@ function App() {
                                   </p>
                                 </div>
 
-                                {/* LTV:CAC Ratio */}
+                                {/* Lifetime Value : Acquisition Cost Ratio */}
                                 <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200">
                                   <div className="flex items-start justify-between mb-2">
-                                    <h4 className="text-sm font-semibold text-gray-700">LTV:CAC Ratio</h4>
+                                    <h4 className="text-sm font-semibold text-gray-700">Lifetime Value : Acquisition Cost</h4>
                                     <TrendingUp className="w-5 h-5 text-gray-400" />
                                   </div>
                                   <p className="text-3xl font-bold text-gray-900 mb-1">
@@ -3105,7 +4112,7 @@ function App() {
                               </div>
                             </motion.div>
 
-                            {/* LTV:CAC Ratio */}
+                            {/* Lifetime Value : Acquisition Cost Ratio */}
                             <motion.div
                               whileHover={{ scale: 1.03, y: -2 }}
                               className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
@@ -3131,7 +4138,7 @@ function App() {
                                 {scenarioResults[1]?.ltvCacRatio?.toFixed(1) || 0}:1
                               </div>
                               <div className="text-sm font-medium text-gray-700 mb-1">
-                                LTV:CAC Ratio
+                                Lifetime Value : Acquisition Cost
                               </div>
                               <div className="text-xs text-gray-500">
                                 {scenarioResults[1]?.ltvCacRatio && scenarioResults[1].ltvCacRatio >= 3 ? 'Excellent' : 'Good'}
@@ -3169,7 +4176,7 @@ function App() {
                             <div className="flex items-start gap-3">
                               <Info className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                               <div className="text-sm text-gray-700">
-                                <strong>Healthy SaaS metrics:</strong> LTV:CAC ratio above 3:1 indicates strong unit economics.
+                                <strong>Healthy metrics:</strong> Lifetime value to acquisition cost ratio above 3:1 indicates strong unit economics.
                                 {scenarioResults[1]?.ltvCacRatio && scenarioResults[1].ltvCacRatio >= 3
                                   ? " Your strategy meets this benchmark."
                                   : " Consider optimizing acquisition costs or improving retention to improve this ratio."}
@@ -3206,7 +4213,7 @@ function App() {
                                     <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">59.7% Impact</span>
                                   </div>
                                   <p className="text-sm text-gray-700 mb-3">
-                                    Moving from {(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 2.0 PPC unlocks optimal 95% retention tier.
+                                    Moving from {(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 2.0 policies per customer unlocks optimal 95% retention tier.
                                     Each additional policy per customer increases both retention AND revenue.
                                   </p>
                                   <div className="flex flex-wrap gap-2">
@@ -3231,7 +4238,7 @@ function App() {
                                   </div>
                                   <p className="text-sm text-gray-700 mb-3">
                                     Current: ${strategyInputs.monthlyLeadSpend.toLocaleString()}/mo → {Math.round(strategyInputs.monthlyLeadSpend / strategyInputs.costPerLead)} leads.
-                                    Live transfers at ${strategyInputs.costPerLead} CPL with 10% conversion = ${Math.round(strategyInputs.costPerLead / 0.10)} effective CAC.
+                                    Live transfers at ${strategyInputs.costPerLead} per lead with 10% conversion = ${Math.round(strategyInputs.costPerLead / 0.10)} effective acquisition cost.
                                   </p>
                                   <div className="flex flex-wrap gap-2">
                                     <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Scale to $5-8K/mo for aggressive growth</span>
@@ -3280,7 +4287,7 @@ function App() {
                                     Retention supports all other growth efforts.
                                   </p>
                                   <div className="flex flex-wrap gap-2">
-                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Cross-sell to 1.8+ PPC</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Cross-sell to 1.8+ policies per customer</span>
                                     <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Annual policy reviews</span>
                                   </div>
                                 </div>
@@ -3308,7 +4315,7 @@ function App() {
                             {[
                               {
                                 priority: 'HIGH',
-                                action: `Launch cross-sell campaign to move PPC from ${(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 1.8+`,
+                                action: `Launch cross-sell campaign to move policies per customer from ${(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 1.8+`,
                                 color: 'bg-red-100 text-red-800'
                               },
                               {
