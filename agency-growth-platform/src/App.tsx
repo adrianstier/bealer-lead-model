@@ -652,13 +652,6 @@ function App() {
     setStrategyInputs(prev => ({ ...prev, [field]: value }));
   };
 
-  const metrics = [
-    { icon: Target, label: 'Current Policies', value: strategyInputs.currentPolicies.toString(), trend: '+12%' },
-    { icon: Users, label: 'Staff FTE', value: strategyInputs.currentStaff.toFixed(1), trend: 'Optimal' },
-    { icon: DollarSign, label: 'Monthly Spend', value: `$${strategyInputs.monthlyLeadSpend.toLocaleString()}`, trend: '+5%' },
-    { icon: Activity, label: 'Conversion Rate', value: '24.4%', trend: '+2.1%' }
-  ];
-
   const tabItems = [
     { id: 'methodology', label: 'Methodology', icon: TrendingUp },
     { id: 'model', label: 'Model Details', icon: Info },
