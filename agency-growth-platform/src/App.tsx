@@ -1601,10 +1601,100 @@ function App() {
                 </Tabs.Content>
 
                 <Tabs.Content value="strategy" role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy">
-                  <div className="max-w-6xl mx-auto">
+                  <div className="max-w-6xl mx-auto space-y-6">
+                    {/* Key Driver Alert - PPC Tracker */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
+                      className={`rounded-2xl p-6 border-2 ${
+                        strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                          ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-500'
+                          : 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-500'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Award className={`w-5 h-5 ${
+                              strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                                ? 'text-green-600'
+                                : 'text-amber-600'
+                            }`} />
+                            <h3 className="font-bold text-gray-900">#1 Growth Driver: Policies Per Customer</h3>
+                            <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">59.7% Impact</span>
+                          </div>
+                          <div className="flex items-baseline gap-4 mb-3">
+                            <div>
+                              <span className="text-4xl font-bold text-gray-900">
+                                {strategyInputs.currentCustomers > 0 ? (strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(2) : '0.00'}
+                              </span>
+                              <span className="text-lg text-gray-600 ml-1">PPC</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-gray-500">→</span>
+                              <span className={`font-semibold ${
+                                strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                                  ? 'text-green-600'
+                                  : 'text-gray-700'
+                              }`}>
+                                Target: 1.80+
+                              </span>
+                              {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8 && (
+                                <span className="text-green-600 flex items-center gap-1">
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  95% Retention Unlocked!
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                            <div
+                              className={`h-2.5 rounded-full transition-all duration-500 ${
+                                strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                                  ? 'bg-green-500'
+                                  : 'bg-amber-500'
+                              }`}
+                              style={{
+                                width: `${Math.min(100, strategyInputs.currentCustomers > 0
+                                  ? ((strategyInputs.currentPolicies / strategyInputs.currentCustomers) / 2.0) * 100
+                                  : 0)}%`
+                              }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) < 1.8
+                              ? `Add ${Math.ceil((1.8 * strategyInputs.currentCustomers) - strategyInputs.currentPolicies)} policies to reach optimal retention tier`
+                              : 'Excellent cross-selling! Focus on maintaining this level with new customers'
+                            }
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="text-xs text-gray-500 mb-1">Retention Tier</div>
+                          <div className={`text-lg font-bold ${
+                            strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                              ? 'text-green-600'
+                              : strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.5
+                              ? 'text-blue-600'
+                              : 'text-yellow-600'
+                          }`}>
+                            {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
+                              ? '95% (Optimal)'
+                              : strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.5
+                              ? '91% (Bundled)'
+                              : '67% (Monoline)'
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
                       className="card-lg p-6 sm:p-8"
                     >
                       <div className="mb-8">
@@ -1795,6 +1885,56 @@ function App() {
 
                         <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200 text-sm text-slate-700">
                           <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces CAC by 30%.
+                        </div>
+
+                        {/* Marketing ROI Summary */}
+                        <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <DollarSign className="w-4 h-4 text-green-600" />
+                            <span className="font-semibold text-gray-900 text-sm">Marketing ROI Summary</span>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                            <div className="bg-white p-2 rounded border">
+                              <div className="text-gray-500">Total Spend</div>
+                              <div className="font-bold text-gray-900">
+                                ${(strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships).toLocaleString()}/mo
+                              </div>
+                            </div>
+                            <div className="bg-white p-2 rounded border">
+                              <div className="text-gray-500">Est. Leads/Mo</div>
+                              <div className="font-bold text-gray-900">
+                                {Math.round(
+                                  (strategyInputs.marketing.referral / 25) + // $25/referral lead
+                                  (strategyInputs.marketing.digital / 35) + // $35/digital lead
+                                  (strategyInputs.marketing.traditional / strategyInputs.costPerLead) + // Live transfer cost
+                                  (strategyInputs.marketing.partnerships / 40) // $40/partnership lead
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-white p-2 rounded border">
+                              <div className="text-gray-500">Blended CPL</div>
+                              <div className="font-bold text-gray-900">
+                                ${Math.round(
+                                  (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
+                                  Math.max(1, (strategyInputs.marketing.referral / 25) + (strategyInputs.marketing.digital / 35) + (strategyInputs.marketing.traditional / strategyInputs.costPerLead) + (strategyInputs.marketing.partnerships / 40))
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-white p-2 rounded border">
+                              <div className="text-gray-500">Est. CAC</div>
+                              <div className="font-bold text-green-600">
+                                ${Math.round(
+                                  (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
+                                  Math.max(1,
+                                    (strategyInputs.marketing.referral / 25) * 0.60 + // 60% referral conversion
+                                    (strategyInputs.marketing.digital / 35) * 0.18 + // 18% digital conversion
+                                    (strategyInputs.marketing.traditional / strategyInputs.costPerLead) * 0.10 + // 10% live transfer
+                                    (strategyInputs.marketing.partnerships / 40) * 0.25 // 25% partnership
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4">
@@ -2122,7 +2262,9 @@ function App() {
                             </div>
                           </label>
 
-                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
+                          <label className={`flex items-center gap-3 p-3 border-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${
+                            strategyInputs.crossSellProgram ? 'border-amber-500 bg-amber-50' : 'border-gray-200'
+                          }`}>
                             <input
                               type="checkbox"
                               checked={strategyInputs.crossSellProgram}
@@ -2130,8 +2272,11 @@ function App() {
                               className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">Cross-Sell Program ($500/mo)</div>
-                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | Drives to 1.8+ policies/customer</div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-900">Cross-Sell Program ($500/mo)</span>
+                                <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">#1 Driver</span>
+                              </div>
+                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | +15% PPC | Unlocks 95% retention tier</div>
                             </div>
                           </label>
                         </div>
@@ -2977,21 +3122,167 @@ function App() {
                           </div>
                         </div>
 
+                        {/* What Matters Most - Key Driver Analysis */}
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 border border-amber-200 mb-10">
+                          <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-amber-100 rounded-lg">
+                              <Award className="w-6 h-6 text-amber-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-900">What Matters Most</h3>
+                              <p className="text-sm text-gray-600">Key growth drivers ranked by impact on your agency</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            {/* #1 - Cross-Selling */}
+                            <div className="bg-white rounded-xl p-5 border border-amber-200 shadow-sm">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  1
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-gray-900">Policies Per Customer (Cross-Selling)</h4>
+                                    <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">59.7% Impact</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-3">
+                                    Moving from {(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 2.0 PPC unlocks optimal 95% retention tier.
+                                    Each additional policy per customer increases both retention AND revenue.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Bundle auto+home</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Add umbrella policies</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Life insurance cross-sell</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* #2 - Marketing Spend */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  2
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-gray-900">Marketing Spend</h4>
+                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">44.3% Impact</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-3">
+                                    Current: ${strategyInputs.monthlyLeadSpend.toLocaleString()}/mo → {Math.round(strategyInputs.monthlyLeadSpend / strategyInputs.costPerLead)} leads.
+                                    Live transfers at ${strategyInputs.costPerLead} CPL with 10% conversion = ${Math.round(strategyInputs.costPerLead / 0.10)} effective CAC.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Scale to $5-8K/mo for aggressive growth</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Diminishing returns above $10K</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* #3 - Conversion Rate */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  3
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-gray-900">Conversion Rate</h4>
+                                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">22.1% Impact</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-3">
+                                    5% improvement in conversion has greater ROI than 20% reduction in CPL.
+                                    Focus on speed-to-lead and follow-up processes.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Respond within 5 minutes</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">5-touch follow-up sequence</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* #4 - Retention */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                  4
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-bold text-gray-900">Retention Rate</h4>
+                                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-medium">16.8% Impact</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 mb-3">
+                                    Small retention gains compound significantly. 85% vs 95% annual = 1.35% vs 0.43% monthly churn.
+                                    Retention supports all other growth efforts.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Cross-sell to 1.8+ PPC</span>
+                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Annual policy reviews</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Strategic Insight */}
+                          <div className="mt-6 p-4 bg-amber-100/50 rounded-xl border border-amber-200">
+                            <div className="flex items-start gap-3">
+                              <Zap className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                              <div className="text-sm text-gray-800">
+                                <strong>Bottom line:</strong> Cross-selling is almost 3x more impactful than any other lever.
+                                A customer with 2.0 policies stays longer (95% retention) AND generates more revenue.
+                                Focus here first, then scale marketing to fuel new customer acquisition.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Action Items */}
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
-                          <h3 className="text-xl font-bold text-gray-900 mb-6">Next Steps</h3>
+                          <h3 className="text-xl font-bold text-gray-900 mb-6">Prioritized Action Plan</h3>
                           <div className="space-y-4">
                             {[
-                              `Allocate $${strategyInputs.additionalLeadSpend.toLocaleString()}/month to lead generation`,
-                              `Target ${Math.round(strategyInputs.additionalLeadSpend / strategyInputs.costPerLead)} new leads per month`,
-                              strategyInputs.conciergeService && 'Implement concierge service for retention boost',
-                              strategyInputs.newsletterSystem && 'Deploy newsletter system for ongoing engagement',
-                              `Monitor conversion rates and adjust strategy at month ${Math.round(strategyInputs.projectionMonths / 3)}`,
-                              'Review ROI metrics quarterly and optimize spend allocation'
+                              {
+                                priority: 'HIGH',
+                                action: `Launch cross-sell campaign to move PPC from ${(strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(1)} to 1.8+`,
+                                color: 'bg-red-100 text-red-800'
+                              },
+                              {
+                                priority: 'HIGH',
+                                action: `Allocate $${strategyInputs.additionalLeadSpend.toLocaleString()}/month to lead generation (${Math.round(strategyInputs.additionalLeadSpend / strategyInputs.costPerLead)} leads/mo)`,
+                                color: 'bg-red-100 text-red-800'
+                              },
+                              {
+                                priority: 'MED',
+                                action: 'Implement 5-minute response time for all leads',
+                                color: 'bg-yellow-100 text-yellow-800'
+                              },
+                              strategyInputs.conciergeService && {
+                                priority: 'MED',
+                                action: 'Deploy concierge service for retention boost',
+                                color: 'bg-yellow-100 text-yellow-800'
+                              },
+                              strategyInputs.newsletterSystem && {
+                                priority: 'LOW',
+                                action: 'Launch newsletter system for ongoing engagement',
+                                color: 'bg-gray-100 text-gray-800'
+                              },
+                              {
+                                priority: 'LOW',
+                                action: `Review ROI metrics at month ${Math.round(strategyInputs.projectionMonths / 3)} and optimize`,
+                                color: 'bg-gray-100 text-gray-800'
+                              }
                             ].filter(Boolean).map((item, idx) => (
                               <div key={idx} className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                                <p className="text-gray-700">{item}</p>
+                                <span className={`text-xs font-bold px-2 py-1 rounded ${(item as { priority: string; action: string; color: string }).color}`}>
+                                  {(item as { priority: string; action: string; color: string }).priority}
+                                </span>
+                                <p className="text-gray-700 flex-1">{(item as { priority: string; action: string; color: string }).action}</p>
                               </div>
                             ))}
                           </div>
