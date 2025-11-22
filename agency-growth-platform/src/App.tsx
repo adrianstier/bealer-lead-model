@@ -375,6 +375,8 @@ function App() {
       fteBenefitsMultiplier,
       salesRampMonths,
       additionalStaff,
+      additionalLeadSpend,
+      costPerLead,
       marketing,
       products,
       eoAutomation,
@@ -383,6 +385,9 @@ function App() {
     } = strategyInputs;
 
     // V3.0: Calculate channel-specific leads and costs
+    // Add additionalLeadSpend to traditional channel (live transfers at costPerLead)
+    const totalTraditionalSpend = marketing.traditional + additionalLeadSpend;
+
     const channelMetrics = {
       referral: {
         spend: marketing.referral,
@@ -397,10 +402,10 @@ function App() {
         leads: marketing.digital / 30
       },
       traditional: {
-        spend: marketing.traditional,
-        cpl: 55, // Live transfer cost from Brittany's benchmark
+        spend: totalTraditionalSpend,
+        cpl: costPerLead, // Use user's costPerLead setting
         conversionRate: 0.10, // 10% conversion rate from Brittany's benchmark
-        leads: marketing.traditional / 55
+        leads: totalTraditionalSpend / costPerLead
       },
       partnerships: {
         spend: marketing.partnerships,
@@ -458,10 +463,13 @@ function App() {
 
     // V3.0: Define scenarios with channel-weighted conversion rates
     // Each scenario has different conversion effectiveness and retention assumptions
+    // Conservative = slower ramp, base retention
+    // Moderate = base case
+    // Aggressive = faster ramp, better conversion, improved retention
     const scenarios = [
-      { name: 'Conservative', conversionMultiplier: 0.70, retentionMultiplier: 0.97 }, // Lower retention assumption
-      { name: 'Moderate', conversionMultiplier: 1.0, retentionMultiplier: 1.0 },        // Base case
-      { name: 'Aggressive', conversionMultiplier: 1.20, retentionMultiplier: 1.03 }     // Higher retention with better service
+      { name: 'Conservative', conversionMultiplier: 0.85, retentionMultiplier: 1.0 }, // 85% conversion effectiveness
+      { name: 'Moderate', conversionMultiplier: 1.0, retentionMultiplier: 1.0 },      // Base case - all benchmarks as expected
+      { name: 'Aggressive', conversionMultiplier: 1.15, retentionMultiplier: 1.02 }   // 15% better conversion, 2% retention boost
     ];
 
     scenarios.forEach(scenario => {
