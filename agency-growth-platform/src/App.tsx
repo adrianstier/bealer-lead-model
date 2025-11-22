@@ -460,10 +460,19 @@ function App() {
                            salesCostPerMonth;
 
     // V4.0: Staff capacity constraints
-    // Each staff member can effectively manage ~400 policies with automation, ~300 without
-    const policiesPerStaff = eoAutomation ? 450 : 350;
+    // Industry benchmark: ~400 policies per staff with automation, ~300 without
+    // But mature agencies can stretch this with good systems - up to 800-1000/person
+    // Derrick's 3500 policies / 2 staff = 1750 per person (very stretched)
+    const policiesPerStaff = eoAutomation ? 800 : 600; // Higher for mature agencies with systems
     const totalStaff = currentStaff + additionalStaff;
     const maxCapacity = totalStaff * policiesPerStaff;
+
+    // Service quality degradation when over-capacity
+    // Above optimal capacity, conversion and retention suffer
+    const optimalCapacity = totalStaff * (eoAutomation ? 450 : 350);
+    const capacityStrain = currentPolicies > optimalCapacity
+      ? Math.min(0.15, (currentPolicies - optimalCapacity) / optimalCapacity * 0.2)
+      : 0;
 
     // V4.0: Referral flywheel rate - satisfied customers refer others
     // Base: 2% of customers refer 1 person per year = 0.02/12 per month
@@ -507,12 +516,14 @@ function App() {
         const rampFactor = month < salesRampMonths ? month / salesRampMonths : 1.0;
 
         // V4.0: Calculate new customers from each channel with efficiency factor
+        // Apply capacity strain penalty to conversion (over-stretched staff = slower follow-up)
+        const conversionPenalty = 1 - capacityStrain;
         const paidChannelCustomers = (
           channelMetrics.referral.leads * channelMetrics.referral.conversionRate +
           channelMetrics.digital.leads * channelMetrics.digital.conversionRate +
           channelMetrics.traditional.leads * channelMetrics.traditional.conversionRate +
           channelMetrics.partnerships.leads * channelMetrics.partnerships.conversionRate
-        ) * scenario.conversionMultiplier * rampFactor * spendEfficiency;
+        ) * scenario.conversionMultiplier * rampFactor * spendEfficiency * conversionPenalty;
 
         // V4.0: Referral flywheel - existing customers generate referrals
         const organicReferrals = customers * referralRate * scenario.conversionMultiplier;
@@ -546,6 +557,9 @@ function App() {
 
         // Apply scenario-specific retention multiplier
         annualRetention = Math.min(annualRetention * scenario.retentionMultiplier, 0.99);
+
+        // V4.0: Apply capacity strain penalty to retention (over-stretched = worse service = more churn)
+        annualRetention = annualRetention * (1 - capacityStrain * 0.5); // Half the strain impact on retention
 
         // Convert annual retention to monthly retention rate
         // Monthly retention = Annual retention ^ (1/12)
