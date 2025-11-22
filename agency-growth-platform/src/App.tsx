@@ -364,6 +364,7 @@ function App() {
     const {
       currentPolicies,
       currentCustomers,
+      currentStaff,
       projectionMonths,
       conciergeService,
       newsletterSystem,
@@ -450,13 +451,32 @@ function App() {
     const techCosts = (eoAutomation ? 200 : 0) + (renewalProgram ? 150 : 0) + (crossSellProgram ? 100 : 0);
 
     // Marketing and operational costs
-    const totalMarketingSpend = marketing.referral + marketing.digital + marketing.traditional + marketing.partnerships;
+    const totalMarketingSpend = marketing.referral + marketing.digital + marketing.traditional + marketing.partnerships + additionalLeadSpend;
     const baseMonthlyCost = totalMarketingSpend +
                            (conciergeService ? 300 : 0) +
                            (newsletterSystem ? 150 : 0) +
                            techCosts +
                            fixedMonthlyCosts +
                            salesCostPerMonth;
+
+    // V4.0: Staff capacity constraints
+    // Each staff member can effectively manage ~400 policies with automation, ~300 without
+    const policiesPerStaff = eoAutomation ? 450 : 350;
+    const totalStaff = currentStaff + additionalStaff;
+    const maxCapacity = totalStaff * policiesPerStaff;
+
+    // V4.0: Referral flywheel rate - satisfied customers refer others
+    // Base: 2% of customers refer 1 person per year = 0.02/12 per month
+    const baseReferralRate = 0.02 / 12;
+    // Technology boosts referral rate
+    const referralBoost = (conciergeService ? 0.5 : 0) + (newsletterSystem ? 0.3 : 0);
+    const referralRate = baseReferralRate * (1 + referralBoost);
+
+    // V4.0: Diminishing returns on marketing spend
+    // Above $5000/mo, each additional dollar is less effective
+    const spendEfficiency = totalMarketingSpend <= 5000
+      ? 1.0
+      : 1.0 - Math.min(0.3, (totalMarketingSpend - 5000) / 20000);
 
     const data: ScenarioData[] = [];
     const results: ScenarioResults[] = [];
@@ -486,13 +506,27 @@ function App() {
         // Calculate sales ramp factor
         const rampFactor = month < salesRampMonths ? month / salesRampMonths : 1.0;
 
-        // V3.0: Calculate new customers from each channel
-        const newCustomers = (
+        // V4.0: Calculate new customers from each channel with efficiency factor
+        const paidChannelCustomers = (
           channelMetrics.referral.leads * channelMetrics.referral.conversionRate +
           channelMetrics.digital.leads * channelMetrics.digital.conversionRate +
           channelMetrics.traditional.leads * channelMetrics.traditional.conversionRate +
           channelMetrics.partnerships.leads * channelMetrics.partnerships.conversionRate
-        ) * scenario.conversionMultiplier * rampFactor;
+        ) * scenario.conversionMultiplier * rampFactor * spendEfficiency;
+
+        // V4.0: Referral flywheel - existing customers generate referrals
+        const organicReferrals = customers * referralRate * scenario.conversionMultiplier;
+
+        // V4.0: Total new customers (capped by staff capacity)
+        let newCustomers = paidChannelCustomers + organicReferrals;
+
+        // Check if we're hitting capacity constraints
+        const projectedPolicies = policies + (newCustomers * initialPoliciesPerCustomer * (1 + crossSellBoost));
+        if (projectedPolicies > maxCapacity) {
+          // Cap growth at capacity - need more staff
+          const availableCapacity = Math.max(0, maxCapacity - policies);
+          newCustomers = availableCapacity / (initialPoliciesPerCustomer * (1 + crossSellBoost));
+        }
 
         // V3.0: Calculate policies per customer (with cross-sell boost)
         let policiesPerCustomer = initialPoliciesPerCustomer * (1 + crossSellBoost);
