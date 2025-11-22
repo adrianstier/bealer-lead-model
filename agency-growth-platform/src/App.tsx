@@ -490,18 +490,22 @@ function App() {
         // V3.0: Calculate policies per customer (with cross-sell boost)
         let policiesPerCustomer = initialPoliciesPerCustomer * (1 + crossSellBoost);
 
-        // V3.0: Set retention based on policies per customer threshold
-        let retentionRate: number;
+        // V3.0: Set ANNUAL retention based on policies per customer threshold
+        let annualRetention: number;
         if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL) {
-          retentionRate = BENCHMARKS.RETENTION.OPTIMAL;
+          annualRetention = BENCHMARKS.RETENTION.OPTIMAL;
         } else if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED) {
-          retentionRate = BENCHMARKS.RETENTION.BUNDLED;
+          annualRetention = BENCHMARKS.RETENTION.BUNDLED;
         } else {
-          retentionRate = BENCHMARKS.RETENTION.MONOLINE;
+          annualRetention = BENCHMARKS.RETENTION.MONOLINE;
         }
 
-        // Apply technology and service boosts
-        retentionRate = Math.min(retentionRate + retentionBoost, 0.98);
+        // Apply technology and service boosts to annual retention
+        annualRetention = Math.min(annualRetention + retentionBoost, 0.98);
+
+        // Convert annual retention to monthly retention rate
+        // Monthly retention = Annual retention ^ (1/12)
+        const retentionRate = Math.pow(annualRetention, 1/12);
 
         // V3.0: New policies = new customers * policies per customer
         const newPolicies = newCustomers * policiesPerCustomer;
