@@ -2379,6 +2379,175 @@ function App() {
                           </ResponsiveContainer>
                         </motion.div>
 
+                        {/* Sensitivity Analysis */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.25 }}
+                          className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                        >
+                          <h2 className="text-2xl font-bold text-gray-900 mb-3">Sensitivity Analysis</h2>
+                          <p className="text-gray-700 mb-8">
+                            How changes in key assumptions affect your projected outcomes
+                          </p>
+
+                          <div className="grid md:grid-cols-2 gap-8">
+                            {/* Conversion Rate Sensitivity */}
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-blue-500" />
+                                Conversion Rate Impact
+                              </h3>
+                              <div className="space-y-3">
+                                {[
+                                  { label: '-5% conversion', multiplier: 0.95 },
+                                  { label: 'Current', multiplier: 1.0 },
+                                  { label: '+5% conversion', multiplier: 1.05 },
+                                  { label: '+10% conversion', multiplier: 1.10 },
+                                ].map(({ label, multiplier }) => {
+                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
+                                  if (!moderateScenario) return null;
+                                  const adjustedROI = moderateScenario.roi * multiplier;
+                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * multiplier);
+                                  return (
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-blue-900' : 'text-gray-700'}`}>{label}</span>
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">{adjustedPolicies.toLocaleString()} policies</p>
+                                        <p className={`text-xs ${adjustedROI >= moderateScenario.roi ? 'text-green-600' : 'text-red-600'}`}>
+                                          ROI: {adjustedROI.toFixed(1)}%
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Cost Sensitivity */}
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <DollarSign className="w-5 h-5 text-amber-500" />
+                                Cost Per Lead Impact
+                              </h3>
+                              <div className="space-y-3">
+                                {[
+                                  { label: '-20% CPL', multiplier: 0.8 },
+                                  { label: '-10% CPL', multiplier: 0.9 },
+                                  { label: 'Current', multiplier: 1.0 },
+                                  { label: '+20% CPL', multiplier: 1.2 },
+                                ].map(({ label, multiplier }) => {
+                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
+                                  if (!moderateScenario) return null;
+                                  const adjustedCost = Math.round(moderateScenario.totalCost * multiplier);
+                                  const adjustedROI = ((moderateScenario.totalRevenue - adjustedCost) / adjustedCost * 100);
+                                  return (
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>{label}</span>
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">${adjustedCost.toLocaleString()}</p>
+                                        <p className={`text-xs ${adjustedROI >= moderateScenario.roi ? 'text-green-600' : 'text-red-600'}`}>
+                                          ROI: {adjustedROI.toFixed(1)}%
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Retention Rate Sensitivity */}
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <Users className="w-5 h-5 text-emerald-500" />
+                                Retention Rate Impact
+                              </h3>
+                              <div className="space-y-3">
+                                {[
+                                  { label: '80% retention', rate: 0.80 },
+                                  { label: '85% retention', rate: 0.85 },
+                                  { label: '90% retention (current)', rate: 0.90 },
+                                  { label: '95% retention', rate: 0.95 },
+                                ].map(({ label, rate }) => {
+                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
+                                  if (!moderateScenario) return null;
+                                  // Simple churn model: retained policies over time
+                                  const retentionMultiplier = Math.pow(rate / 0.90, strategyInputs.projectionMonths / 12);
+                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * retentionMultiplier);
+                                  const adjustedRevenue = Math.round(moderateScenario.totalRevenue * retentionMultiplier);
+                                  return (
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${rate === 0.90 ? 'bg-emerald-100 border border-emerald-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${rate === 0.90 ? 'font-semibold text-emerald-900' : 'text-gray-700'}`}>{label}</span>
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">{adjustedPolicies.toLocaleString()} policies</p>
+                                        <p className="text-xs text-gray-600">
+                                          Revenue: ${(adjustedRevenue / 1000).toFixed(0)}k
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Market Spend Sensitivity */}
+                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <BarChart3 className="w-5 h-5 text-purple-500" />
+                                Marketing Spend Impact
+                              </h3>
+                              <div className="space-y-3">
+                                {[
+                                  { label: '50% spend', multiplier: 0.5 },
+                                  { label: '75% spend', multiplier: 0.75 },
+                                  { label: 'Current spend', multiplier: 1.0 },
+                                  { label: '150% spend', multiplier: 1.5 },
+                                ].map(({ label, multiplier }) => {
+                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
+                                  if (!moderateScenario) return null;
+                                  // Diminishing returns on increased spend
+                                  const effectivenessMultiplier = multiplier <= 1 ? multiplier : 1 + (multiplier - 1) * 0.7;
+                                  const adjustedLeads = Math.round((strategyInputs.monthlyLeadSpend * multiplier) / strategyInputs.costPerLead);
+                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * effectivenessMultiplier);
+                                  return (
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-purple-100 border border-purple-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-purple-900' : 'text-gray-700'}`}>{label}</span>
+                                      <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">{adjustedLeads.toLocaleString()} leads/mo</p>
+                                        <p className="text-xs text-gray-600">
+                                          → {adjustedPolicies.toLocaleString()} policies
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Key Insights */}
+                          <div className="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
+                            <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                              <Lightbulb className="w-5 h-5" />
+                              Key Sensitivity Insights
+                            </h4>
+                            <ul className="space-y-2 text-sm text-blue-800">
+                              <li className="flex items-start gap-2">
+                                <span className="text-blue-500 mt-1">•</span>
+                                <span>A 5% improvement in conversion rate has a greater ROI impact than a 20% reduction in CPL</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-blue-500 mt-1">•</span>
+                                <span>Retention rate has compounding effects - even small improvements significantly impact long-term revenue</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-blue-500 mt-1">•</span>
+                                <span>Increased marketing spend shows diminishing returns beyond current levels</span>
+                              </li>
+                            </ul>
+                          </div>
+                        </motion.div>
+
                         {/* V3.0: Benchmark Metrics Dashboard */}
                         {benchmarkMetrics && (
                           <>
