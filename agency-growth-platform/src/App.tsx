@@ -2551,22 +2551,23 @@ function App() {
                               </h3>
                               <div className="space-y-3">
                                 {[
-                                  { label: '-5% conversion', multiplier: 0.95 },
-                                  { label: 'Current', multiplier: 1.0 },
-                                  { label: '+5% conversion', multiplier: 1.05 },
-                                  { label: '+10% conversion', multiplier: 1.10 },
-                                ].map(({ label, multiplier }) => {
-                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
-                                  if (!moderateScenario) return null;
-                                  const adjustedROI = moderateScenario.roi * multiplier;
-                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * multiplier);
+                                  { label: '5% conversion', rate: 0.05 },
+                                  { label: '10% conversion', rate: 0.10 },
+                                  { label: '15% conversion', rate: 0.15 },
+                                  { label: '20% conversion', rate: 0.20 },
+                                ].map(({ label, rate }) => {
+                                  // Calculate new policies from leads at different conversion rates
+                                  const monthlyLeads = strategyInputs.monthlyLeadSpend / strategyInputs.costPerLead;
+                                  const newPoliciesPerMonth = monthlyLeads * rate;
+                                  const totalNewPolicies = Math.round(newPoliciesPerMonth * strategyInputs.projectionMonths);
+                                  const isCurrent = rate === 0.10; // Assume 10% baseline
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'}`}>
-                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-blue-900' : 'text-gray-700'}`}>{label}</span>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${isCurrent ? 'font-semibold text-blue-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-900">{adjustedPolicies.toLocaleString()} policies</p>
-                                        <p className={`text-xs ${adjustedROI >= moderateScenario.roi ? 'text-green-600' : 'text-red-600'}`}>
-                                          ROI: {adjustedROI.toFixed(1)}%
+                                        <p className="text-sm font-semibold text-gray-900">+{totalNewPolicies.toLocaleString()} policies</p>
+                                        <p className="text-xs text-gray-600">
+                                          {Math.round(newPoliciesPerMonth)}/mo
                                         </p>
                                       </div>
                                     </div>
@@ -2583,22 +2584,22 @@ function App() {
                               </h3>
                               <div className="space-y-3">
                                 {[
-                                  { label: '-20% CPL', multiplier: 0.8 },
-                                  { label: '-10% CPL', multiplier: 0.9 },
-                                  { label: 'Current', multiplier: 1.0 },
-                                  { label: '+20% CPL', multiplier: 1.2 },
-                                ].map(({ label, multiplier }) => {
-                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
-                                  if (!moderateScenario) return null;
-                                  const adjustedCost = Math.round(moderateScenario.totalCost * multiplier);
-                                  const adjustedROI = ((moderateScenario.totalRevenue - adjustedCost) / adjustedCost * 100);
+                                  { label: '$35 CPL', cpl: 35 },
+                                  { label: '$45 CPL', cpl: 45 },
+                                  { label: `$${strategyInputs.costPerLead} CPL (current)`, cpl: strategyInputs.costPerLead },
+                                  { label: '$75 CPL', cpl: 75 },
+                                ].map(({ label, cpl }) => {
+                                  // Calculate leads at different CPL with same budget
+                                  const monthlyLeads = strategyInputs.monthlyLeadSpend / cpl;
+                                  const effectiveCAC = cpl / 0.10; // Cost per converted policy
+                                  const isCurrent = cpl === strategyInputs.costPerLead;
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-gray-200'}`}>
-                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>{label}</span>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${isCurrent ? 'font-semibold text-amber-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-900">${adjustedCost.toLocaleString()}</p>
-                                        <p className={`text-xs ${adjustedROI >= moderateScenario.roi ? 'text-green-600' : 'text-red-600'}`}>
-                                          ROI: {adjustedROI.toFixed(1)}%
+                                        <p className="text-sm font-semibold text-gray-900">{Math.round(monthlyLeads)} leads/mo</p>
+                                        <p className="text-xs text-gray-600">
+                                          CAC: ${Math.round(effectiveCAC)}
                                         </p>
                                       </div>
                                     </div>
@@ -2615,24 +2616,27 @@ function App() {
                               </h3>
                               <div className="space-y-3">
                                 {[
-                                  { label: '80% retention', rate: 0.80 },
+                                  { label: '67% (monoline)', rate: 0.67 },
                                   { label: '85% retention', rate: 0.85 },
-                                  { label: '90% retention (current)', rate: 0.90 },
-                                  { label: '95% retention', rate: 0.95 },
+                                  { label: '91% (bundled)', rate: 0.91 },
+                                  { label: '95% (optimal)', rate: 0.95 },
                                 ].map(({ label, rate }) => {
-                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
-                                  if (!moderateScenario) return null;
-                                  // Simple churn model: retained policies over time
-                                  const retentionMultiplier = Math.pow(rate / 0.90, strategyInputs.projectionMonths / 12);
-                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * retentionMultiplier);
-                                  const adjustedRevenue = Math.round(moderateScenario.totalRevenue * retentionMultiplier);
+                                  // Calculate policies retained after projection period
+                                  const monthlyRetention = Math.pow(rate, 1/12);
+                                  const monthlyChurn = (1 - monthlyRetention) * 100;
+                                  const policiesRetained = Math.round(strategyInputs.currentPolicies * Math.pow(monthlyRetention, strategyInputs.projectionMonths));
+                                  const policiesLost = strategyInputs.currentPolicies - policiesRetained;
+                                  const currentPPC = strategyInputs.currentPolicies / strategyInputs.currentCustomers;
+                                  const isCurrent = (currentPPC >= 1.8 && rate === 0.95) ||
+                                                   (currentPPC >= 1.5 && currentPPC < 1.8 && rate === 0.91) ||
+                                                   (currentPPC < 1.5 && rate === 0.67);
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${rate === 0.90 ? 'bg-emerald-100 border border-emerald-300' : 'bg-white border border-gray-200'}`}>
-                                      <span className={`text-sm ${rate === 0.90 ? 'font-semibold text-emerald-900' : 'text-gray-700'}`}>{label}</span>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-emerald-100 border border-emerald-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${isCurrent ? 'font-semibold text-emerald-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-900">{adjustedPolicies.toLocaleString()} policies</p>
+                                        <p className="text-sm font-semibold text-gray-900">{policiesRetained.toLocaleString()} retained</p>
                                         <p className="text-xs text-gray-600">
-                                          Revenue: ${(adjustedRevenue / 1000).toFixed(0)}k
+                                          -{policiesLost.toLocaleString()} ({monthlyChurn.toFixed(1)}%/mo churn)
                                         </p>
                                       </div>
                                     </div>
@@ -2649,24 +2653,23 @@ function App() {
                               </h3>
                               <div className="space-y-3">
                                 {[
-                                  { label: '50% spend', multiplier: 0.5 },
-                                  { label: '75% spend', multiplier: 0.75 },
-                                  { label: 'Current spend', multiplier: 1.0 },
-                                  { label: '150% spend', multiplier: 1.5 },
-                                ].map(({ label, multiplier }) => {
-                                  const moderateScenario = scenarioResults.find(s => s.name === 'Moderate');
-                                  if (!moderateScenario) return null;
-                                  // Diminishing returns on increased spend
-                                  const effectivenessMultiplier = multiplier <= 1 ? multiplier : 1 + (multiplier - 1) * 0.7;
-                                  const adjustedLeads = Math.round((strategyInputs.monthlyLeadSpend * multiplier) / strategyInputs.costPerLead);
-                                  const adjustedPolicies = Math.round(moderateScenario.finalPolicies * effectivenessMultiplier);
+                                  { label: '$1,000/mo', spend: 1000 },
+                                  { label: '$3,000/mo', spend: 3000 },
+                                  { label: '$5,000/mo', spend: 5000 },
+                                  { label: '$10,000/mo', spend: 10000 },
+                                ].map(({ label, spend }) => {
+                                  // Calculate leads and new policies per month
+                                  const monthlyLeads = spend / strategyInputs.costPerLead;
+                                  const newPoliciesPerMonth = monthlyLeads * 0.10; // 10% conversion
+                                  const totalNewPolicies = Math.round(newPoliciesPerMonth * strategyInputs.projectionMonths);
+                                  const isCurrent = Math.abs(spend - strategyInputs.monthlyLeadSpend) < 500;
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${multiplier === 1.0 ? 'bg-purple-100 border border-purple-300' : 'bg-white border border-gray-200'}`}>
-                                      <span className={`text-sm ${multiplier === 1.0 ? 'font-semibold text-purple-900' : 'text-gray-700'}`}>{label}</span>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-purple-100 border border-purple-300' : 'bg-white border border-gray-200'}`}>
+                                      <span className={`text-sm ${isCurrent ? 'font-semibold text-purple-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
-                                        <p className="text-sm font-semibold text-gray-900">{adjustedLeads.toLocaleString()} leads/mo</p>
+                                        <p className="text-sm font-semibold text-gray-900">{Math.round(monthlyLeads)} leads/mo</p>
                                         <p className="text-xs text-gray-600">
-                                          → {adjustedPolicies.toLocaleString()} policies
+                                          +{totalNewPolicies.toLocaleString()} policies ({strategyInputs.projectionMonths}mo)
                                         </p>
                                       </div>
                                     </div>
