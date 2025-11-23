@@ -1,40 +1,162 @@
 /**
  * Login Screen Component
- * Simple password protection for the dashboard
+ * Enhanced password protection for the dashboard
  */
 
-import { useState } from 'react';
-import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Lock, Eye, EyeOff, AlertCircle, ShieldAlert } from 'lucide-react';
 
 interface LoginScreenProps {
   onLogin: () => void;
 }
 
-// Password hash (SHA-256 of "bealer2025")
-// In production, this would be server-side validation
-const VALID_PASSWORD = 'bealer2025';
+// SHA-256 hash of the password for obfuscation
+// This isn't truly secure (client-side), but better than plaintext
+const PASSWORD_HASH = 'b14b6fe1ab0c11ffe45fe560c52da6ddff25a98fba90be672c3d75e0cb2052d1'; // hash of "bealer2025"
+
+// Rate limiting constants
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+const ATTEMPT_WINDOW = 15 * 60 * 1000; // 15 minutes window for attempts
+
+// Hash function using Web Crypto API
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Get failed attempts from localStorage
+function getFailedAttempts(): { count: number; firstAttempt: number; lockedUntil: number } {
+  try {
+    const stored = localStorage.getItem('bealer_login_attempts');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return { count: 0, firstAttempt: 0, lockedUntil: 0 };
+}
+
+// Save failed attempts to localStorage
+function saveFailedAttempts(attempts: { count: number; firstAttempt: number; lockedUntil: number }) {
+  localStorage.setItem('bealer_login_attempts', JSON.stringify(attempts));
+}
+
+// Clear failed attempts
+function clearFailedAttempts() {
+  localStorage.removeItem('bealer_login_attempts');
+}
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(MAX_ATTEMPTS);
+
+  // Check lockout status on mount and update timer
+  useEffect(() => {
+    const checkLockout = () => {
+      const attempts = getFailedAttempts();
+      const now = Date.now();
+
+      // Check if locked out
+      if (attempts.lockedUntil > now) {
+        setIsLocked(true);
+        setLockoutRemaining(Math.ceil((attempts.lockedUntil - now) / 1000));
+        return true;
+      }
+
+      // Reset if outside attempt window
+      if (attempts.firstAttempt && now - attempts.firstAttempt > ATTEMPT_WINDOW) {
+        clearFailedAttempts();
+        setAttemptsRemaining(MAX_ATTEMPTS);
+      } else {
+        setAttemptsRemaining(MAX_ATTEMPTS - attempts.count);
+      }
+
+      setIsLocked(false);
+      return false;
+    };
+
+    checkLockout();
+
+    // Update countdown every second if locked
+    const interval = setInterval(() => {
+      if (checkLockout() && lockoutRemaining > 0) {
+        setLockoutRemaining(prev => {
+          if (prev <= 1) {
+            clearFailedAttempts();
+            setIsLocked(false);
+            setAttemptsRemaining(MAX_ATTEMPTS);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lockoutRemaining]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isLocked) return;
+
     setError('');
     setIsLoading(true);
 
-    // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Add variable delay to prevent timing attacks
+    const delay = 500 + Math.random() * 500;
+    await new Promise(resolve => setTimeout(resolve, delay));
 
-    if (password === VALID_PASSWORD) {
+    // Hash the input password and compare
+    const inputHash = await hashPassword(password);
+
+    if (inputHash === PASSWORD_HASH) {
+      // Clear failed attempts on success
+      clearFailedAttempts();
+
+      // Generate a session token
+      const sessionToken = crypto.randomUUID();
+
       // Store auth state in sessionStorage
       sessionStorage.setItem('bealer_auth', 'true');
       sessionStorage.setItem('bealer_auth_time', Date.now().toString());
+      sessionStorage.setItem('bealer_session_token', sessionToken);
+
       onLogin();
     } else {
-      setError('Invalid password. Please try again.');
+      // Record failed attempt
+      const attempts = getFailedAttempts();
+      const now = Date.now();
+
+      const newAttempts = {
+        count: attempts.count + 1,
+        firstAttempt: attempts.firstAttempt || now,
+        lockedUntil: 0
+      };
+
+      // Lock out after max attempts
+      if (newAttempts.count >= MAX_ATTEMPTS) {
+        newAttempts.lockedUntil = now + LOCKOUT_DURATION;
+        setIsLocked(true);
+        setLockoutRemaining(Math.ceil(LOCKOUT_DURATION / 1000));
+        setError(`Too many failed attempts. Locked for 5 minutes.`);
+      } else {
+        const remaining = MAX_ATTEMPTS - newAttempts.count;
+        setAttemptsRemaining(remaining);
+        setError(`Invalid password. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
+      }
+
+      saveFailedAttempts(newAttempts);
       setPassword('');
     }
 
@@ -59,6 +181,22 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-2xl p-8">
+          {/* Lockout Warning */}
+          {isLocked && (
+            <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg">
+              <div className="flex items-center text-red-800 mb-2">
+                <ShieldAlert className="w-5 h-5 mr-2" />
+                <span className="font-semibold">Account Temporarily Locked</span>
+              </div>
+              <p className="text-sm text-red-700">
+                Too many failed attempts. Please wait{' '}
+                <span className="font-mono font-bold">
+                  {Math.floor(lockoutRemaining / 60)}:{(lockoutRemaining % 60).toString().padStart(2, '0')}
+                </span>
+              </p>
+            </div>
+          )}
+
           <div className="mb-6">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -72,14 +210,16 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 placeholder="Enter password"
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12 ${
                   error ? 'border-red-500' : 'border-gray-300'
-                }`}
+                } ${isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
                 autoFocus
+                disabled={isLocked}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                disabled={isLocked}
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -88,10 +228,15 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 )}
               </button>
             </div>
+            {!isLocked && attemptsRemaining < MAX_ATTEMPTS && attemptsRemaining > 0 && (
+              <p className="mt-2 text-xs text-amber-600">
+                {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining before lockout
+              </p>
+            )}
           </div>
 
           {/* Error Message */}
-          {error && (
+          {error && !isLocked && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-700">
               <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
               <span className="text-sm">{error}</span>
@@ -101,9 +246,9 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !password}
+            disabled={isLoading || !password || isLocked}
             className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
-              isLoading || !password
+              isLoading || !password || isLocked
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
             }`}
@@ -116,6 +261,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 </svg>
                 Verifying...
               </span>
+            ) : isLocked ? (
+              'Locked'
             ) : (
               'Access Dashboard'
             )}
