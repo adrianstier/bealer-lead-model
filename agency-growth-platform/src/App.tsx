@@ -27,6 +27,7 @@ import BookOfBusinessDashboard from './components/BookOfBusinessDashboard';
 import LeadAnalysisDashboard from './components/LeadAnalysisDashboard';
 import CustomerLookupDashboard from './components/CustomerLookupDashboard';
 import BealerPlanningSection from './components/BealerPlanningSection';
+import LoginScreen from './components/LoginScreen';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 // V3.0 Enhanced Interfaces
@@ -190,6 +191,30 @@ const BENCHMARKS = {
 };
 
 function App() {
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check sessionStorage on initial load
+    const auth = sessionStorage.getItem('bealer_auth');
+    const authTime = sessionStorage.getItem('bealer_auth_time');
+    if (auth === 'true' && authTime) {
+      // Session expires after 24 hours
+      const elapsed = Date.now() - parseInt(authTime);
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      return elapsed < twentyFourHours;
+    }
+    return false;
+  });
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('bealer_auth');
+    sessionStorage.removeItem('bealer_auth_time');
+    setIsAuthenticated(false);
+  };
+
   const [activeTab, setActiveTab] = useState('planning');
   const [isCalculating, setIsCalculating] = useState(false);
   const [showCalculationModal, setShowCalculationModal] = useState(false);
@@ -795,8 +820,21 @@ function App() {
     { id: 'results', label: 'Results', icon: Lightbulb }
   ];
 
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      {/* Logout button */}
+      <button
+        onClick={handleLogout}
+        className="fixed top-4 right-4 z-50 px-3 py-1.5 text-sm bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-lg shadow-md border border-gray-200 transition-all"
+      >
+        Logout
+      </button>
+
       {/* Calculation Progress Modal */}
       <AnimatePresence>
         {showCalculationModal && (
