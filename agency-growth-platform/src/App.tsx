@@ -2938,6 +2938,48 @@ function App() {
                                 </div>
                               </div>
 
+                              {/* Third Row: Organic Sales Slider */}
+                              <div className="mt-4">
+                                <div className="flex justify-between items-center mb-2">
+                                  <label className="text-sm font-medium text-gray-700">Organic Sales (Walk-ins/Referrals)</label>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max="50"
+                                      step="0.5"
+                                      value={strategyInputs.organicSalesPerMonth}
+                                      onChange={(e) => setStrategyInputs(prev => ({
+                                        ...prev,
+                                        organicSalesPerMonth: Math.max(0, Math.min(50, parseFloat(e.target.value) || 0))
+                                      }))}
+                                      className="w-16 px-2 py-1 text-sm font-bold text-purple-600 border border-purple-200 rounded text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <span className="text-sm text-gray-500">/mo</span>
+                                  </div>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="30"
+                                  step="0.5"
+                                  value={strategyInputs.organicSalesPerMonth}
+                                  onChange={(e) => setStrategyInputs(prev => ({
+                                    ...prev,
+                                    organicSalesPerMonth: parseFloat(e.target.value)
+                                  }))}
+                                  className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                                />
+                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                  <span>0</span>
+                                  <span className="text-green-600">13 (Derrick avg)</span>
+                                  <span>30</span>
+                                </div>
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Policies from walk-ins, existing customer referrals, and organic sources (not paid leads)
+                                </div>
+                              </div>
+
                               {/* Results */}
                               <div className="bg-white p-4 rounded-lg border border-purple-200">
                                 <div className="text-sm font-medium text-gray-700 mb-3">Projected Outcomes (12 Months)</div>
