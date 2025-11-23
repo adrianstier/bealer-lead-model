@@ -438,7 +438,9 @@ function App() {
       eoAutomation,
       renewalProgram,
       crossSellProgram,
-      organicSalesPerMonth
+      organicSalesPerMonth,
+      targetRetentionRate,
+      targetConversionRate
     } = strategyInputs;
 
     // V3.0: Calculate channel-specific leads and costs
@@ -466,7 +468,7 @@ function App() {
       traditional: {
         spend: totalTraditionalSpend,
         cpl: costPerLead, // $55 for live transfers
-        conversionRate: 0.10, // 10% - LIVE TRANSFERS (1 in 10 = policy)
+        conversionRate: targetConversionRate / 100, // Use slider value (default 10%)
         leads: totalTraditionalSpend / costPerLead
       },
       partnerships: {
@@ -617,18 +619,20 @@ function App() {
         // V3.0: Calculate policies per customer (with cross-sell boost)
         let policiesPerCustomer = initialPoliciesPerCustomer * (1 + crossSellBoost);
 
-        // V3.0: Set ANNUAL retention based on policies per customer threshold
-        let annualRetention: number;
+        // V6.0: Use target retention rate from slider as base, with bundling bonus
+        // Bundled customers have better retention - apply bonus for high PPC
+        let bundlingBonus = 0;
         if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL) {
-          annualRetention = BENCHMARKS.RETENTION.OPTIMAL;
+          bundlingBonus = 0.02; // +2% for optimal bundling (1.8+ PPC)
         } else if (policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED) {
-          annualRetention = BENCHMARKS.RETENTION.BUNDLED;
-        } else {
-          annualRetention = BENCHMARKS.RETENTION.MONOLINE;
+          bundlingBonus = 0.01; // +1% for bundled (1.5+ PPC)
         }
 
+        // Start with user's target retention, add bundling bonus and tech boosts
+        let annualRetention = (targetRetentionRate / 100) + bundlingBonus;
+
         // Apply technology and service boosts to annual retention
-        annualRetention = Math.min(annualRetention + retentionBoost, 0.98);
+        annualRetention = Math.min(annualRetention + retentionBoost, 0.99);
 
         // Apply scenario-specific retention multiplier
         annualRetention = Math.min(annualRetention * scenario.retentionMultiplier, 0.99);
@@ -2083,10 +2087,10 @@ function App() {
                               <div className="text-gray-500">Est. Leads/Mo</div>
                               <div className="font-bold text-gray-900">
                                 {Math.round(
-                                  (strategyInputs.marketing.referral / 25) + // $25/referral lead
-                                  (strategyInputs.marketing.digital / 35) + // $35/digital lead
+                                  (strategyInputs.marketing.referral / 15) + // $15/referral lead
+                                  (strategyInputs.marketing.digital / 30) + // $30/digital lead
                                   (strategyInputs.marketing.traditional / strategyInputs.costPerLead) + // Live transfer cost
-                                  (strategyInputs.marketing.partnerships / 40) // $40/partnership lead
+                                  (strategyInputs.marketing.partnerships / 25) // $25/partnership lead
                                 )}
                               </div>
                             </div>
@@ -2095,7 +2099,7 @@ function App() {
                               <div className="font-bold text-gray-900">
                                 ${Math.round(
                                   (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
-                                  Math.max(1, (strategyInputs.marketing.referral / 25) + (strategyInputs.marketing.digital / 35) + (strategyInputs.marketing.traditional / strategyInputs.costPerLead) + (strategyInputs.marketing.partnerships / 40))
+                                  Math.max(1, (strategyInputs.marketing.referral / 15) + (strategyInputs.marketing.digital / 30) + (strategyInputs.marketing.traditional / strategyInputs.costPerLead) + (strategyInputs.marketing.partnerships / 25))
                                 )}
                               </div>
                             </div>
@@ -2105,10 +2109,10 @@ function App() {
                                 ${Math.round(
                                   (strategyInputs.marketing.referral + strategyInputs.marketing.digital + strategyInputs.marketing.traditional + strategyInputs.marketing.partnerships) /
                                   Math.max(1,
-                                    (strategyInputs.marketing.referral / 25) * 0.60 + // 60% referral conversion
-                                    (strategyInputs.marketing.digital / 35) * 0.18 + // 18% digital conversion
+                                    (strategyInputs.marketing.referral / 15) * 0.08 + // 8% referral conversion
+                                    (strategyInputs.marketing.digital / 30) * 0.005 + // 0.5% digital conversion
                                     (strategyInputs.marketing.traditional / strategyInputs.costPerLead) * 0.10 + // 10% live transfer
-                                    (strategyInputs.marketing.partnerships / 40) * 0.25 // 25% partnership
+                                    (strategyInputs.marketing.partnerships / 25) * 0.06 // 6% partnership
                                   )
                                 )}
                               </div>
@@ -2132,7 +2136,7 @@ function App() {
                               }))}
                               className="form-input"
                             />
-                            <p className="text-xs text-gray-500 mt-1">60% conv, $50/lead</p>
+                            <p className="text-xs text-gray-500 mt-1">8% conv, $15/lead (warm introductions)</p>
                           </div>
 
                           <div>
@@ -2150,7 +2154,7 @@ function App() {
                               }))}
                               className="form-input"
                             />
-                            <p className="text-xs text-gray-500 mt-1">18% conv, $25/lead</p>
+                            <p className="text-xs text-gray-500 mt-1">0.5% conv, $30/lead (internet leads)</p>
                           </div>
 
                           <div>
@@ -2186,7 +2190,7 @@ function App() {
                               }))}
                               className="form-input"
                             />
-                            <p className="text-xs text-gray-500 mt-1">25% conv, $40/lead</p>
+                            <p className="text-xs text-gray-500 mt-1">6% conv, $25/lead (pre-qualified)</p>
                           </div>
                         </div>
 
@@ -2423,8 +2427,8 @@ function App() {
                               className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">E&O Certificate Automation ($150/mo)</div>
-                              <div className="text-xs text-gray-500">Prevents 40% of claims | ROI: 733%</div>
+                              <div className="text-sm font-medium text-gray-900">E&O Certificate Automation ($200/mo)</div>
+                              <div className="text-xs text-gray-500">Prevents 40% of claims | +2% retention boost</div>
                             </div>
                           </label>
 
@@ -2436,8 +2440,8 @@ function App() {
                               className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">Proactive Renewal Review Program</div>
-                              <div className="text-xs text-gray-500">1.5-2% retention improvement | 5% = 2x profits in 5 years</div>
+                              <div className="text-sm font-medium text-gray-900">Proactive Renewal Review Program ($150/mo)</div>
+                              <div className="text-xs text-gray-500">+3% retention improvement | Proactive customer outreach</div>
                             </div>
                           </label>
 
@@ -2452,10 +2456,10 @@ function App() {
                             />
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-900">Cross-Sell Program ($500/mo)</span>
+                                <span className="text-sm font-medium text-gray-900">Cross-Sell Program ($100/mo)</span>
                                 <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-medium">#1 Driver</span>
                               </div>
-                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | +15% policies per customer | Unlocks 95% retention tier</div>
+                              <div className="text-xs text-gray-500">Umbrella & Cyber focus | +15% policies per customer</div>
                             </div>
                           </label>
                         </div>
@@ -2543,9 +2547,9 @@ function App() {
                           const newPoliciesPerMonth = newCustomersPerMonth * (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
                           const actualCAC = newCustomersPerMonth > 0 ? totalLeadSpend / newCustomersPerMonth : 0;
 
-                          // Calculate churn - V5.0 FIX: Use ACTUAL retention from Nov 2025 Business Metrics
-                          // Total P&C Retention: 88.84% annually
-                          const annualRetention = 0.8884; // ACTUAL from business report
+                          // Calculate churn using target retention rate from slider
+                          // Default 97.5% based on actual loss pattern (avg 3/mo, range 0-6)
+                          const annualRetention = strategyInputs.targetRetentionRate / 100;
                           const monthlyRetention = Math.pow(annualRetention, 1/12);
                           const monthlyChurnPolicies = strategyInputs.currentPolicies * (1 - monthlyRetention);
 
@@ -2619,22 +2623,23 @@ function App() {
                           const currentCustomers = strategyInputs.currentCustomers;
                           const ppc = currentPolicies / currentCustomers;
 
-                          // Current retention (98.6% based on loss pattern: 1-2/mo avg, 0-6 range)
-                          const currentRetention = 0.986;
+                          // Current retention from slider (default 97.5%)
+                          const currentRetention = strategyInputs.targetRetentionRate / 100;
                           // V5.1 FIX: Churn = customers leaving × their PPC
                           const monthlyChurn = currentCustomers * (1 - Math.pow(currentRetention, 1/12)) * ppc;
 
                           // Current new business
                           const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
                           const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
-                          const currentConversion = 0.10; // 10% - 1 in 10 leads = policy
+                          const currentConversion = strategyInputs.targetConversionRate / 100; // From slider (default 10%)
                           const currentNewCustomers = monthlyLeads * currentConversion;
                           const currentNewPolicies = currentNewCustomers * ppc;
 
                           // Net monthly change
                           const currentNetChange = currentNewPolicies - monthlyChurn;
 
-                          // Calculate what-if scenarios
+                          // Calculate what-if scenarios using slider values as baseline
+                          const improvedConversion = Math.min(currentConversion * 1.5, 0.20); // 50% improvement, max 20%
                           const scenarios = [
                             {
                               name: 'Elite Retention (99%)',
@@ -2645,10 +2650,10 @@ function App() {
                               color: 'emerald'
                             },
                             {
-                              name: 'Double Conversion to 8%',
-                              description: 'Better lead quality & follow-up',
+                              name: `Improve Conversion (+50%)`,
+                              description: `Better lead quality & follow-up (${(improvedConversion * 100).toFixed(0)}%)`,
                               newRetention: currentRetention,
-                              newConversion: 0.08,
+                              newConversion: improvedConversion,
                               newLeadSpend: totalLeadSpend,
                               color: 'blue'
                             },
@@ -2664,7 +2669,7 @@ function App() {
                               name: 'Combined: All Three',
                               description: 'Maximum growth strategy',
                               newRetention: 0.99,
-                              newConversion: 0.08,
+                              newConversion: improvedConversion,
                               newLeadSpend: 10000,
                               color: 'amber'
                             }
@@ -2748,8 +2753,8 @@ function App() {
 
                               {/* Key Insight */}
                               <div className="p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
-                                <strong>Key Insight:</strong> With 98.6% retention (~2 losses/mo), focus on conversion improvement
-                                has the biggest ROI. Doubling from 4% to 8% adds more new policies than any other single lever!
+                                <strong>Key Insight:</strong> With {(currentRetention * 100).toFixed(1)}% retention, focus on conversion improvement
+                                has the biggest ROI. Improving from {(currentConversion * 100).toFixed(0)}% to {((currentConversion * 2) * 100).toFixed(0)}% adds more new policies than any other single lever!
                               </div>
                             </div>
                           );
@@ -2871,7 +2876,7 @@ function App() {
                                   <input
                                     type="range"
                                     min="80"
-                                    max="98"
+                                    max="99"
                                     step="0.5"
                                     value={strategyInputs.targetRetentionRate}
                                     onChange={(e) => setStrategyInputs(prev => ({
@@ -2882,7 +2887,7 @@ function App() {
                                   />
                                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                                     <span>80% (Poor)</span>
-                                    <span className="text-green-600">98.6%</span>
+                                    <span className="text-green-600">97.5%</span>
                                     <span>99% (Elite)</span>
                                   </div>
                                   <div className="text-xs text-gray-400 mt-1">
@@ -3134,9 +3139,9 @@ function App() {
                           const currentCustomers = strategyInputs.currentCustomers;
                           const ppc = currentPolicies / currentCustomers;
 
-                          // Current values
-                          const baseRetention = 0.986; // 98.6%
-                          const baseConversion = 0.10; // 10% - 1 in 10 leads = policy
+                          // Current values from sliders
+                          const baseRetention = strategyInputs.targetRetentionRate / 100;
+                          const baseConversion = strategyInputs.targetConversionRate / 100;
                           const baseLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
                           const baseCPL = strategyInputs.costPerLead;
 
@@ -3150,12 +3155,29 @@ function App() {
                           const baseAnnualNet = baseNetMonthly * 12;
 
                           // Sensitivity analysis - test each lever independently
+                          // Generate dynamic test values centered around slider values
+                          const retentionTestValues = [
+                            Math.max(94, baseRetention * 100 - 2),
+                            Math.max(95, baseRetention * 100 - 1),
+                            baseRetention * 100,
+                            Math.min(99, baseRetention * 100 + 1),
+                            Math.min(99, baseRetention * 100 + 1.5)
+                          ].map(v => Math.round(v * 10) / 10);
+
+                          const conversionTestValues = [
+                            Math.max(1, baseConversion * 100 * 0.4),
+                            Math.max(2, baseConversion * 100 * 0.6),
+                            baseConversion * 100,
+                            baseConversion * 100 * 1.25,
+                            baseConversion * 100 * 1.5
+                          ].map(v => Math.round(v * 10) / 10);
+
                           const sensitivities = [
                             {
                               lever: 'Retention Rate',
                               unit: '%',
                               baseValue: baseRetention * 100,
-                              testValues: [96, 97, 98, 98.6, 99],
+                              testValues: retentionTestValues,
                               calculate: (val: number) => {
                                 const customerChurn = currentCustomers * (1 - Math.pow(val/100, 1/12));
                                 const policyChurn = customerChurn * ppc;
@@ -3168,7 +3190,7 @@ function App() {
                               lever: 'Conversion Rate',
                               unit: '%',
                               baseValue: baseConversion * 100,
-                              testValues: [2, 4, 6, 8, 10],
+                              testValues: conversionTestValues,
                               calculate: (val: number) => {
                                 const newPols = baseMonthlyLeads * (val/100) * ppc;
                                 return (newPols - baseMonthlyPolicyChurn) * 12;
@@ -3219,11 +3241,11 @@ function App() {
                                       </li>
                                       <li className="flex justify-between">
                                         <span className="text-gray-600">Annual Retention:</span>
-                                        <span className="font-medium text-green-600">98.6% (~2 lost/mo)</span>
+                                        <span className="font-medium text-green-600">{(baseRetention * 100).toFixed(1)}%</span>
                                       </li>
                                       <li className="flex justify-between">
                                         <span className="text-gray-600">Bound Conversion:</span>
-                                        <span className="font-medium">4%</span>
+                                        <span className="font-medium">{(baseConversion * 100).toFixed(0)}%</span>
                                       </li>
                                       <li className="flex justify-between">
                                         <span className="text-gray-600">Monthly Lead Spend:</span>
