@@ -84,3 +84,4 @@ Thumbs.db
 
 # Archive (keep but don't track changes frequently)
 # archive/
+.vercel

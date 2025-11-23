@@ -62,48 +62,40 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
   // Check lockout status on mount and update timer
   useEffect(() => {
-    const checkLockout = () => {
-      const attempts = getFailedAttempts();
-      const now = Date.now();
+    // Initial check on mount
+    const attempts = getFailedAttempts();
+    const now = Date.now();
 
-      // Check if locked out
-      if (attempts.lockedUntil > now) {
-        setIsLocked(true);
-        setLockoutRemaining(Math.ceil((attempts.lockedUntil - now) / 1000));
-        return true;
-      }
+    if (attempts.lockedUntil > now) {
+      setIsLocked(true);
+      setLockoutRemaining(Math.ceil((attempts.lockedUntil - now) / 1000));
+    } else if (attempts.firstAttempt && now - attempts.firstAttempt > ATTEMPT_WINDOW) {
+      clearFailedAttempts();
+      setAttemptsRemaining(MAX_ATTEMPTS);
+    } else {
+      setAttemptsRemaining(MAX_ATTEMPTS - attempts.count);
+    }
 
-      // Reset if outside attempt window
-      if (attempts.firstAttempt && now - attempts.firstAttempt > ATTEMPT_WINDOW) {
-        clearFailedAttempts();
-        setAttemptsRemaining(MAX_ATTEMPTS);
-      } else {
-        setAttemptsRemaining(MAX_ATTEMPTS - attempts.count);
-      }
-
-      setIsLocked(false);
-      return false;
-    };
-
-    checkLockout();
-
-    // Update countdown every second if locked
+    // Update countdown every second
     const interval = setInterval(() => {
-      if (checkLockout() && lockoutRemaining > 0) {
-        setLockoutRemaining(prev => {
-          if (prev <= 1) {
-            clearFailedAttempts();
-            setIsLocked(false);
-            setAttemptsRemaining(MAX_ATTEMPTS);
-            return 0;
-          }
-          return prev - 1;
-        });
+      const currentAttempts = getFailedAttempts();
+      const currentTime = Date.now();
+
+      if (currentAttempts.lockedUntil > currentTime) {
+        const remaining = Math.ceil((currentAttempts.lockedUntil - currentTime) / 1000);
+        setLockoutRemaining(remaining);
+        setIsLocked(true);
+      } else if (currentAttempts.lockedUntil > 0) {
+        // Lockout just expired
+        clearFailedAttempts();
+        setIsLocked(false);
+        setLockoutRemaining(0);
+        setAttemptsRemaining(MAX_ATTEMPTS);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lockoutRemaining]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,6 +212,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 disabled={isLocked}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />

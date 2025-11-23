@@ -212,6 +212,7 @@ function App() {
   const handleLogout = () => {
     sessionStorage.removeItem('bealer_auth');
     sessionStorage.removeItem('bealer_auth_time');
+    sessionStorage.removeItem('bealer_session_token');
     setIsAuthenticated(false);
   };
 
