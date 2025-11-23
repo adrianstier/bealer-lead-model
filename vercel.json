@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd agency-growth-platform && npm install && npm run build",
+  "outputDirectory": "agency-growth-platform/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
