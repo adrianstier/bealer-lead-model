@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { TrendingUp, Users, Phone, Target, AlertTriangle, CheckCircle, Info, Lightbulb, Database, Code, FileText } from 'lucide-react';
+import { TrendingUp, Users, Phone, Target, AlertTriangle, CheckCircle, Info, Lightbulb, Database, Code, FileText, Download } from 'lucide-react';
+import { generateLeadAnalysisPDF } from '../utils/generateLeadAnalysisPDF';
+import { generateDataDocumentationPDF } from '../utils/generateDataDocumentationPDF';
 
 interface LeadAnalysisData {
   summary: {
@@ -309,12 +311,12 @@ export default function LeadAnalysisDashboard() {
   }
 
   const viewTabs = [
+    { id: 'data', label: 'Data' },
     { id: 'overview', label: 'Overview' },
     { id: 'diagnostics', label: 'Diagnostics' },
     { id: 'vendors', label: 'Vendors' },
     { id: 'agents', label: 'Agents' },
     { id: 'timing', label: 'Timing' },
-    { id: 'data', label: 'Data' },
   ] as const;
 
   return (
@@ -323,7 +325,16 @@ export default function LeadAnalysisDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Lead Performance Analysis</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold text-gray-900">Lead Performance Analysis</h2>
+              <button
+                onClick={() => generateLeadAnalysisPDF(data)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export PDF
+              </button>
+            </div>
             <p className="text-sm text-gray-500">
               {data.summary.date_range.start} to {data.summary.date_range.end} • {data.summary.total_records.toLocaleString()} records
             </p>
@@ -1428,8 +1439,17 @@ export default function LeadAnalysisDashboard() {
           <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-5">
             <div className="flex gap-3">
               <Database className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Data Transparency</h3>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-gray-900">Data Transparency</h3>
+                  <button
+                    onClick={() => generateDataDocumentationPDF(data)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export Documentation
+                  </button>
+                </div>
                 <p className="text-sm text-gray-700">
                   {data.data_overview.methodology_summary}
                 </p>

@@ -375,9 +375,25 @@ function ScoreGauge({ label, score, color, description }: { label: string; score
   );
 }
 
+// Example customer to demonstrate the tool
+const EXAMPLE_CUSTOMER: Customer = {
+  name: "Example: Sarah Johnson",
+  totalPremium: 2400,
+  policyCount: 1,
+  zipCode: "93101",
+  email: "sarah.johnson@example.com",
+  phone: "(805) 555-0123",
+  tenure: 3,
+  ezpay: false,
+  products: ["Auto - Full Coverage"],
+  gender: "Female",
+  maritalStatus: "Married",
+  claimCount: 0
+};
+
 export default function CustomerLookupDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(EXAMPLE_CUSTOMER);
   const [showInstructions, setShowInstructions] = useState(true);
   const [expandedOpportunity, setExpandedOpportunity] = useState<number | null>(null);
 
@@ -546,6 +562,30 @@ export default function CustomerLookupDashboard() {
       {/* Selected Customer Details */}
       {selectedCustomer && scores && (
         <div className="space-y-6">
+          {/* Example Customer Banner */}
+          {selectedCustomer.name.startsWith('Example:') && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-amber-800">This is an example customer</h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Sarah represents a typical <strong>high-risk, high-opportunity</strong> customer: single policy, no EZPay,
+                      married but no home or life insurance. Use the search above to find your real customers.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedCustomer(null)}
+                  className="text-amber-600 hover:text-amber-800 text-sm font-medium"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Customer Header with Key Indicators */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <div className="flex items-start justify-between mb-4">
