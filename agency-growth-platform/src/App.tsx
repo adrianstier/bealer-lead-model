@@ -2542,9 +2542,14 @@ function App() {
                           // Calculate realistic acquisition metrics
                           const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
                           const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
-                          const realisticConversionRate = 0.04; // 4% actual bound rate from data
+                          const realisticConversionRate = strategyInputs.targetConversionRate / 100; // Use slider value
                           const newCustomersPerMonth = monthlyLeads * realisticConversionRate;
-                          const newPoliciesPerMonth = newCustomersPerMonth * (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
+                          const paidLeadPolicies = newCustomersPerMonth * (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
+
+                          // Include organic/walk-in sales (Derrick's typical 13/month)
+                          const organicPolicies = strategyInputs.organicSalesPerMonth;
+                          const newPoliciesPerMonth = paidLeadPolicies + organicPolicies;
+
                           const actualCAC = newCustomersPerMonth > 0 ? totalLeadSpend / newCustomersPerMonth : 0;
 
                           // Calculate churn using target retention rate from slider
@@ -2553,8 +2558,8 @@ function App() {
                           const monthlyRetention = Math.pow(annualRetention, 1/12);
                           const monthlyChurnPolicies = strategyInputs.currentPolicies * (1 - monthlyRetention);
 
-                          // Break-even calculation
-                          const breakEvenPolicies = Math.ceil(monthlyChurnPolicies);
+                          // Break-even calculation (only considers paid leads, not organic)
+                          const breakEvenPolicies = Math.ceil(Math.max(0, monthlyChurnPolicies - organicPolicies));
                           const breakEvenCustomers = breakEvenPolicies / (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
                           const breakEvenLeadSpend = (breakEvenCustomers / realisticConversionRate) * strategyInputs.costPerLead;
 
@@ -2581,7 +2586,7 @@ function App() {
                                   {isGrowing ? '+' : ''}{Math.round(netPoliciesPerMonth)} policies
                                 </div>
                                 <div className="text-xs text-gray-500 mt-1">
-                                  +{newPoliciesPerMonth.toFixed(1)} new, -{monthlyChurnPolicies.toFixed(1)} churned
+                                  +{paidLeadPolicies.toFixed(1)} paid + {organicPolicies.toFixed(1)} organic, -{monthlyChurnPolicies.toFixed(1)} churned
                                 </div>
                               </div>
 
@@ -2628,12 +2633,16 @@ function App() {
                           // V5.1 FIX: Churn = customers leaving × their PPC
                           const monthlyChurn = currentCustomers * (1 - Math.pow(currentRetention, 1/12)) * ppc;
 
-                          // Current new business
+                          // Current new business from paid leads
                           const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
                           const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
                           const currentConversion = strategyInputs.targetConversionRate / 100; // From slider (default 10%)
                           const currentNewCustomers = monthlyLeads * currentConversion;
-                          const currentNewPolicies = currentNewCustomers * ppc;
+                          const paidLeadPolicies = currentNewCustomers * ppc;
+
+                          // Add organic/walk-in sales (Derrick's typical 13/month)
+                          const organicPolicies = strategyInputs.organicSalesPerMonth;
+                          const currentNewPolicies = paidLeadPolicies + organicPolicies;
 
                           // Net monthly change
                           const currentNetChange = currentNewPolicies - monthlyChurn;
@@ -2708,7 +2717,9 @@ function App() {
                                   // V5.1 FIX: Churn = customers leaving × their PPC
                                   const newMonthlyChurn = currentCustomers * (1 - Math.pow(scenario.newRetention, 1/12)) * ppc;
                                   const newLeads = scenario.newLeadSpend / strategyInputs.costPerLead;
-                                  const newNewPolicies = newLeads * scenario.newConversion * ppc;
+                                  const newPaidPolicies = newLeads * scenario.newConversion * ppc;
+                                  // Include organic sales in all scenarios
+                                  const newNewPolicies = newPaidPolicies + organicPolicies;
                                   const newNetChange = newNewPolicies - newMonthlyChurn;
                                   const improvement = newNetChange - currentNetChange;
                                   const annualGrowth = newNetChange * 12;
@@ -3150,7 +3161,10 @@ function App() {
                           const baseMonthlyCustomerChurn = currentCustomers * (1 - Math.pow(baseRetention, 1/12));
                           const baseMonthlyPolicyChurn = baseMonthlyCustomerChurn * ppc;
                           const baseMonthlyLeads = baseLeadSpend / baseCPL;
-                          const baseNewPolicies = baseMonthlyLeads * baseConversion * ppc;
+                          const basePaidPolicies = baseMonthlyLeads * baseConversion * ppc;
+                          // Include organic/walk-in sales (Derrick's typical 13/month)
+                          const organicPolicies = strategyInputs.organicSalesPerMonth;
+                          const baseNewPolicies = basePaidPolicies + organicPolicies;
                           const baseNetMonthly = baseNewPolicies - baseMonthlyPolicyChurn;
                           const baseAnnualNet = baseNetMonthly * 12;
 
@@ -3192,7 +3206,7 @@ function App() {
                               baseValue: baseConversion * 100,
                               testValues: conversionTestValues,
                               calculate: (val: number) => {
-                                const newPols = baseMonthlyLeads * (val/100) * ppc;
+                                const newPols = baseMonthlyLeads * (val/100) * ppc + organicPolicies;
                                 return (newPols - baseMonthlyPolicyChurn) * 12;
                               },
                               color: 'blue',
@@ -3205,7 +3219,7 @@ function App() {
                               testValues: [2000, 4500, 7000, 10000, 15000],
                               calculate: (val: number) => {
                                 const leads = val / baseCPL;
-                                const newPols = leads * baseConversion * ppc;
+                                const newPols = leads * baseConversion * ppc + organicPolicies;
                                 return (newPols - baseMonthlyPolicyChurn) * 12;
                               },
                               color: 'purple',
@@ -3218,7 +3232,7 @@ function App() {
                               testValues: [30, 45, 55, 75, 100],
                               calculate: (val: number) => {
                                 const leads = baseLeadSpend / val;
-                                const newPols = leads * baseConversion * ppc;
+                                const newPols = leads * baseConversion * ppc + organicPolicies;
                                 return (newPols - baseMonthlyPolicyChurn) * 12;
                               },
                               color: 'amber',
