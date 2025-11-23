@@ -842,7 +842,7 @@ def generate_data_overview(data):
         },
         'QUOTED': {
             'example_statuses': ['3.0 QUOTED', '3.1 QUOTED - Thinking About It'],
-            'meaning': 'Received a quote but hasnt decided',
+            'meaning': 'Received a quote but has not decided',
             'funnel_stage': 'Quoted'
         },
         'CONTACTED - Not Interested': {

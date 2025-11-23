@@ -5,7 +5,61 @@ Stores default parameters and allows easy customization
 
 import json
 from pathlib import Path
-from agency_simulator import SimulationParameters
+from dataclasses import dataclass
+
+
+@dataclass
+class SimulationParameters:
+    """Simulation parameters for backward compatibility"""
+    current_policies: int = 500
+    current_staff_fte: float = 2.0
+    baseline_lead_spend: float = 1000
+    lead_cost_per_lead: float = 25
+    contact_rate: float = 0.70
+    quote_rate: float = 0.60
+    bind_rate: float = 0.50
+    avg_premium_annual: float = 1500
+    commission_rate: float = 0.12
+    annual_retention_base: float = 0.85
+    staff_monthly_cost_per_fte: float = 5000
+    max_leads_per_fte_per_month: int = 150
+    efficiency_penalty_rate: float = 0.05
+    concierge_retention_boost: float = 0.03
+    newsletter_retention_boost: float = 0.02
+    concierge_monthly_cost: float = 500
+    newsletter_monthly_cost: float = 200
+
+    @property
+    def monthly_retention_base(self) -> float:
+        return self.annual_retention_base ** (1/12)
+
+    def to_dict(self) -> dict:
+        return {
+            'current_policies': self.current_policies,
+            'current_staff_fte': self.current_staff_fte,
+            'baseline_lead_spend': self.baseline_lead_spend,
+            'lead_cost_per_lead': self.lead_cost_per_lead,
+            'contact_rate': self.contact_rate,
+            'quote_rate': self.quote_rate,
+            'bind_rate': self.bind_rate,
+            'avg_premium_annual': self.avg_premium_annual,
+            'commission_rate': self.commission_rate,
+            'annual_retention_base': self.annual_retention_base,
+            'monthly_retention_base': self.monthly_retention_base,
+            'staff_monthly_cost_per_fte': self.staff_monthly_cost_per_fte,
+            'max_leads_per_fte_per_month': self.max_leads_per_fte_per_month,
+            'efficiency_penalty_rate': self.efficiency_penalty_rate,
+            'concierge_retention_boost': self.concierge_retention_boost,
+            'newsletter_retention_boost': self.newsletter_retention_boost,
+            'concierge_monthly_cost': self.concierge_monthly_cost,
+            'newsletter_monthly_cost': self.newsletter_monthly_cost
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'SimulationParameters':
+        # Remove calculated field if present
+        data = {k: v for k, v in data.items() if k != 'monthly_retention_base'}
+        return cls(**data)
 
 
 class ConfigManager:
