@@ -77,6 +77,9 @@ Thumbs.db
 !package-lock.json
 !tsconfig*.json
 !src/**/*.json
+!public/**/*.json
+!**/public/**/*.json
+!agency-growth-platform/public/data/*.json
 
 # Cache
 .pytest_cache/
