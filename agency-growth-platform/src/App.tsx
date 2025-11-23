@@ -995,7 +995,7 @@ function App() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" role="navigation" aria-label="Main navigation">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-            <Tabs.List className="flex gap-1 overflow-x-auto py-3 -mb-px scrollbar-hide" role="tablist" aria-label="Platform sections">
+            <Tabs.List className="flex gap-1 overflow-x-auto py-3 -mb-px" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} role="tablist" aria-label="Platform sections">
               {tabItems.map((item) => (
                 <Tabs.Trigger
                   key={item.id}
@@ -1004,7 +1004,7 @@ function App() {
                   aria-selected={activeTab === item.id}
                   aria-controls={`tabpanel-${item.id}`}
                   className={`
-                    group relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap
+                    group relative flex items-center gap-2 px-3 py-2 text-sm font-medium whitespace-nowrap flex-shrink-0
                     transition-all duration-200 rounded-md
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
                     ${activeTab === item.id
