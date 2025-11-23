@@ -2773,7 +2773,7 @@ function App() {
                       </div>
 
                       {/* Custom Scenario Builder with Sliders */}
-                      <div className="card p-6 mt-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                      <div className="card p-6 mt-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                             <Settings className="w-5 h-5 text-purple-700" />
@@ -2901,7 +2901,7 @@ function App() {
                                   />
                                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                                     <span>80% (Poor)</span>
-                                    <span className="text-green-600">97.5%</span>
+                                    <span className="text-gray-600 font-medium">97.5%</span>
                                     <span>99% (Elite)</span>
                                   </div>
                                   <div className="text-xs text-gray-400 mt-1">
@@ -2929,7 +2929,7 @@ function App() {
                                   />
                                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                                     <span>2% (Cold)</span>
-                                    <span className="text-green-600">10%</span>
+                                    <span className="text-gray-600 font-medium">10%</span>
                                     <span>15% (Hot)</span>
                                   </div>
                                   <div className="text-xs text-gray-400 mt-1">
@@ -2972,7 +2972,7 @@ function App() {
                                 />
                                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                                   <span>0</span>
-                                  <span className="text-green-600">13 (Derrick avg)</span>
+                                  <span className="text-gray-600 font-medium">13 (Derrick avg)</span>
                                   <span>30</span>
                                 </div>
                                 <div className="text-xs text-gray-400 mt-1">
@@ -2981,7 +2981,7 @@ function App() {
                               </div>
 
                               {/* Results */}
-                              <div className="bg-white p-4 rounded-lg border border-purple-200">
+                              <div className="bg-white p-4 rounded-lg border border-indigo-200">
                                 <div className="text-sm font-medium text-gray-700 mb-3">Projected Outcomes (12 Months)</div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                   <div className="text-center">
@@ -2997,7 +2997,7 @@ function App() {
                                     <div className="text-xs text-gray-500">Annual Growth</div>
                                   </div>
                                   <div className="text-center">
-                                    <div className="text-xl font-bold text-gray-900">
+                                    <div className={`text-xl font-bold ${yearEndPolicies > currentPolicies ? 'text-green-600' : yearEndPolicies < currentPolicies ? 'text-red-600' : 'text-gray-900'}`}>
                                       {Math.round(yearEndPolicies).toLocaleString()}
                                     </div>
                                     <div className="text-xs text-gray-500">Year-End Policies</div>
@@ -3028,7 +3028,7 @@ function App() {
                               </div>
 
                               {/* Recommendation */}
-                              <div className={`p-3 rounded-lg text-sm ${netChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              <div className={`p-3 rounded-lg text-sm border ${netChange >= 0 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`}>
                                 {netChange >= 0 ? (
                                   <>
                                     <strong>Growth Path:</strong> With {organicPolicies.toFixed(1)} organic + {paidLeadPolicies.toFixed(1)} paid lead policies/mo, you'll add {Math.round(annualChange)} policies by year-end,
@@ -3043,8 +3043,8 @@ function App() {
                               </div>
 
                               {/* Break-Even Analysis */}
-                              <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                                <div className="text-sm font-medium text-gray-700 mb-3">Break-Even Analysis</div>
+                              <div className="mt-4 p-4 bg-slate-50 rounded-lg border-l-4 border-slate-400">
+                                <div className="text-sm font-medium text-slate-700 mb-3">Break-Even Analysis</div>
 
                                 {(() => {
                                   // Calculate break-even requirements (accounting for organic sales)
