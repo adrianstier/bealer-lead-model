@@ -194,6 +194,34 @@ interface LeadAnalysisData {
       }>;
       total_combinations: number;
     };
+    call_duration_outcomes?: {
+      duration_brackets: Array<{
+        bracket: string;
+        total_calls: number;
+        sales: number;
+        sale_rate: number;
+        quote_rate: number;
+        contact_rate: number;
+      }>;
+      optimal_duration: string | null;
+      optimal_sale_rate: number | null;
+      avg_duration_by_outcome: Record<string, number>;
+    };
+    weekly_trends?: {
+      weekly_data: Array<{
+        week: number;
+        total_leads: number;
+        sales: number;
+        sale_rate: number;
+        contact_rate: number;
+        quote_rate: number;
+        avg_duration: number;
+        sale_rate_change: number;
+      }>;
+      trend: string;
+      trend_change_pct: number;
+      total_weeks: number;
+    };
   };
   action_plan?: {
     current_state: {
@@ -228,6 +256,16 @@ interface LeadAnalysisData {
     data_notes: string[];
     methodology_summary: string;
   };
+  industry_benchmarks?: Record<string, {
+    poor?: number;
+    average?: number;
+    good?: number;
+    excellent?: number;
+    min?: number;
+    optimal?: number;
+    max?: number;
+    description: string;
+  }>;
 }
 
 export default function LeadAnalysisDashboard() {
@@ -841,6 +879,183 @@ export default function LeadAnalysisDashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Call Duration vs Outcome */}
+          {data.diagnostics.call_duration_outcomes && data.diagnostics.call_duration_outcomes.duration_brackets.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Call Duration Impact</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Longer calls typically mean better engagement. Find the sweet spot for your team.
+                </p>
+              </div>
+
+              {data.diagnostics.call_duration_outcomes.optimal_duration && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    <span className="font-medium text-emerald-800">
+                      Optimal Duration: {data.diagnostics.call_duration_outcomes.optimal_duration}
+                    </span>
+                  </div>
+                  <p className="text-sm text-emerald-700 mt-1">
+                    Calls in this range have a {data.diagnostics.call_duration_outcomes.optimal_sale_rate}% sale rate
+                  </p>
+                </div>
+              )}
+
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.diagnostics.call_duration_outcomes.duration_brackets}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="bracket" fontSize={12} />
+                    <YAxis fontSize={12} unit="%" />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [
+                        `${value}%`,
+                        name === 'sale_rate' ? 'Sale Rate' : name === 'contact_rate' ? 'Contact Rate' : name
+                      ]}
+                      contentStyle={{ fontSize: '12px' }}
+                    />
+                    <Bar dataKey="sale_rate" fill="#10B981" name="sale_rate" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Duration by Outcome */}
+              {Object.keys(data.diagnostics.call_duration_outcomes.avg_duration_by_outcome).length > 0 && (
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(data.diagnostics.call_duration_outcomes.avg_duration_by_outcome).map(([outcome, duration]) => (
+                    <div key={outcome} className="bg-gray-50 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-gray-900">{Math.round(duration / 60)}:{String(Math.round(duration % 60)).padStart(2, '0')}</p>
+                      <p className="text-xs text-gray-600">{outcome.replace('_', ' ')}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Weekly Trends */}
+          {data.diagnostics.weekly_trends && data.diagnostics.weekly_trends.weekly_data.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Weekly Performance Trends</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Track how performance is changing over time
+                </p>
+              </div>
+
+              {/* Trend Summary */}
+              <div className={`rounded-lg p-4 mb-4 ${
+                data.diagnostics.weekly_trends.trend === 'improving' ? 'bg-emerald-50 border border-emerald-200' :
+                data.diagnostics.weekly_trends.trend === 'declining' ? 'bg-red-50 border border-red-200' :
+                'bg-gray-50 border border-gray-200'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className={`w-5 h-5 ${
+                    data.diagnostics.weekly_trends.trend === 'improving' ? 'text-emerald-600' :
+                    data.diagnostics.weekly_trends.trend === 'declining' ? 'text-red-600 rotate-180' :
+                    'text-gray-600'
+                  }`} />
+                  <span className={`font-medium ${
+                    data.diagnostics.weekly_trends.trend === 'improving' ? 'text-emerald-800' :
+                    data.diagnostics.weekly_trends.trend === 'declining' ? 'text-red-800' :
+                    'text-gray-800'
+                  }`}>
+                    Trend: {data.diagnostics.weekly_trends.trend.charAt(0).toUpperCase() + data.diagnostics.weekly_trends.trend.slice(1)}
+                    {data.diagnostics.weekly_trends.trend_change_pct !== 0 && (
+                      <span className="ml-2">
+                        ({data.diagnostics.weekly_trends.trend_change_pct > 0 ? '+' : ''}{data.diagnostics.weekly_trends.trend_change_pct}% change)
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data.diagnostics.weekly_trends.weekly_data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="week" fontSize={12} tickFormatter={(w) => `Wk ${w}`} />
+                    <YAxis fontSize={12} unit="%" />
+                    <Tooltip
+                      labelFormatter={(w) => `Week ${w}`}
+                      formatter={(value: number, name: string) => [
+                        `${value}%`,
+                        name === 'sale_rate' ? 'Sale Rate' : name === 'contact_rate' ? 'Contact Rate' : name
+                      ]}
+                      contentStyle={{ fontSize: '12px' }}
+                    />
+                    <Line type="monotone" dataKey="sale_rate" stroke="#10B981" strokeWidth={2} name="sale_rate" />
+                    <Line type="monotone" dataKey="contact_rate" stroke="#3B82F6" strokeWidth={2} name="contact_rate" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* Industry Benchmarks */}
+          {data.industry_benchmarks && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Industry Benchmarks</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Compare your performance against industry standards
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sale Rate Benchmark */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Sale Rate</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-bold text-gray-900">{data.summary.overall_sale_rate}%</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.excellent || 2) ? 'bg-emerald-100 text-emerald-700' :
+                      data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.good || 1.5) ? 'bg-blue-100 text-blue-700' :
+                      data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.average || 1) ? 'bg-amber-100 text-amber-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.excellent || 2) ? 'Excellent' :
+                       data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.good || 1.5) ? 'Good' :
+                       data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.average || 1) ? 'Average' :
+                       'Below Average'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div className="flex justify-between"><span>Excellent:</span><span>≥{data.industry_benchmarks.sale_rate?.excellent}%</span></div>
+                    <div className="flex justify-between"><span>Good:</span><span>≥{data.industry_benchmarks.sale_rate?.good}%</span></div>
+                    <div className="flex justify-between"><span>Average:</span><span>≥{data.industry_benchmarks.sale_rate?.average}%</span></div>
+                  </div>
+                </div>
+
+                {/* Contact Rate Benchmark */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Contact Rate</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-bold text-gray-900">{data.summary.overall_contact_rate}%</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.excellent || 80) ? 'bg-emerald-100 text-emerald-700' :
+                      data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.good || 65) ? 'bg-blue-100 text-blue-700' :
+                      data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.average || 50) ? 'bg-amber-100 text-amber-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.excellent || 80) ? 'Excellent' :
+                       data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.good || 65) ? 'Good' :
+                       data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.average || 50) ? 'Average' :
+                       'Below Average'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div className="flex justify-between"><span>Excellent:</span><span>≥{data.industry_benchmarks.contact_rate?.excellent}%</span></div>
+                    <div className="flex justify-between"><span>Good:</span><span>≥{data.industry_benchmarks.contact_rate?.good}%</span></div>
+                    <div className="flex justify-between"><span>Average:</span><span>≥{data.industry_benchmarks.contact_rate?.average}%</span></div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

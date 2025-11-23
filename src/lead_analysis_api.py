@@ -779,6 +779,186 @@ def generate_action_plan(data, vendor_data, agent_data):
         'best_days': [d['day'] for d in best_days]
     }
 
+def analyze_call_duration_outcomes(data):
+    """Analyze correlation between call duration and outcomes"""
+    # Filter out zero-duration calls (likely disconnects)
+    valid_calls = data[data['Call Duration In Seconds'] > 0].copy()
+
+    if len(valid_calls) == 0:
+        return {
+            'duration_brackets': [],
+            'optimal_duration': None,
+            'avg_duration_by_outcome': {}
+        }
+
+    # Create duration brackets
+    brackets = [
+        (0, 30, '0-30s'),
+        (30, 60, '30-60s'),
+        (60, 120, '1-2min'),
+        (120, 300, '2-5min'),
+        (300, 600, '5-10min'),
+        (600, float('inf'), '10min+')
+    ]
+
+    bracket_results = []
+    for min_sec, max_sec, label in brackets:
+        bracket_data = valid_calls[
+            (valid_calls['Call Duration In Seconds'] >= min_sec) &
+            (valid_calls['Call Duration In Seconds'] < max_sec)
+        ]
+        if len(bracket_data) > 0:
+            bracket_results.append({
+                'bracket': label,
+                'total_calls': len(bracket_data),
+                'sales': int(bracket_data['Is_Sale'].sum()),
+                'sale_rate': round(bracket_data['Is_Sale'].mean() * 100, 2),
+                'quote_rate': round(bracket_data['Is_Quoted'].mean() * 100, 2),
+                'contact_rate': round(bracket_data['Is_Contacted'].mean() * 100, 2)
+            })
+
+    # Find optimal duration bracket
+    if bracket_results:
+        # Filter to brackets with meaningful sample size
+        significant_brackets = [b for b in bracket_results if b['total_calls'] >= 100]
+        if significant_brackets:
+            optimal = max(significant_brackets, key=lambda x: x['sale_rate'])
+        else:
+            optimal = max(bracket_results, key=lambda x: x['sale_rate'])
+    else:
+        optimal = None
+
+    # Average duration by outcome
+    outcome_durations = {}
+    for outcome in ['SOLD', 'QUOTED', 'NOT_INTERESTED', 'NO_CONTACT']:
+        outcome_data = valid_calls[valid_calls['Outcome'] == outcome]
+        if len(outcome_data) > 0:
+            outcome_durations[outcome] = round(outcome_data['Call Duration In Seconds'].mean(), 1)
+
+    return {
+        'duration_brackets': bracket_results,
+        'optimal_duration': optimal['bracket'] if optimal else None,
+        'optimal_sale_rate': optimal['sale_rate'] if optimal else None,
+        'avg_duration_by_outcome': outcome_durations
+    }
+
+def analyze_weekly_trends(data):
+    """Analyze performance trends week over week"""
+    # Group by week
+    weekly = data.groupby('Week').agg({
+        'Full name': 'count',
+        'Is_Sale': ['sum', 'mean'],
+        'Is_Contacted': 'mean',
+        'Is_Quoted': 'mean',
+        'Call Duration In Seconds': 'mean'
+    }).round(4)
+
+    weekly.columns = ['total_leads', 'sales', 'sale_rate', 'contact_rate', 'quote_rate', 'avg_duration']
+    weekly = weekly.reset_index()
+
+    # Calculate week-over-week changes
+    results = []
+    prev_sale_rate = None
+    for _, row in weekly.iterrows():
+        week_data = {
+            'week': int(row['Week']),
+            'total_leads': int(row['total_leads']),
+            'sales': int(row['sales']),
+            'sale_rate': round(float(row['sale_rate']) * 100, 2),
+            'contact_rate': round(float(row['contact_rate']) * 100, 2),
+            'quote_rate': round(float(row['quote_rate']) * 100, 2),
+            'avg_duration': round(float(row['avg_duration']), 1)
+        }
+
+        # Calculate change from previous week
+        if prev_sale_rate is not None:
+            change = week_data['sale_rate'] - prev_sale_rate
+            week_data['sale_rate_change'] = round(change, 2)
+        else:
+            week_data['sale_rate_change'] = 0
+
+        prev_sale_rate = week_data['sale_rate']
+        results.append(week_data)
+
+    # Calculate overall trend
+    if len(results) >= 2:
+        first_half = results[:len(results)//2]
+        second_half = results[len(results)//2:]
+        first_avg = sum(w['sale_rate'] for w in first_half) / len(first_half)
+        second_avg = sum(w['sale_rate'] for w in second_half) / len(second_half)
+        trend = 'improving' if second_avg > first_avg else 'declining' if second_avg < first_avg else 'stable'
+        trend_change = round(second_avg - first_avg, 2)
+    else:
+        trend = 'insufficient_data'
+        trend_change = 0
+
+    return {
+        'weekly_data': results,
+        'trend': trend,
+        'trend_change_pct': trend_change,
+        'total_weeks': len(results)
+    }
+
+def get_industry_benchmarks():
+    """Return industry benchmark data for comparison"""
+    return {
+        'sale_rate': {
+            'poor': 0.5,
+            'average': 1.0,
+            'good': 1.5,
+            'excellent': 2.0,
+            'description': 'Percentage of leads that become customers'
+        },
+        'contact_rate': {
+            'poor': 30,
+            'average': 50,
+            'good': 65,
+            'excellent': 80,
+            'description': 'Percentage of leads successfully reached'
+        },
+        'quote_rate': {
+            'poor': 10,
+            'average': 20,
+            'good': 30,
+            'excellent': 40,
+            'description': 'Percentage of leads that receive a quote'
+        },
+        'cost_per_bind': {
+            'excellent': 300,
+            'good': 500,
+            'average': 800,
+            'poor': 1200,
+            'description': 'Total cost to acquire one customer'
+        },
+        'ltv_cac_ratio': {
+            'poor': 1.5,
+            'average': 3.0,
+            'good': 4.0,
+            'excellent': 5.0,
+            'description': 'Customer lifetime value vs acquisition cost'
+        },
+        'avg_call_duration_sale': {
+            'min': 180,
+            'optimal': 420,
+            'max': 900,
+            'description': 'Typical call duration for successful sales (seconds)'
+        },
+        'speed_to_lead': {
+            'excellent': 5,
+            'good': 15,
+            'average': 60,
+            'poor': 1440,
+            'description': 'Minutes from lead submission to first call'
+        },
+        'call_attempts': {
+            'poor': 1,
+            'average': 3,
+            'good': 6,
+            'excellent': 8,
+            'description': 'Number of call attempts before giving up'
+        }
+    }
+
 def generate_data_overview(data):
     """Generate transparent overview of raw data structure and interpretation"""
 
@@ -956,6 +1136,12 @@ def generate_analysis():
     agent_vendor_match = analyze_agent_vendor_match(data)
     action_plan = generate_action_plan(data, vendor_data, agent_data)
 
+    # New enhanced analyses
+    print("Running enhanced analyses...")
+    call_duration_outcomes = analyze_call_duration_outcomes(data)
+    weekly_trends = analyze_weekly_trends(data)
+    industry_benchmarks = get_industry_benchmarks()
+
     # Generate data overview for transparency
     print("Generating data overview...")
     data_overview = generate_data_overview(data)
@@ -988,10 +1174,13 @@ def generate_analysis():
             'roi_metrics': roi_metrics,
             'funnel_bottlenecks': funnel_bottlenecks,
             'call_attempts': call_attempts,
-            'agent_vendor_match': agent_vendor_match
+            'agent_vendor_match': agent_vendor_match,
+            'call_duration_outcomes': call_duration_outcomes,
+            'weekly_trends': weekly_trends
         },
         'action_plan': action_plan,
-        'data_overview': data_overview
+        'data_overview': data_overview,
+        'industry_benchmarks': industry_benchmarks
     }
 
     return result
