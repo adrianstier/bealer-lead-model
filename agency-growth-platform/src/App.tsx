@@ -2801,7 +2801,10 @@ function App() {
                           const monthlyPolicyChurn = monthlyCustomerChurn * ppc;
                           const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
                           const newCustomers = monthlyLeads * conversionRate;
-                          const newPolicies = newCustomers * ppc;
+                          const paidLeadPolicies = newCustomers * ppc;
+                          // Include organic/walk-in sales (Derrick's typical 13/month)
+                          const organicPolicies = strategyInputs.organicSalesPerMonth;
+                          const newPolicies = paidLeadPolicies + organicPolicies;
                           const netChange = newPolicies - monthlyPolicyChurn;
                           const annualChange = netChange * 12;
                           const yearEndPolicies = currentPolicies + annualChange;
@@ -2986,13 +2989,13 @@ function App() {
                               <div className={`p-3 rounded-lg text-sm ${netChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {netChange >= 0 ? (
                                   <>
-                                    <strong>Growth Path:</strong> At this investment level, you'll add {Math.round(annualChange)} policies by year-end,
+                                    <strong>Growth Path:</strong> With {organicPolicies.toFixed(1)} organic + {paidLeadPolicies.toFixed(1)} paid lead policies/mo, you'll add {Math.round(annualChange)} policies by year-end,
                                     generating an additional ${Math.round(commissionChange / 1000)}K in annual commission.
                                   </>
                                 ) : (
                                   <>
                                     <strong>Warning:</strong> Current settings result in {Math.round(Math.abs(annualChange))} policy loss.
-                                    Increase lead spend to ${Math.round((monthlyPolicyChurn / (conversionRate * ppc)) * strategyInputs.costPerLead / 100) * 100}/mo or improve conversion/retention to break even.
+                                    Your {organicPolicies.toFixed(1)} organic sales partially offset {monthlyPolicyChurn.toFixed(1)} churn, but you need {(monthlyPolicyChurn - organicPolicies).toFixed(1)} more from paid leads.
                                   </>
                                 )}
                               </div>
@@ -3002,13 +3005,14 @@ function App() {
                                 <div className="text-sm font-medium text-gray-700 mb-3">Break-Even Analysis</div>
 
                                 {(() => {
-                                  // Calculate break-even requirements
-                                  const breakEvenLeadSpend = (monthlyPolicyChurn / (conversionRate * ppc)) * strategyInputs.costPerLead;
-                                  const breakEvenConversion = (monthlyPolicyChurn / (monthlyLeads * ppc)) * 100;
-                                  const breakEvenRetention = Math.pow(1 - (newPolicies / currentPolicies), 12) * 100;
+                                  // Calculate break-even requirements (accounting for organic sales)
+                                  // Only need paid leads to cover churn NOT covered by organic
+                                  const churnGap = Math.max(0, monthlyPolicyChurn - organicPolicies);
+                                  const breakEvenLeadSpend = churnGap > 0 ? (churnGap / (conversionRate * ppc)) * strategyInputs.costPerLead : 0;
+                                  const breakEvenConversion = monthlyLeads > 0 ? (churnGap / (monthlyLeads * ppc)) * 100 : 0;
 
                                   // Calculate CAC for current settings
-                                  const cac = totalLeadSpend / (monthlyLeads * conversionRate);
+                                  const cac = monthlyLeads > 0 && conversionRate > 0 ? totalLeadSpend / (monthlyLeads * conversionRate) : 0;
 
                                   return (
                                     <div className="space-y-3">
