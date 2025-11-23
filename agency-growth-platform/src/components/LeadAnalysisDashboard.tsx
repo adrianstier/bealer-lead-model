@@ -285,12 +285,12 @@ export default function LeadAnalysisDashboard() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Lead Analysis</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Lead Performance Analysis</h2>
             <p className="text-sm text-gray-500">
-              Brittany's Agency Benchmark Data • {data.summary.total_records.toLocaleString()} records
+              {data.summary.date_range.start} to {data.summary.date_range.end} • {data.summary.total_records.toLocaleString()} records
             </p>
             <p className="text-xs text-blue-600 mt-1">
-              Use these insights to inform your lead vendor and agent strategy
+              Use these insights to optimize vendor spend, agent performance, and call timing
             </p>
           </div>
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
@@ -320,9 +320,9 @@ export default function LeadAnalysisDashboard() {
               <div>
                 <h3 className="font-semibold text-blue-900 mb-2">What am I looking at?</h3>
                 <p className="text-sm text-blue-800 mb-3">
-                  This is <strong>8 weeks of lead data</strong> from Brittany's agency showing how different lead sources
-                  and agents performed. Use this to understand which vendors are worth investing in and what
-                  conversion rates to expect.
+                  This analysis shows <strong>call-by-call lead performance data</strong> tracking how different lead sources
+                  and agents convert. Use this to understand which vendors are worth investing in, identify training needs,
+                  and optimize your call schedule.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div className="bg-white/60 rounded-lg p-2">
