@@ -846,8 +846,8 @@ export default function LeadAnalysisDashboard() {
               <div className="flex gap-2">
                 <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-800">
-                  <strong>Interpretation:</strong> Negative ROI vendors are losing money. A vendor needs
-                  ROI above 0% to be profitable. Consider cutting vendors with ROI below -50%.
+                  <strong>Interpretation:</strong> Lower cost-per-sale means more efficient customer acquisition.
+                  Focus budget on vendors with lowest CPB (cost per bind) to maximize book growth per dollar spent.
                 </p>
               </div>
             </div>
