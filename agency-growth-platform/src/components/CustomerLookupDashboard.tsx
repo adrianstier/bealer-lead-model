@@ -437,7 +437,7 @@ export default function CustomerLookupDashboard() {
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5">
           <div className="flex justify-between items-start">
             <div className="flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Info className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-blue-900 mb-2">How to Use This Tool</h3>
                 <div className="space-y-3 text-sm text-blue-800">
@@ -459,7 +459,7 @@ export default function CustomerLookupDashboard() {
                   </div>
                 </div>
 
-                <div className="mt-4 p-3 bg-white/60 rounded-lg">
+                <div className="mt-4 p-3 bg-white/60 rounded-xl">
                   <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
                     <Lightbulb className="w-4 h-4 mr-1" />
                     Why This Matters
@@ -475,7 +475,7 @@ export default function CustomerLookupDashboard() {
             </div>
             <button
               onClick={() => setShowInstructions(false)}
-              className="text-blue-400 hover:text-blue-600"
+              className="text-blue-400 hover:text-primary-600"
             >
               <XCircle className="w-5 h-5" />
             </button>
@@ -502,13 +502,13 @@ export default function CustomerLookupDashboard() {
             placeholder="Search by name, phone, or ZIP code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
+            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg"
           />
         </div>
 
         {/* Search Results */}
         {filteredCustomers.length > 0 && (
-          <div className="mt-4 border border-gray-200 rounded-lg divide-y max-h-80 overflow-y-auto">
+          <div className="mt-4 border border-gray-200 rounded-xl divide-y max-h-80 overflow-y-auto">
             {filteredCustomers.map((customer, i) => {
               const customerScores = calculateCustomerScore(customer);
               return (
@@ -564,7 +564,7 @@ export default function CustomerLookupDashboard() {
         <div className="space-y-6">
           {/* Example Customer Banner */}
           {selectedCustomer.name.startsWith('Example:') && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
                   <Lightbulb className="w-5 h-5 text-amber-600 mt-0.5" />
@@ -624,7 +624,7 @@ export default function CustomerLookupDashboard() {
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-4xl font-bold ${
+                <div className={`text-3xl font-bold ${
                   scores.overall >= 70 ? 'text-green-600' :
                   scores.overall >= 50 ? 'text-amber-600' :
                   'text-red-600'
@@ -637,23 +637,23 @@ export default function CustomerLookupDashboard() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-xl font-bold text-gray-900">${selectedCustomer.totalPremium.toLocaleString()}</p>
                 <p className="text-xs text-gray-500">Total Premium</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-xl font-bold text-gray-900">{selectedCustomer.policyCount}</p>
                 <p className="text-xs text-gray-500">Policies</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-xl font-bold text-gray-900">{selectedCustomer.tenure} yr</p>
                 <p className="text-xs text-gray-500">Tenure</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-xl font-bold text-gray-900">{selectedCustomer.claimCount}</p>
                 <p className="text-xs text-gray-500">Claims</p>
               </div>
-              <div className={`rounded-lg p-3 text-center ${selectedCustomer.ezpay ? 'bg-green-50' : 'bg-red-50'}`}>
+              <div className={`rounded-xl p-3 text-center ${selectedCustomer.ezpay ? 'bg-green-50' : 'bg-red-50'}`}>
                 <p className={`text-xl font-bold ${selectedCustomer.ezpay ? 'text-green-600' : 'text-red-600'}`}>
                   {selectedCustomer.ezpay ? <CheckCircle className="w-6 h-6 mx-auto" /> : <XCircle className="w-6 h-6 mx-auto" />}
                 </p>
@@ -663,7 +663,7 @@ export default function CustomerLookupDashboard() {
 
             {/* Customer Value Metrics */}
             {customerLTV && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+              <div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
                 <h4 className="text-sm font-semibold text-indigo-900 mb-3 flex items-center">
                   <DollarSign className="w-4 h-4 mr-1" />
                   Customer Value Analysis
@@ -722,7 +722,7 @@ export default function CustomerLookupDashboard() {
             {/* Score Interpretation */}
             <div className="mt-6 grid md:grid-cols-2 gap-4">
               {scores.retention >= 70 && (
-                <div className="flex items-start space-x-2 text-sm bg-green-50 p-3 rounded-lg">
+                <div className="flex items-start space-x-2 text-sm bg-green-50 p-3 rounded-xl">
                   <Shield className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="font-medium text-green-800">Strong retention profile</span>
@@ -731,7 +731,7 @@ export default function CustomerLookupDashboard() {
                 </div>
               )}
               {scores.growth >= 60 && (
-                <div className="flex items-start space-x-2 text-sm bg-indigo-50 p-3 rounded-lg">
+                <div className="flex items-start space-x-2 text-sm bg-indigo-50 p-3 rounded-xl">
                   <TrendingUp className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="font-medium text-indigo-800">High growth potential</span>
@@ -740,7 +740,7 @@ export default function CustomerLookupDashboard() {
                 </div>
               )}
               {scores.referral >= 70 && (
-                <div className="flex items-start space-x-2 text-sm bg-pink-50 p-3 rounded-lg">
+                <div className="flex items-start space-x-2 text-sm bg-pink-50 p-3 rounded-xl">
                   <Heart className="w-4 h-4 text-pink-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="font-medium text-pink-800">Ideal referral candidate</span>
@@ -749,7 +749,7 @@ export default function CustomerLookupDashboard() {
                 </div>
               )}
               {scores.risk >= 60 && (
-                <div className="flex items-start space-x-2 text-sm bg-red-50 p-3 rounded-lg">
+                <div className="flex items-start space-x-2 text-sm bg-red-50 p-3 rounded-xl">
                   <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="font-medium text-red-800">Elevated churn risk</span>
@@ -779,7 +779,7 @@ export default function CustomerLookupDashboard() {
 
             {/* What they're missing */}
             {scores.growth >= 40 && (
-              <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+              <div className="mt-4 p-3 bg-amber-50 rounded-xl">
                 <p className="text-sm font-medium text-amber-800 mb-2">Missing Products:</p>
                 <div className="flex flex-wrap gap-2">
                   {!selectedCustomer.products.some(p => p.toLowerCase().includes('auto')) && (
@@ -829,7 +829,7 @@ export default function CustomerLookupDashboard() {
                 {opportunities.map((opp, i) => (
                   <div
                     key={i}
-                    className={`border-l-4 rounded-lg overflow-hidden ${
+                    className={`border-l-4 rounded-xl overflow-hidden ${
                       opp.priority === 'high'
                         ? 'border-red-500 bg-red-50'
                         : opp.priority === 'medium'
@@ -871,15 +871,15 @@ export default function CustomerLookupDashboard() {
                     {expandedOpportunity === i && (
                       <div className="px-4 pb-4 space-y-4">
                         {/* Action */}
-                        <div className="flex items-center text-sm bg-white p-3 rounded-lg">
+                        <div className="flex items-center text-sm bg-white p-3 rounded-xl">
                           <Award className="w-4 h-4 mr-2 text-indigo-600" />
                           <span><strong>Action:</strong> {opp.action}</span>
                         </div>
 
                         {/* Talking Points */}
-                        <div className="bg-white p-3 rounded-lg">
+                        <div className="bg-white p-3 rounded-xl">
                           <h6 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
-                            <MessageSquare className="w-4 h-4 mr-1 text-blue-600" />
+                            <MessageSquare className="w-4 h-4 mr-1 text-primary-600" />
                             Talking Points
                           </h6>
                           <ul className="space-y-2">
@@ -893,7 +893,7 @@ export default function CustomerLookupDashboard() {
 
                         {/* Objection Handlers */}
                         {opp.objectionHandlers.length > 0 && (
-                          <div className="bg-white p-3 rounded-lg">
+                          <div className="bg-white p-3 rounded-xl">
                             <h6 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
                               <Shield className="w-4 h-4 mr-1 text-amber-600" />
                               Objection Handlers
@@ -913,7 +913,7 @@ export default function CustomerLookupDashboard() {
                 ))}
 
                 {/* Total Potential */}
-                <div className="mt-4 p-4 bg-indigo-50 rounded-lg">
+                <div className="mt-4 p-4 bg-indigo-50 rounded-xl">
                   <div className="flex justify-between items-center">
                     <div>
                       <span className="font-medium text-indigo-900">Total Potential Premium</span>
@@ -928,7 +928,7 @@ export default function CustomerLookupDashboard() {
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <Award className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">This customer has all recommended products!</p>
+                <p className="font-medium">This customer has all recommended products.</p>
                 <p className="text-sm mt-1">Focus on retention, coverage reviews, and asking for referrals.</p>
               </div>
             )}
@@ -943,23 +943,23 @@ export default function CustomerLookupDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <a
                 href={`tel:${selectedCustomer.phone}`}
-                className="flex flex-col items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                className="flex flex-col items-center p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
               >
                 <Phone className="w-5 h-5 text-green-600 mb-1" />
                 <span className="text-xs text-green-700">Call Now</span>
               </a>
               <a
                 href={`mailto:${selectedCustomer.email}`}
-                className="flex flex-col items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                className="flex flex-col items-center p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
               >
-                <Mail className="w-5 h-5 text-blue-600 mb-1" />
+                <Mail className="w-5 h-5 text-primary-600 mb-1" />
                 <span className="text-xs text-blue-700">Send Email</span>
               </a>
-              <button className="flex flex-col items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <button className="flex flex-col items-center p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
                 <Calendar className="w-5 h-5 text-purple-600 mb-1" />
                 <span className="text-xs text-purple-700">Schedule</span>
               </button>
-              <button className="flex flex-col items-center p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+              <button className="flex flex-col items-center p-3 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors">
                 <Users className="w-5 h-5 text-amber-600 mb-1" />
                 <span className="text-xs text-amber-700">Add Note</span>
               </button>

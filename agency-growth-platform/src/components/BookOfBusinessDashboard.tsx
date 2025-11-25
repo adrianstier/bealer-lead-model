@@ -280,7 +280,7 @@ export const bookOfBusinessData = {
       },
       ezPayRate: 14.1,
       loyalCustomersPct: 86.4, // 10+ year tenure
-      keyInsight: "Aging book - 78% are 65+. CRITICAL: Only 14.1% on EZPay - major retention risk!"
+      keyInsight: "Aging book - 78% are 65+. Only 14.1% on EZPay - significant retention risk."
     },
     "Renters": {
       totalPolicies: 168,
@@ -590,10 +590,10 @@ function OpportunityCard({ title, count, action, potentialPremium, conversionRat
   };
 
   return (
-    <div className={`border-l-4 ${priorityColors[priority]} rounded-lg p-4 hover:shadow-md transition-shadow`}>
+    <div className={`border-l-4 ${priorityColors[priority]} rounded-xl p-4 hover:shadow-md transition-shadow`}>
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-semibold text-gray-900">{title}</h4>
-        <span className="text-2xl font-bold text-blue-600">{count}</span>
+        <span className="text-2xl font-bold text-primary-600">{count}</span>
       </div>
       <p className="text-sm text-gray-600 mb-2">{action}</p>
       <div className="flex justify-between text-xs">
@@ -618,8 +618,8 @@ function MetricCard({ title, value, subtitle, icon: Icon, trend, trendValue }: M
   return (
     <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <Icon className="w-5 h-5 text-blue-600" />
+        <div className="p-2 bg-blue-100 rounded-xl">
+          <Icon className="w-5 h-5 text-primary-600" />
         </div>
         {trend && (
           <span className={`text-sm flex items-center ${trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-500'}`}>
@@ -698,7 +698,7 @@ export function BookOfBusinessDashboard() {
           <button
             key={tab.id}
             onClick={() => setActiveSection(tab.id as typeof activeSection)}
-            className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               activeSection === tab.id
                 ? 'bg-blue-100 text-blue-700'
                 : 'text-gray-600 hover:bg-gray-100'
@@ -749,7 +749,7 @@ export function BookOfBusinessDashboard() {
             {/* Age Distribution */}
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <Users className="w-5 h-5 mr-2 text-blue-600" />
+                <Users className="w-5 h-5 mr-2 text-primary-600" />
                 Customer Age Distribution
               </h3>
               <div className="space-y-3">
@@ -763,7 +763,7 @@ export function BookOfBusinessDashboard() {
                   />
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600">
                 <p>Average Age: <span className="font-semibold">{data.demographics.avgAge} years</span></p>
                 <p>Median Age: <span className="font-semibold">{data.demographics.medianAge} years</span></p>
               </div>
@@ -799,7 +799,7 @@ export function BookOfBusinessDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="mt-4 pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-600">
                   <span className="font-semibold">Key Insight:</span> 48% are couples (joint policies), 53% married - ideal for multi-policy bundling
                 </p>
@@ -826,7 +826,7 @@ export function BookOfBusinessDashboard() {
                   />
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600">
                 <p>Average Tenure: <span className="font-semibold">{data.demographics.avgTenure} years</span></p>
                 <p className="text-green-600 font-medium mt-1">57% are 10+ year customers - strong loyalty base</p>
               </div>
@@ -849,7 +849,7 @@ export function BookOfBusinessDashboard() {
                   />
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600">
                 <p>Primary Market: Santa Barbara & Goleta ({(data.geography["SANTA BARBARA"].percentage + data.geography["GOLETA"].percentage).toFixed(1)}%)</p>
               </div>
             </div>
@@ -859,21 +859,21 @@ export function BookOfBusinessDashboard() {
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4">Digital Engagement</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-900">{data.demographics.ezPayEnrollment}%</p>
                 <p className="text-xs text-gray-600 mt-1">EZPay Enrolled</p>
                 <p className="text-xs text-red-600 mt-1">69% at payment lapse risk</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-green-600">100%</p>
                 <p className="text-xs text-gray-600 mt-1">My Account Active</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-900">601</p>
                 <p className="text-xs text-gray-600 mt-1">Not on EZPay</p>
                 <p className="text-xs text-orange-600 mt-1">Retention opportunity</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-900">50.5%</p>
                 <p className="text-xs text-gray-600 mt-1">Multi-Policy Discount</p>
               </div>
@@ -888,7 +888,7 @@ export function BookOfBusinessDashboard() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {Object.entries(data.customerSegments).map(([key, segment]) => (
-                <div key={key} className="text-center p-4 bg-gray-50 rounded-lg">
+                <div key={key} className="text-center p-4 bg-gray-50 rounded-xl">
                   <p className="text-2xl font-bold text-gray-900">{segment.count}</p>
                   <p className="text-xs text-gray-600 mt-1">{segment.label}</p>
                   <p className="text-sm text-gray-500">{segment.percentage}%</p>
@@ -932,7 +932,7 @@ export function BookOfBusinessDashboard() {
               return (
                 <div key={product} className="bg-white rounded-xl p-5 border border-gray-200 hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between mb-3">
-                    <div className={`p-2 ${info.color} bg-opacity-10 rounded-lg`}>
+                    <div className={`p-2 ${info.color} bg-opacity-10 rounded-xl`}>
                       <IconComponent className={`w-5 h-5 ${info.color.replace('bg-', 'text-')}`} />
                     </div>
                     <span className="text-xs font-medium text-gray-500">{info.percentage}%</span>
@@ -948,12 +948,12 @@ export function BookOfBusinessDashboard() {
           {/* Detailed Product Demographics */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+              <BarChart3 className="w-5 h-5 mr-2 text-primary-600" />
               Product Demographics Analysis
             </h3>
 
             {/* Auto */}
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-blue-900 flex items-center">
                   <Car className="w-4 h-4 mr-2" />
@@ -1010,7 +1010,7 @@ export function BookOfBusinessDashboard() {
             </div>
 
             {/* Homeowners */}
-            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-green-900 flex items-center">
                   <Home className="w-4 h-4 mr-2" />
@@ -1062,12 +1062,12 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-red-700 bg-red-100 p-2 rounded">
-                {data.productDemographics?.Homeowners?.keyInsight || "Aging book - 78% are 65+. CRITICAL: Only 14.1% on EZPay - major retention risk!"}
+                {data.productDemographics?.Homeowners?.keyInsight || "Aging book - 78% are 65+. Only 14.1% on EZPay - significant retention risk."}
               </p>
             </div>
 
             {/* Renters */}
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="mb-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-yellow-900 flex items-center">
                   <Home className="w-4 h-4 mr-2" />
@@ -1094,7 +1094,7 @@ export function BookOfBusinessDashboard() {
                   <div className="space-y-1">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Single</span>
-                      <span className="font-medium text-blue-600">{data.productDemographics?.Renters?.byGender?.Single?.percentage || 60.1}%</span>
+                      <span className="font-medium text-primary-600">{data.productDemographics?.Renters?.byGender?.Single?.percentage || 60.1}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Female</span>
@@ -1130,7 +1130,7 @@ export function BookOfBusinessDashboard() {
             </div>
 
             {/* Umbrella */}
-            <div className="mb-6 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+            <div className="mb-6 p-4 bg-cyan-50 rounded-xl border border-cyan-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-cyan-900 flex items-center">
                   <Umbrella className="w-4 h-4 mr-2" />
@@ -1187,7 +1187,7 @@ export function BookOfBusinessDashboard() {
             </div>
 
             {/* Landlords */}
-            <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+            <div className="mb-6 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-indigo-900 flex items-center">
                   <Home className="w-4 h-4 mr-2" />
@@ -1244,7 +1244,7 @@ export function BookOfBusinessDashboard() {
             </div>
 
             {/* Condominiums */}
-            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-purple-900 flex items-center">
                   <Home className="w-4 h-4 mr-2" />
@@ -1305,7 +1305,7 @@ export function BookOfBusinessDashboard() {
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4">Product Mix Strategic Insights</h3>
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+              <div className="p-4 bg-red-50 rounded-xl border-l-4 border-red-500">
                 <h4 className="font-medium text-red-900">Critical EZPay Gaps</h4>
                 <ul className="mt-2 text-sm text-red-700 space-y-1">
                   <li>• Homeowners: Only 14.1% on EZPay (vs 40.9% Auto)</li>
@@ -1313,7 +1313,7 @@ export function BookOfBusinessDashboard() {
                   <li>• These are your most loyal customers (25+ yr avg tenure) at payment lapse risk</li>
                 </ul>
               </div>
-              <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+              <div className="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
                 <h4 className="font-medium text-blue-900">Aging Book Opportunity</h4>
                 <ul className="mt-2 text-sm text-blue-700 space-y-1">
                   <li>• Homeowners: 78% are 65+ (succession planning needed)</li>
@@ -1321,7 +1321,7 @@ export function BookOfBusinessDashboard() {
                   <li>• Target adult children for policy transitions</li>
                 </ul>
               </div>
-              <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+              <div className="p-4 bg-green-50 rounded-xl border-l-4 border-green-500">
                 <h4 className="font-medium text-green-900">Growth Pipeline</h4>
                 <ul className="mt-2 text-sm text-green-700 space-y-1">
                   <li>• Renters: 22% under 35, avg 6.9yr tenure</li>
@@ -1329,7 +1329,7 @@ export function BookOfBusinessDashboard() {
                   <li>• Track life events for conversion triggers</li>
                 </ul>
               </div>
-              <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+              <div className="p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
                 <h4 className="font-medium text-yellow-900">Umbrella Expansion</h4>
                 <ul className="mt-2 text-sm text-yellow-700 space-y-1">
                   <li>• Current: Only 74 policies (5.2% penetration)</li>
@@ -1418,7 +1418,7 @@ export function BookOfBusinessDashboard() {
             {/* Auto-Only Top Targets */}
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <Car className="w-5 h-5 mr-2 text-blue-600" />
+                <Car className="w-5 h-5 mr-2 text-primary-600" />
                 Top Auto-Only Targets (Need Home)
               </h3>
               <div className="space-y-3">
@@ -1428,7 +1428,7 @@ export function BookOfBusinessDashboard() {
                       <p className="font-medium text-gray-900">{target.name}</p>
                       <p className="text-xs text-gray-500">{target.tenure}yr tenure • {target.zip}</p>
                     </div>
-                    <span className="font-bold text-blue-600">${target.premium.toLocaleString()}</span>
+                    <span className="font-bold text-primary-600">${target.premium.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -1463,7 +1463,7 @@ export function BookOfBusinessDashboard() {
             <p className="text-sm text-red-700 mb-4">157 customers at high churn risk. These are your highest priority for retention outreach and bundling offers.</p>
             <div className="grid md:grid-cols-5 gap-3">
               {data.crossSellTargets?.atRiskHighValue?.map((target, i) => (
-                <div key={i} className="p-3 bg-red-50 rounded-lg text-center">
+                <div key={i} className="p-3 bg-red-50 rounded-xl text-center">
                   <p className="font-bold text-red-700">${target.premium.toLocaleString()}</p>
                   <p className="text-xs text-gray-700 truncate">{target.name}</p>
                   <p className="text-xs text-gray-500">{target.product} • {target.tenure}yr</p>
@@ -1483,7 +1483,7 @@ export function BookOfBusinessDashboard() {
               <div>
                 <h4 className="font-medium text-gray-800 mb-3">Auto-Only Customers (337) by Segment</h4>
                 <div className="space-y-3">
-                  <div className="p-3 bg-purple-50 rounded-lg">
+                  <div className="p-3 bg-purple-50 rounded-xl">
                     <p className="text-sm font-medium text-purple-900">By Age</p>
                     <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
                       {data.demographicInsights?.autoOnlyByAge && Object.entries(data.demographicInsights.autoOnlyByAge).map(([age, info]) => (
@@ -1494,7 +1494,7 @@ export function BookOfBusinessDashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="p-3 bg-blue-50 rounded-xl">
                     <p className="text-sm font-medium text-blue-900">By Gender</p>
                     <div className="space-y-1 mt-2 text-xs">
                       {data.demographicInsights?.autoOnlyByGender && Object.entries(data.demographicInsights.autoOnlyByGender).map(([gender, info]) => (
@@ -1505,7 +1505,7 @@ export function BookOfBusinessDashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="p-3 bg-green-50 rounded-xl">
                     <p className="text-sm font-medium text-green-900">By Marital Status</p>
                     <div className="space-y-1 mt-2 text-xs">
                       <div className="flex justify-between">
@@ -1525,7 +1525,7 @@ export function BookOfBusinessDashboard() {
               <div>
                 <h4 className="font-medium text-gray-800 mb-3">Bundle Conversion Likelihood</h4>
                 <div className="space-y-3">
-                  <div className="p-3 bg-indigo-50 rounded-lg">
+                  <div className="p-3 bg-indigo-50 rounded-xl">
                     <p className="text-sm font-medium text-indigo-900">Bundle Rate by Gender</p>
                     <div className="space-y-1 mt-2 text-xs">
                       <div className="flex justify-between">
@@ -1542,7 +1542,7 @@ export function BookOfBusinessDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 bg-orange-50 rounded-lg">
+                  <div className="p-3 bg-orange-50 rounded-xl">
                     <p className="text-sm font-medium text-orange-900">Bundle Rate by Age</p>
                     <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
                       {data.demographicInsights?.bundleRateByAge && Object.entries(data.demographicInsights.bundleRateByAge).map(([age, rate]) => (
@@ -1553,7 +1553,7 @@ export function BookOfBusinessDashboard() {
                       ))}
                     </div>
                   </div>
-                  <div className="p-3 bg-cyan-50 rounded-lg">
+                  <div className="p-3 bg-cyan-50 rounded-xl">
                     <p className="text-sm font-medium text-cyan-900">EZPay Enrollment</p>
                     <div className="space-y-1 mt-2 text-xs">
                       <div className="flex justify-between">
@@ -1571,7 +1571,7 @@ export function BookOfBusinessDashboard() {
             </div>
 
             {/* Key Targeting Recommendations */}
-            <div className="mt-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+            <div className="mt-4 p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
               <h4 className="font-medium text-yellow-900">Key Targeting Insights</h4>
               <ul className="mt-2 text-sm text-yellow-800 space-y-1">
                 <li>• <strong>Couples convert best</strong> - 43% bundle rate vs 38% for individuals. Married auto-only avg $2,456 premium.</li>
@@ -1586,7 +1586,7 @@ export function BookOfBusinessDashboard() {
           {/* Action Plan */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <ChevronRight className="w-5 h-5 mr-2 text-blue-600" />
+              <ChevronRight className="w-5 h-5 mr-2 text-primary-600" />
               Recommended Action Plan
             </h3>
             <div className="space-y-4">
@@ -1605,7 +1605,7 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
                 <div>
                   <h4 className="font-medium text-gray-900">Quick Win: Umbrella Add-ons (137)</h4>
                   <p className="text-sm text-gray-600">Bundled customers are prime for umbrella at $150-300/yr. Top targets have $10K+ premium - perfect for high-limit umbrella.</p>
@@ -1660,16 +1660,16 @@ export function BookOfBusinessDashboard() {
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-4">Renewal Status</h3>
               <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl">
                   <span className="text-green-700">Renewal Taken</span>
                   <span className="font-bold text-green-700">{data.retention.renewalTaken}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl">
                   <span className="text-red-700">Renewal Not Taken</span>
                   <span className="font-bold text-red-700">{data.retention.renewalNotTaken}</span>
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+              <div className="mt-4 p-4 bg-yellow-50 rounded-xl border-l-4 border-yellow-500">
                 <p className="text-sm text-yellow-800">
                   <strong>Alert:</strong> The 49.2% renewal rate is significantly below the industry benchmark of 85%.
                   This may be due to data capture timing or indicates a retention crisis requiring immediate attention.
@@ -1680,21 +1680,21 @@ export function BookOfBusinessDashboard() {
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <h3 className="font-semibold text-gray-900 mb-4">Retention by Bundle Status</h3>
               <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-gray-600">Single Policy</span>
                     <span className="font-semibold text-red-600">67% retention</span>
                   </div>
                   <ProgressBar value={67} max={100} color="bg-red-500" />
                 </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-gray-600">2-Policy Bundle</span>
                     <span className="font-semibold text-yellow-600">85% retention</span>
                   </div>
                   <ProgressBar value={85} max={100} color="bg-yellow-500" />
                 </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-gray-600">3+ Policy Bundle</span>
                     <span className="font-semibold text-green-600">95% retention</span>
@@ -1708,11 +1708,11 @@ export function BookOfBusinessDashboard() {
           {/* Retention Strategy */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <Shield className="w-5 h-5 mr-2 text-blue-600" />
+              <Shield className="w-5 h-5 mr-2 text-primary-600" />
               Retention Strategy Recommendations
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
+              <div className="p-4 bg-red-50 rounded-xl border-l-4 border-red-500">
                 <h4 className="font-medium text-red-900">Immediate Action Required</h4>
                 <ul className="mt-2 text-sm text-red-700 space-y-1">
                   <li>• Contact 157 at-risk high-value customers ($2K+ single policy)</li>
@@ -1721,7 +1721,7 @@ export function BookOfBusinessDashboard() {
                   <li>• Bundle 523 single-policy customers (60% of book)</li>
                 </ul>
               </div>
-              <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+              <div className="p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
                 <h4 className="font-medium text-blue-900">Best Practices</h4>
                 <ul className="mt-2 text-sm text-blue-700 space-y-1">
                   <li>• Call customers 45 days before renewal</li>
@@ -1731,7 +1731,7 @@ export function BookOfBusinessDashboard() {
                 </ul>
               </div>
             </div>
-            <div className="mt-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+            <div className="mt-4 p-4 bg-green-50 rounded-xl border-l-4 border-green-500">
               <h4 className="font-medium text-green-900">Retention by Bundle Status</h4>
               <p className="text-sm text-green-700 mt-1">
                 Single policy: 67% retention • 2-policy bundle: 85% retention • 3+ policies: 95% retention.
@@ -1797,7 +1797,7 @@ export function BookOfBusinessDashboard() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 p-3 bg-green-50 rounded-lg text-sm">
+                <div className="mt-3 p-3 bg-green-50 rounded-xl text-sm">
                   <strong>Best performing:</strong> 93109 at 71.4% bundle rate - focus marketing here
                 </div>
               </div>
@@ -1811,15 +1811,15 @@ export function BookOfBusinessDashboard() {
               Retention Risk Scoring
             </h3>
             <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <div className="text-center p-4 bg-red-50 rounded-lg">
+              <div className="text-center p-4 bg-red-50 rounded-xl">
                 <p className="text-3xl font-bold text-red-600">{data.retentionRisk?.highRiskCount}</p>
                 <p className="text-sm text-red-700">High Risk Customers</p>
               </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <div className="text-center p-4 bg-orange-50 rounded-xl">
                 <p className="text-3xl font-bold text-orange-600">${(data.retentionRisk?.revenueAtRisk / 1000).toFixed(0)}K</p>
                 <p className="text-sm text-orange-700">Revenue at Risk</p>
               </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+              <div className="text-center p-4 bg-yellow-50 rounded-xl">
                 <p className="text-3xl font-bold text-yellow-600">5+</p>
                 <p className="text-sm text-yellow-700">Risk Score Threshold</p>
               </div>
@@ -1863,7 +1863,7 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-red-50 rounded-lg border-l-4 border-red-500 text-sm">
+            <div className="mt-4 p-3 bg-red-50 rounded-xl border-l-4 border-red-500 text-sm">
               <strong>Risk factors:</strong> Single policy (+3), No EZPay (+2), High premium (+1), Short tenure (+1)
             </div>
           </div>
@@ -1871,14 +1871,14 @@ export function BookOfBusinessDashboard() {
           {/* 3. Life Stage Analysis */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <Users className="w-5 h-5 mr-2 text-blue-600" />
+              <Users className="w-5 h-5 mr-2 text-primary-600" />
               Life Stage Analysis
             </h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(data.lifeStages || {}).slice(0, 7).map(([stage, info]) => (
-                <div key={stage} className="p-4 bg-gray-50 rounded-lg">
+                <div key={stage} className="p-4 bg-gray-50 rounded-xl">
                   <h4 className="font-medium text-gray-900 text-sm">{stage}</h4>
-                  <p className="text-2xl font-bold text-blue-600 mt-1">{info.count}</p>
+                  <p className="text-2xl font-bold text-primary-600 mt-1">{info.count}</p>
                   <div className="text-xs text-gray-500 mt-2 space-y-1">
                     <p>${(info.totalPremium / 1000).toFixed(0)}K total</p>
                     <p>${info.avgPremium.toLocaleString()} avg</p>
@@ -1888,10 +1888,10 @@ export function BookOfBusinessDashboard() {
               ))}
             </div>
             <div className="mt-4 grid md:grid-cols-2 gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg text-sm">
+              <div className="p-3 bg-blue-50 rounded-xl text-sm">
                 <strong>Highest value:</strong> Retired customers ($1.3M, 1.94 policies avg) - protect these relationships
               </div>
-              <div className="p-3 bg-green-50 rounded-lg text-sm">
+              <div className="p-3 bg-green-50 rounded-xl text-sm">
                 <strong>Growth opportunity:</strong> Young Families (only 19) - aggressive acquisition target
               </div>
             </div>
@@ -1904,7 +1904,7 @@ export function BookOfBusinessDashboard() {
               Premium Optimization - Missing Bundle Discounts
             </h3>
             <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <div className="text-center p-4 bg-yellow-50 rounded-lg col-span-1">
+              <div className="text-center p-4 bg-yellow-50 rounded-xl col-span-1">
                 <p className="text-3xl font-bold text-yellow-600">{data.premiumOptimization?.missingBundleDiscount}</p>
                 <p className="text-sm text-yellow-700">Single-Policy $1.5K+</p>
                 <p className="text-xs text-gray-500 mt-1">Missing multi-policy discount</p>
@@ -1921,7 +1921,7 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
             </div>
-            <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500 text-sm">
+            <div className="p-3 bg-yellow-50 rounded-xl border-l-4 border-yellow-500 text-sm">
               <strong>Opportunity:</strong> 244 customers paying $1,500+ without multi-policy discount. Each bundle adds ~$1,500/year and increases retention from 67% to 95%.
             </div>
           </div>
@@ -1933,7 +1933,7 @@ export function BookOfBusinessDashboard() {
               Referral Potential
             </h3>
             <div className="grid md:grid-cols-3 gap-4 mb-4">
-              <div className="text-center p-4 bg-pink-50 rounded-lg">
+              <div className="text-center p-4 bg-pink-50 rounded-xl">
                 <p className="text-3xl font-bold text-pink-600">{data.referralPotential?.totalCandidates}</p>
                 <p className="text-sm text-pink-700">Ideal Referrers</p>
                 <p className="text-xs text-gray-500 mt-1">$3K+ • 10yr+ • 2+ policies</p>
@@ -1965,7 +1965,7 @@ export function BookOfBusinessDashboard() {
                   ))}
                 </div>
               </div>
-              <div className="p-3 bg-pink-50 rounded-lg text-sm">
+              <div className="p-3 bg-pink-50 rounded-xl text-sm">
                 <strong>Referral strategy:</strong> These 179 customers are your most loyal advocates. Implement a referral program offering $50-100 for successful referrals. Expected yield: 10-15 new customers per year.
               </div>
             </div>
@@ -2002,7 +2002,7 @@ export function BookOfBusinessDashboard() {
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <div className="p-4 bg-teal-50 rounded-lg text-center">
+              <div className="p-4 bg-teal-50 rounded-xl text-center">
                 <p className="text-3xl font-bold text-teal-600">{data.seasonalPatterns?.q4Focus?.policyCount}</p>
                 <p className="text-sm text-teal-700">Q4/Q1 Renewals (Nov-Jan)</p>
                 <p className="text-xs text-gray-500 mt-1">${(data.seasonalPatterns?.q4Focus?.premiumAtStake / 1000).toFixed(0)}K premium at stake</p>
@@ -2022,7 +2022,7 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
             </div>
-            <div className="p-3 bg-teal-50 rounded-lg border-l-4 border-teal-500 text-sm">
+            <div className="p-3 bg-teal-50 rounded-xl border-l-4 border-teal-500 text-sm">
               <strong>Key insight:</strong> {data.seasonalPatterns?.insights?.[0]}. Prepare cross-sell campaigns for peak months.
             </div>
           </div>
@@ -2034,19 +2034,19 @@ export function BookOfBusinessDashboard() {
               Claims Impact Analysis
             </h3>
             <div className="grid md:grid-cols-4 gap-4 mb-4">
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="text-center p-3 bg-orange-50 rounded-xl">
                 <p className="text-2xl font-bold text-orange-600">{data.claimsImpact?.summary?.totalClaims}</p>
                 <p className="text-xs text-orange-700">Total Claims</p>
               </div>
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-center p-3 bg-gray-50 rounded-xl">
                 <p className="text-2xl font-bold text-gray-700">{data.claimsImpact?.summary?.uniqueCustomers}</p>
                 <p className="text-xs text-gray-600">Customers w/Claims</p>
               </div>
-              <div className="text-center p-3 bg-yellow-50 rounded-lg">
+              <div className="text-center p-3 bg-yellow-50 rounded-xl">
                 <p className="text-2xl font-bold text-yellow-600">{data.claimsImpact?.summary?.pendingClaims}</p>
                 <p className="text-xs text-yellow-700">Pending</p>
               </div>
-              <div className="text-center p-3 bg-red-50 rounded-lg">
+              <div className="text-center p-3 bg-red-50 rounded-xl">
                 <p className="text-2xl font-bold text-red-600">${(data.claimsImpact?.summary?.totalAdjustedLosses / 1000000).toFixed(1)}M</p>
                 <p className="text-xs text-red-700">Adjusted Losses</p>
               </div>
@@ -2081,7 +2081,7 @@ export function BookOfBusinessDashboard() {
                 </div>
               </div>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500 text-sm">
+            <div className="p-3 bg-orange-50 rounded-xl border-l-4 border-orange-500 text-sm">
               <strong>Retention priority:</strong> Single-policy claimants are 3x more likely to leave. Contact within 48 hours of claim resolution with bundle offer to reduce churn by 40%.
             </div>
           </div>

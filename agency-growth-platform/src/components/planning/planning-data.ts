@@ -14,17 +14,17 @@ export const planningData = {
 
   executive: {
     opportunity: {
-      icon: "🎯",
+      icon: "target",
       title: "The Opportunity",
       description: "Santa Barbara/Goleta represents one of the most competitive and high-value personal lines markets with significant retiree population, high-value homeowners, and tech professionals."
     },
     challenge: {
-      icon: "⚡",
+      icon: "zap",
       title: "The Challenge",
       description: "Rising rate pressure, increased cancellation risk, manual processes, and limited scalability threaten growth potential and customer retention."
     },
     solution: {
-      icon: "🤖",
+      icon: "bot",
       title: "The Solution",
       description: "A five-pillar integrated AI system that creates predictable, scalable growth through automation, personalization, and data-driven decision making."
     },
@@ -227,7 +227,7 @@ export const planningData = {
 
   benefits: [
     {
-      icon: "📈",
+      icon: "trending-up",
       title: "Business Growth",
       items: [
         "Predictable and scalable lead generation",
@@ -238,7 +238,7 @@ export const planningData = {
       ]
     },
     {
-      icon: "🛡️",
+      icon: "shield",
       title: "Retention",
       items: [
         "Fewer preventable cancellations",
@@ -249,7 +249,7 @@ export const planningData = {
       ]
     },
     {
-      icon: "⚙️",
+      icon: "settings",
       title: "Operational Efficiency",
       items: [
         "Automated monthly and weekly workflows",
@@ -260,7 +260,7 @@ export const planningData = {
       ]
     },
     {
-      icon: "⭐",
+      icon: "star",
       title: "Customer Experience",
       items: [
         "Personal, relevant, meaningful communication",

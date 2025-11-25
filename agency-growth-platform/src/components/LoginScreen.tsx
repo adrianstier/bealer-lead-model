@@ -156,31 +156,31 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-dark flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+          <div className="icon-container-lg bg-primary-600 rounded-full mb-4 mx-auto">
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Bealer Agency Dashboard
           </h1>
-          <p className="text-blue-200">
+          <p className="text-primary-200">
             Enter your password to access the growth platform
           </p>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-2xl p-8">
+        <form onSubmit={handleSubmit} className="card-lg p-8">
           {/* Lockout Warning */}
           {isLocked && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg">
-              <div className="flex items-center text-red-800 mb-2">
+            <div className="alert-danger mb-6">
+              <div className="flex items-center mb-2">
                 <ShieldAlert className="w-5 h-5 mr-2" />
                 <span className="font-semibold">Account Temporarily Locked</span>
               </div>
-              <p className="text-sm text-red-700">
+              <p className="text-sm">
                 Too many failed attempts. Please wait{' '}
                 <span className="font-mono font-bold">
                   {Math.floor(lockoutRemaining / 60)}:{(lockoutRemaining % 60).toString().padStart(2, '0')}
@@ -190,7 +190,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           )}
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="form-label">
               Password
             </label>
             <div className="relative">
@@ -200,8 +200,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12 ${
-                  error ? 'border-red-500' : 'border-gray-300'
+                className={`form-input pr-12 ${
+                  error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : ''
                 } ${isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
                 autoFocus
@@ -210,7 +210,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                 disabled={isLocked}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
@@ -222,7 +222,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
               </button>
             </div>
             {!isLocked && attemptsRemaining < MAX_ATTEMPTS && attemptsRemaining > 0 && (
-              <p className="mt-2 text-xs text-amber-600">
+              <p className="form-helper text-amber-600">
                 {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining before lockout
               </p>
             )}
@@ -230,7 +230,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
           {/* Error Message */}
           {error && !isLocked && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-700">
+            <div className="alert-danger mb-4 flex items-center">
               <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
               <span className="text-sm">{error}</span>
             </div>
@@ -240,10 +240,10 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
           <button
             type="submit"
             disabled={isLoading || !password || isLocked}
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
+            className={`w-full py-3 px-6 rounded-xl font-semibold text-white transition-all duration-200 ${
               isLoading || !password || isLocked
                 ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+                : 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-sm hover:shadow-md'
             }`}
           >
             {isLoading ? (
@@ -263,7 +263,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         </form>
 
         {/* Footer */}
-        <p className="text-center text-blue-200 text-sm mt-6">
+        <p className="text-center text-primary-200 text-sm mt-6">
           Derrick Bealer • Allstate Santa Barbara & Goleta
         </p>
       </div>

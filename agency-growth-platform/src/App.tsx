@@ -17,14 +17,14 @@ import {
   Package,
   Award,
   BookOpen,
-  Search,
-  AlertTriangle,
   Rocket,
-  User
+  User,
+  ChevronDown,
+  ChevronRight,
+  RotateCcw
 } from 'lucide-react';
 import CompensationDashboard from './components/CompensationDashboard';
 import BookOfBusinessDashboard from './components/BookOfBusinessDashboard';
-import LeadAnalysisDashboard from './components/LeadAnalysisDashboard';
 import CustomerLookupDashboard from './components/CustomerLookupDashboard';
 import BealerPlanningSection from './components/BealerPlanningSection';
 import LoginScreen from './components/LoginScreen';
@@ -296,6 +296,64 @@ function App() {
   const [scenarioData, setScenarioData] = useState<ScenarioData[]>([]);
   const [scenarioResults, setScenarioResults] = useState<ScenarioResults[]>([]);
   const [benchmarkMetrics, setBenchmarkMetrics] = useState<BenchmarkMetrics | null>(null); // V3.0: Benchmark metrics
+
+  // Collapsible section states
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    currentState: true,
+    growthInvestment: true,
+    marketing: false,
+    staffing: false,
+    productMix: false,
+    technology: false,
+    economics: false
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  // Default values for reset functionality
+  const defaultStrategyInputs: StrategyInputs = {
+    currentPolicies: 1424,
+    currentCustomers: 876,
+    currentStaff: 2.0,
+    monthlyLeadSpend: 0,
+    costPerLead: 55,
+    additionalLeadSpend: 0,
+    additionalStaff: 1.0,
+    projectionMonths: 24,
+    conciergeService: false,
+    newsletterSystem: false,
+    salesCompensationModel: 'commission',
+    commissionRate: 10,
+    fteSalary: 3500,
+    monthlyChurnRate: 0.21,
+    averagePremium: 2963,
+    commissionPayout: 10,
+    fixedMonthlyCosts: 12000,
+    fteBenefitsMultiplier: 1.3,
+    salesRampMonths: 3,
+    marketing: { referral: 0, digital: 0, traditional: 0, partnerships: 0 },
+    staffing: { producers: 1.0, serviceStaff: 0.0, adminStaff: 1.0 },
+    products: { auto: 620, home: 721, umbrella: 74, cyber: 0, commercial: 9 },
+    eoAutomation: true,
+    renewalProgram: true,
+    crossSellProgram: false,
+    growthStage: 'mature',
+    commissionStructure: 'captive',
+    targetRetentionRate: 97.5,
+    targetConversionRate: 10.0,
+    organicSalesPerMonth: 13.5
+  };
+
+  const resetToDefaults = () => {
+    setStrategyInputs(defaultStrategyInputs);
+    setHasResults(false);
+    setCalculationComplete(false);
+    setScenarioData([]);
+    setScenarioResults([]);
+    setBenchmarkMetrics(null);
+  };
 
   // V3.0: Calculate benchmark metrics
   const calculateBenchmarks = (
@@ -818,10 +876,8 @@ function App() {
     { id: 'model', label: 'Model Details', icon: Info },
     { id: 'book', label: 'Book of Business', icon: BookOpen },
     { id: 'lookup', label: 'Customer Lookup', icon: User },
-    { id: 'leads', label: 'Lead Analysis', icon: Search },
     { id: 'compensation', label: 'Compensation', icon: Award },
-    { id: 'strategy', label: 'Strategy Builder', icon: Settings },
-    { id: 'scenarios', label: 'Scenario Analysis', icon: BarChart3 },
+    { id: 'strategy', label: 'Strategy & Scenarios', icon: Settings },
     { id: 'results', label: 'Results', icon: Lightbulb }
   ];
 
@@ -831,7 +887,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100">
       {/* Logout button */}
       <button
         onClick={handleLogout}
@@ -858,7 +914,7 @@ function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-3xl p-8 lg:p-12 max-w-2xl w-full shadow-2xl"
+              className="bg-white rounded-2xl p-8 lg:p-12 max-w-2xl w-full shadow-2xl"
             >
               {!calculationComplete ? (
                 // Calculating state
@@ -882,7 +938,7 @@ function App() {
                       transition={{ delay: 0.2 }}
                       className="flex items-center gap-3 text-gray-700"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary-600 flex-shrink-0" />
                       <span>Processing funnel conversion rates...</span>
                     </motion.div>
                     <motion.div
@@ -891,7 +947,7 @@ function App() {
                       transition={{ delay: 0.5 }}
                       className="flex items-center gap-3 text-gray-700"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary-600 flex-shrink-0" />
                       <span>Simulating capacity constraints...</span>
                     </motion.div>
                     <motion.div
@@ -900,7 +956,7 @@ function App() {
                       transition={{ delay: 0.8 }}
                       className="flex items-center gap-3 text-gray-700"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary-600 flex-shrink-0" />
                       <span>Calculating ROI projections...</span>
                     </motion.div>
                     <motion.div
@@ -909,7 +965,7 @@ function App() {
                       transition={{ delay: 1.1 }}
                       className="flex items-center gap-3 text-gray-700"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary-600 flex-shrink-0" />
                       <span>Generating scenario comparisons...</span>
                     </motion.div>
                   </div>
@@ -925,13 +981,13 @@ function App() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                    className="w-20 h-20 mx-auto mb-6 bg-emerald-100 rounded-full flex items-center justify-center"
+                    className="w-20 h-20 mx-auto mb-6 bg-primary-100 rounded-full flex items-center justify-center"
                   >
-                    <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+                    <CheckCircle2 className="w-12 h-12 text-primary-600" />
                   </motion.div>
 
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    Calculation Complete!
+                    Calculation Complete
                   </h2>
 
                   <p className="text-lg text-gray-700 mb-8">
@@ -942,28 +998,28 @@ function App() {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleNavigateToResults('scenarios')}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                      onClick={() => handleNavigateToResults('strategy')}
+                      className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 px-6 rounded-xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
                     >
-                      <BarChart3 className="w-6 h-6" />
-                      View Scenario Analysis
-                      <ArrowRight className="w-5 h-5" />
+                      <BarChart3 className="w-5 h-5" />
+                      View Scenario Results
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleNavigateToResults('results')}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3"
                     >
-                      <Lightbulb className="w-6 h-6" />
+                      <Lightbulb className="w-5 h-5" />
                       View Strategic Recommendations
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
 
                     <button
                       onClick={handleStayOnPage}
-                      className="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200"
+                      className="btn-secondary w-full"
                     >
                       Stay on Strategy Builder
                     </button>
@@ -976,19 +1032,19 @@ function App() {
       </AnimatePresence>
 
       {/* Compact Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white" role="banner">
+      <header className="bg-gradient-to-r from-primary-700 to-primary-600 text-white" role="banner">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-base font-semibold">
                 Derrick Bealer Agency
               </h1>
-              <p className="text-xs text-blue-100">
-                A0C6581 • $4.07M/mo • 3,500 policies
+              <p className="text-xs text-primary-100">
+                A0C6581 • $4.2M written premium • 1,424 policies
               </p>
             </div>
             <div className="text-right hidden sm:block">
-              <p className="text-xs text-blue-200">Target</p>
+              <p className="text-xs text-primary-200">Target</p>
               <p className="text-sm font-semibold">1.8 policies/customer</p>
             </div>
           </div>
@@ -1009,20 +1065,20 @@ function App() {
                   aria-controls={`tabpanel-${item.id}`}
                   className={`
                     group relative flex items-center gap-2 px-3 py-2 text-sm font-medium whitespace-nowrap flex-shrink-0
-                    transition-all duration-200 rounded-md
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2
+                    transition-all duration-200 rounded-lg
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
                     ${activeTab === item.id
-                      ? 'text-emerald-700 bg-emerald-50 shadow-sm'
+                      ? 'text-primary-700 bg-primary-50 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }
                   `}
                 >
-                  <item.icon className={`w-4 h-4 transition-colors duration-200 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600'}`} aria-hidden="true" />
+                  <item.icon className={`w-4 h-4 transition-colors duration-200 ${activeTab === item.id ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} aria-hidden="true" />
                   <span>{item.label}</span>
                   {activeTab === item.id && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600 rounded-full"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded-full"
                       transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
@@ -1056,8 +1112,8 @@ function App() {
                       className="card-lg p-6 sm:p-8"
                     >
                       <div className="flex items-start gap-4 mb-6">
-                        <div className="p-3 bg-blue-50 rounded-xl">
-                          <Info className="w-6 h-6 text-blue-600" />
+                        <div className="p-3 bg-primary-50 rounded-xl">
+                          <Info className="w-6 h-6 text-primary-600" />
                         </div>
                         <div>
                           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Our Approach</h2>
@@ -1085,10 +1141,10 @@ function App() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1 }}
-                            className="bg-white rounded-xl p-4 border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300"
+                            className="bg-white rounded-xl p-4 border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-200"
                           >
                             <div className="flex items-center gap-2 mb-2">
-                              <metric.icon className="w-5 h-5 text-blue-600" />
+                              <metric.icon className="w-5 h-5 text-primary-600" />
                               <h3 className="font-semibold text-gray-900 text-sm">{metric.label}</h3>
                             </div>
                             <p className="text-xs text-gray-600 mb-1">{metric.value}</p>
@@ -1110,7 +1166,7 @@ function App() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.5 + idx * 0.1 }}
-                            className="flex gap-4 p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 hover:shadow-md transition-all duration-300"
+                            className="flex gap-4 p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 hover:shadow-md transition-all duration-200"
                           >
                             <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
                             <div>
@@ -1127,7 +1183,7 @@ function App() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 lg:p-12 border border-blue-100"
+                      className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 lg:p-12 border border-blue-100"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-8">Model Validation & Accuracy</h2>
 
@@ -1175,7 +1231,7 @@ function App() {
                     <motion.section
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                     >
                       <div className="flex items-start gap-4 mb-6">
                         <div className="p-3 bg-indigo-50 rounded-xl">
@@ -1205,15 +1261,15 @@ function App() {
                           </p>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                              <div className="w-2 h-2 rounded-full bg-primary-600"></div>
                               <span className="text-sm text-gray-700">Monthly time-step calculations</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                              <div className="w-2 h-2 rounded-full bg-primary-600"></div>
                               <span className="text-sm text-gray-700">Sequential state updates</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                              <div className="w-2 h-2 rounded-full bg-primary-600"></div>
                               <span className="text-sm text-gray-700">Compounding effects modeled</span>
                             </div>
                           </div>
@@ -1248,7 +1304,7 @@ function App() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Sales Funnel Conversion Mathematics</h2>
 
@@ -1260,7 +1316,7 @@ function App() {
                         <div className="space-y-4">
                           <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center font-bold text-blue-700">1</div>
+                              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center font-bold text-primary-700">1</div>
                               <div>
                                 <h4 className="font-semibold text-gray-900">Leads Generated</h4>
                                 <p className="text-sm text-gray-600">Raw lead volume from marketing spend</p>
@@ -1273,14 +1329,14 @@ function App() {
                           </div>
 
                           <div className="flex items-center justify-center">
-                            <div className="text-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold">
+                            <div className="text-center px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-semibold">
                               × 75% Contact Rate
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center font-bold text-blue-700">2</div>
+                              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center font-bold text-primary-700">2</div>
                               <div>
                                 <h4 className="font-semibold text-gray-900">Contacts Made</h4>
                                 <p className="text-sm text-gray-600">Successful lead engagement</p>
@@ -1288,19 +1344,19 @@ function App() {
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-gray-500">Industry Median</p>
-                              <p className="font-bold text-blue-600">75%</p>
+                              <p className="font-bold text-primary-600">75%</p>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-center">
-                            <div className="text-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold">
+                            <div className="text-center px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-semibold">
                               × 65% Quote Rate
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center font-bold text-blue-700">3</div>
+                              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center font-bold text-primary-700">3</div>
                               <div>
                                 <h4 className="font-semibold text-gray-900">Quotes Issued</h4>
                                 <p className="text-sm text-gray-600">Qualified prospects quoted</p>
@@ -1308,19 +1364,19 @@ function App() {
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-gray-500">Industry Median</p>
-                              <p className="font-bold text-blue-600">65%</p>
+                              <p className="font-bold text-primary-600">65%</p>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-center">
-                            <div className="text-center px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-semibold">
+                            <div className="text-center px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-semibold">
                               × 50% Bind Rate
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center font-bold text-blue-700">4</div>
+                              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center font-bold text-primary-700">4</div>
                               <div>
                                 <h4 className="font-semibold text-gray-900">Policies Bound</h4>
                                 <p className="text-sm text-gray-600">Accepted and activated</p>
@@ -1328,7 +1384,7 @@ function App() {
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-gray-500">Industry Median</p>
-                              <p className="font-bold text-blue-600">50%</p>
+                              <p className="font-bold text-primary-600">50%</p>
                             </div>
                           </div>
 
@@ -1339,10 +1395,10 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl">
+                        <div className="mt-6 p-4 bg-primary-50 border-l-4 border-primary-500 rounded-r-xl">
                           <p className="text-sm font-semibold text-gray-900 mb-1">Net Conversion Rate</p>
                           <p className="text-gray-700">
-                            Overall lead-to-policy: <span className="font-bold text-blue-600">24.4%</span>
+                            Overall lead-to-policy: <span className="font-bold text-primary-600">24.4%</span>
                             <span className="text-gray-500 ml-2">(0.75 × 0.65 × 0.50)</span>
                           </p>
                         </div>
@@ -1354,16 +1410,16 @@ function App() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.15 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Core Mathematical Formulas</h2>
 
                       <div className="space-y-8">
                         {/* Monthly New Policies */}
-                        <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+                        <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-primary-200">
                           <h3 className="text-lg font-bold text-gray-900 mb-4">1. Monthly New Policies Generated</h3>
 
-                          <div className="bg-white rounded-xl p-6 mb-4 border border-blue-200">
+                          <div className="bg-white rounded-xl p-6 mb-4 border border-primary-200">
                             <p className="font-mono text-lg text-gray-900 mb-2">
                               New_Policies = (Monthly_Spend ÷ Cost_Per_Lead) × Conversion_Rate
                             </p>
@@ -1373,7 +1429,7 @@ function App() {
                             </div>
                           </div>
 
-                          <div className="bg-blue-100 rounded-lg p-4">
+                          <div className="bg-primary-100 rounded-lg p-4">
                             <p className="text-sm font-semibold text-gray-900 mb-2">Example Calculation:</p>
                             <div className="text-sm text-gray-700 space-y-1 font-mono">
                               <p>Monthly Spend: $2,000</p>
@@ -1530,7 +1586,7 @@ function App() {
                                 <span className="font-semibold text-gray-900">Conservative:</span>
                                 <span className="font-mono text-gray-700">Base_Rate × 0.615 = 24.4% × 0.615 = 15%</span>
                               </div>
-                              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center justify-between p-3 bg-primary-50 rounded-lg border border-primary-200">
                                 <span className="font-semibold text-gray-900">Moderate (Baseline):</span>
                                 <span className="font-mono text-gray-700">Base_Rate × 1.0 = 24.4%</span>
                               </div>
@@ -1561,20 +1617,20 @@ function App() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                      className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Critical Model Assumptions</h2>
 
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                          <div className="p-5 rounded-xl border-2 border-blue-200 bg-blue-50">
+                          <div className="p-5 rounded-xl border-2 border-primary-200 bg-primary-50">
                             <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                              <DollarSign className="w-5 h-5 text-blue-600" />
+                              <DollarSign className="w-5 h-5 text-primary-600" />
                               Average Commission
                             </h4>
-                            <div className="text-3xl font-bold text-blue-600 mb-2">$600</div>
+                            <div className="text-3xl font-bold text-primary-600 mb-2">$600</div>
                             <p className="text-sm text-gray-700">Annual commission per policy (median across all lines)</p>
-                            <div className="mt-3 pt-3 border-t border-blue-200">
+                            <div className="mt-3 pt-3 border-t border-primary-200">
                               <p className="text-xs text-gray-600">
                                 <span className="font-semibold">Range:</span> $420-$840 depending on product mix
                               </p>
@@ -1667,7 +1723,7 @@ function App() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
-                      className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl p-8 lg:p-12 border-2 border-yellow-200"
+                      className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 lg:p-12 border-2 border-yellow-200"
                     >
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Model Limitations & Considerations</h2>
 
@@ -1761,12 +1817,6 @@ function App() {
                   </div>
                 </Tabs.Content>
 
-                <Tabs.Content value="leads" role="tabpanel" id="tabpanel-leads" aria-labelledby="tab-leads">
-                  <div className="max-w-7xl mx-auto">
-                    <LeadAnalysisDashboard />
-                  </div>
-                </Tabs.Content>
-
                 <Tabs.Content value="compensation" role="tabpanel" id="tabpanel-compensation" aria-labelledby="tab-compensation">
                   <div className="max-w-7xl mx-auto">
                     <CompensationDashboard
@@ -1774,16 +1824,47 @@ function App() {
                       currentPG={-200}
                       writtenPremium={strategyInputs.averagePremium * strategyInputs.currentPolicies}
                       isElite={false}
-                      onTargetUpdate={(targets) => {
-                        // Integration point for projection model
-                        console.log('Compensation targets updated:', targets);
+                      onTargetUpdate={() => {
+                        // Integration point for projection model - placeholder
                       }}
                     />
                   </div>
                 </Tabs.Content>
 
                 <Tabs.Content value="strategy" role="tabpanel" id="tabpanel-strategy" aria-labelledby="tab-strategy">
-                  <div className="max-w-6xl mx-auto space-y-6">
+                  {/* Sticky Calculate Button */}
+                  {!hasResults && (
+                    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg p-4">
+                      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Ready to see projections?</span> Adjust settings above, then calculate.
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: isCalculating ? 1 : 1.02 }}
+                          whileTap={{ scale: isCalculating ? 1 : 0.98 }}
+                          onClick={handleCalculate}
+                          disabled={isCalculating}
+                          className={`bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-6 rounded-lg font-semibold text-sm shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 ${
+                            isCalculating ? 'opacity-70 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {isCalculating ? (
+                            <>
+                              <Settings className="w-4 h-4 animate-spin" />
+                              Calculating...
+                            </>
+                          ) : (
+                            <>
+                              Calculate Scenarios
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </motion.button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="max-w-6xl mx-auto space-y-6 pb-24">
                     {/* Key Driver Alert - Policies Per Customer Tracker */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -1807,10 +1888,10 @@ function App() {
                           </div>
                           <div className="flex items-baseline gap-4 mb-3">
                             <div>
-                              <span className="text-4xl font-bold text-gray-900">
+                              <span className="text-3xl font-bold text-gray-900">
                                 {strategyInputs.currentCustomers > 0 ? (strategyInputs.currentPolicies / strategyInputs.currentCustomers).toFixed(2) : '0.00'}
                               </span>
-                              <span className="text-lg text-gray-600 ml-1">policies per customer</span>
+                              <span className="text-base text-gray-600 ml-1">policies per customer</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <span className="text-gray-500">→</span>
@@ -1824,7 +1905,7 @@ function App() {
                               {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8 && (
                                 <span className="text-green-600 flex items-center gap-1">
                                   <CheckCircle2 className="w-4 h-4" />
-                                  95% Retention Unlocked!
+                                  95% Retention Achieved
                                 </span>
                               )}
                             </div>
@@ -1848,7 +1929,7 @@ function App() {
                           <p className="text-xs text-gray-600">
                             {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) < 1.8
                               ? `Add ${Math.ceil((1.8 * strategyInputs.currentCustomers) - strategyInputs.currentPolicies)} policies to reach optimal retention tier`
-                              : 'Excellent cross-selling! Focus on maintaining this level with new customers'
+                              : 'Excellent cross-selling. Focus on maintaining this level with new customers.'
                             }
                           </p>
                         </div>
@@ -1859,7 +1940,7 @@ function App() {
                             strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
                               ? 'text-green-600'
                               : strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.5
-                              ? 'text-blue-600'
+                              ? 'text-primary-600'
                               : 'text-yellow-600'
                           }`}>
                             {strategyInputs.currentCustomers > 0 && (strategyInputs.currentPolicies / strategyInputs.currentCustomers) >= 1.8
@@ -1879,11 +1960,21 @@ function App() {
                       transition={{ delay: 0.1 }}
                       className="card-lg p-6 sm:p-8"
                     >
-                      <div className="mb-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Configure Your Growth Strategy</h2>
-                        <p className="text-gray-600">
-                          Adjust parameters to model different scenarios and optimize growth
-                        </p>
+                      <div className="mb-8 flex items-start justify-between">
+                        <div>
+                          <h2 className="text-xl font-semibold text-gray-900 mb-2">Configure Your Growth Strategy</h2>
+                          <p className="text-gray-600">
+                            Adjust parameters to model different scenarios and optimize growth
+                          </p>
+                        </div>
+                        <button
+                          onClick={resetToDefaults}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Reset all inputs to default values"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          Reset
+                        </button>
                       </div>
 
                       <div className="grid lg:grid-cols-2 gap-8">
@@ -1928,8 +2019,8 @@ function App() {
                         {/* Growth Investment */}
                         <div className="space-y-6">
                           <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <TrendingUp className="w-5 h-5 text-blue-700" />
+                            <div className="p-2 bg-primary-100 rounded-lg">
+                              <TrendingUp className="w-5 h-5 text-primary-700" />
                             </div>
                             <h3 className="text-xl font-semibold text-gray-900">Growth Investment</h3>
                           </div>
@@ -1971,7 +2062,7 @@ function App() {
                                   checked={strategyInputs[system.field] as boolean}
                                   onChange={(e) => updateInput(system.field, e.target.checked)}
                                   aria-label={`Enable ${system.label} for ${system.cost}`}
-                                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
+                                  className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                                 />
                                 <span className="flex-1 text-sm font-medium text-gray-700">{system.label}</span>
                                 <span className="text-xs text-gray-500">{system.cost}</span>
@@ -2054,19 +2145,27 @@ function App() {
                         </div>
                       </div>
 
-                      {/* V3.0: Marketing Channels */}
+                      {/* Marketing Channels - Collapsible */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <TrendingUp className="w-5 h-5 text-blue-700" />
+                        <button
+                          onClick={() => toggleSection('marketing')}
+                          className="w-full flex items-center justify-between gap-3 mb-6 text-left hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary-100 rounded-lg">
+                              <TrendingUp className="w-5 h-5 text-primary-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">Marketing Channels</h3>
+                              <p className="text-sm text-gray-600">Channel-specific spending with proven conversion rates</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Marketing Channels (V3.0)</h3>
-                            <p className="text-sm text-gray-600">Channel-specific spending with proven conversion rates</p>
-                          </div>
-                        </div>
+                          {expandedSections.marketing ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                        </button>
 
-                        <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200 text-sm text-slate-700">
+                        {expandedSections.marketing && (
+                        <>
+                        <div className="mb-4 p-3 bg-primary-50 rounded border border-primary-200 text-sm text-slate-700">
                           <strong>Industry Benchmarks:</strong> Referrals convert at 60% vs 15% traditional (4x better). Digital reduces acquisition cost by 30%.
                         </div>
 
@@ -2197,20 +2296,30 @@ function App() {
                         <div className="mt-4 pt-4 border-t text-sm font-medium text-gray-700">
                           Total Marketing: ${Object.values(strategyInputs.marketing).reduce((a, b) => a + b, 0).toLocaleString()}/month
                         </div>
+                        </>
+                        )}
                       </div>
 
-                      {/* V3.0: Staffing Composition */}
+                      {/* Staffing Composition - Collapsible */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-purple-100 rounded-lg">
-                            <Users className="w-5 h-5 text-purple-700" />
+                        <button
+                          onClick={() => toggleSection('staffing')}
+                          className="w-full flex items-center justify-between gap-3 mb-6 text-left hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                              <Users className="w-5 h-5 text-purple-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">Staffing Composition</h3>
+                              <p className="text-sm text-gray-600">Optimize your team structure for growth</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Staffing Composition (V3.0)</h3>
-                            <p className="text-sm text-gray-600">Optimize your team structure for growth</p>
-                          </div>
-                        </div>
+                          {expandedSections.staffing ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                        </button>
 
+                        {expandedSections.staffing && (
+                        <>
                         <div className="mb-4 p-3 bg-purple-50 rounded border border-purple-200 text-sm text-slate-700">
                           <strong>Optimal Ratio:</strong> 2.8 service staff per producer. Target revenue per employee: $150k-$200k (good), $300k+ (excellent).
                         </div>
@@ -2286,22 +2395,32 @@ function App() {
                             </span>
                           </div>
                         </div>
+                        </>
+                        )}
                       </div>
 
-                      {/* V3.0: Product Mix */}
+                      {/* Product Mix - Collapsible */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-green-100 rounded-lg">
-                            <Package className="w-5 h-5 text-green-700" />
+                        <button
+                          onClick={() => toggleSection('productMix')}
+                          className="w-full flex items-center justify-between gap-3 mb-6 text-left hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <Package className="w-5 h-5 text-green-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">Product Mix</h3>
+                              <p className="text-sm text-gray-600">Track policies by product type for retention optimization</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Product Mix (V3.0)</h3>
-                            <p className="text-sm text-gray-600">Track policies by product type for retention optimization</p>
-                          </div>
-                        </div>
+                          {expandedSections.productMix ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                        </button>
 
+                        {expandedSections.productMix && (
+                        <>
                         <div className="mb-4 p-3 bg-green-50 rounded border border-green-200 text-sm text-slate-700">
-                          <strong>Critical Threshold:</strong> 1.8 policies per customer = 95% retention. Focus on bundling!
+                          <strong>Critical Threshold:</strong> 1.8 policies per customer = 95% retention. Focus on bundling.
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-4">
@@ -2339,7 +2458,7 @@ function App() {
 
                           <div>
                             <label htmlFor="input-products-umbrella" className="form-label">
-                              Umbrella <span className="text-emerald-600">(High Margin)</span>
+                              Umbrella <span className="text-primary-600">(High Margin)</span>
                             </label>
                             <input
                               id="input-products-umbrella"
@@ -2355,7 +2474,7 @@ function App() {
 
                           <div>
                             <label htmlFor="input-products-cyber" className="form-label">
-                              Cyber <span className="text-emerald-600">(15-25% comm)</span>
+                              Cyber <span className="text-primary-600">(15-25% comm)</span>
                             </label>
                             <input
                               id="input-products-cyber"
@@ -2398,33 +2517,42 @@ function App() {
                               {strategyInputs.currentCustomers > 0 && (Object.values(strategyInputs.products).reduce((a, b) => a + b, 0) / strategyInputs.currentCustomers) >= 1.8 && (
                                 <span className="text-green-600 flex items-center gap-1">
                                   <CheckCircle2 className="w-4 h-4" />
-                                  95% Retention!
+                                  95% Retention
                                 </span>
                               )}
                             </span>
                           </div>
                         </div>
+                        </>
+                        )}
                       </div>
 
-                      {/* V3.0: Technology Investments */}
+                      {/* Technology Investments - Collapsible */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-yellow-100 rounded-lg">
-                            <Zap className="w-5 h-5 text-yellow-700" />
+                        <button
+                          onClick={() => toggleSection('technology')}
+                          className="w-full flex items-center justify-between gap-3 mb-6 text-left hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-yellow-100 rounded-lg">
+                              <Zap className="w-5 h-5 text-yellow-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">Technology Investments</h3>
+                              <p className="text-sm text-gray-600">High-ROI programs with proven returns</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Technology Investments (V3.0)</h3>
-                            <p className="text-sm text-gray-600">High-ROI programs with proven returns</p>
-                          </div>
-                        </div>
+                          {expandedSections.technology ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                        </button>
 
+                        {expandedSections.technology && (
                         <div className="space-y-3">
                           <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                             <input
                               type="checkbox"
                               checked={strategyInputs.eoAutomation}
                               onChange={(e) => updateInput('eoAutomation', e.target.checked)}
-                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
+                              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
                               <div className="text-sm font-medium text-gray-900">E&O Certificate Automation ($200/mo)</div>
@@ -2437,7 +2565,7 @@ function App() {
                               type="checkbox"
                               checked={strategyInputs.renewalProgram}
                               onChange={(e) => updateInput('renewalProgram', e.target.checked)}
-                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
+                              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
                               <div className="text-sm font-medium text-gray-900">Proactive Renewal Review Program ($150/mo)</div>
@@ -2452,7 +2580,7 @@ function App() {
                               type="checkbox"
                               checked={strategyInputs.crossSellProgram}
                               onChange={(e) => updateInput('crossSellProgram', e.target.checked)}
-                              className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
+                              className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-emerald-500 focus:ring-offset-0"
                             />
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
@@ -2463,20 +2591,29 @@ function App() {
                             </div>
                           </label>
                         </div>
+                        )}
                       </div>
 
-                      {/* Economic Assumptions */}
+                      {/* Economic Assumptions - Collapsible */}
                       <div className="mt-10 pt-10 border-t-2 border-gray-200">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <Activity className="w-5 h-5 text-blue-700" />
+                        <button
+                          onClick={() => toggleSection('economics')}
+                          className="w-full flex items-center justify-between gap-3 mb-6 text-left hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary-100 rounded-lg">
+                              <Activity className="w-5 h-5 text-primary-700" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">Economic Assumptions</h3>
+                              <p className="text-sm text-gray-600">Fine-tune financial parameters for accurate modeling</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Economic Assumptions</h3>
-                            <p className="text-sm text-gray-600">Fine-tune financial parameters for accurate modeling</p>
-                          </div>
-                        </div>
+                          {expandedSections.economics ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                        </button>
 
+                        {expandedSections.economics && (
+                        <>
                         <div className="grid md:grid-cols-3 gap-4">
                           {[
                             { label: 'Monthly Churn Rate (%)', field: 'monthlyChurnRate' as keyof StrategyInputs, step: 0.5, help: 'Typical: 2-4%' },
@@ -2524,255 +2661,11 @@ function App() {
                             </div>
                           ))}
                         </div>
+                        </>
+                        )}
                       </div>
 
-                      {/* V5.0: Reality Check - Show actual acquisition economics */}
-                      <div className="card p-6 mt-6 bg-amber-50 border-amber-200">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-amber-700" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Reality Check: Acquisition Economics</h3>
-                            <p className="text-sm text-gray-600">Based on actual lead data analysis (not industry benchmarks)</p>
-                          </div>
-                        </div>
-
-                        {(() => {
-                          // Calculate realistic acquisition metrics
-                          const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
-                          const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
-                          const realisticConversionRate = strategyInputs.targetConversionRate / 100; // Use slider value
-                          const newCustomersPerMonth = monthlyLeads * realisticConversionRate;
-                          const paidLeadPolicies = newCustomersPerMonth * (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
-
-                          // Include organic/walk-in sales (Derrick's typical 13/month)
-                          const organicPolicies = strategyInputs.organicSalesPerMonth;
-                          const newPoliciesPerMonth = paidLeadPolicies + organicPolicies;
-
-                          const actualCAC = newCustomersPerMonth > 0 ? totalLeadSpend / newCustomersPerMonth : 0;
-
-                          // Calculate churn using target retention rate from slider
-                          // Default 97.5% based on actual loss pattern (avg 3/mo, range 0-6)
-                          const annualRetention = strategyInputs.targetRetentionRate / 100;
-                          const monthlyRetention = Math.pow(annualRetention, 1/12);
-                          const monthlyChurnPolicies = strategyInputs.currentPolicies * (1 - monthlyRetention);
-
-                          // Break-even calculation (only considers paid leads, not organic)
-                          const breakEvenPolicies = Math.ceil(Math.max(0, monthlyChurnPolicies - organicPolicies));
-                          const breakEvenCustomers = breakEvenPolicies / (strategyInputs.currentPolicies / strategyInputs.currentCustomers);
-                          const breakEvenLeadSpend = (breakEvenCustomers / realisticConversionRate) * strategyInputs.costPerLead;
-
-                          // Growth projection
-                          const netPoliciesPerMonth = newPoliciesPerMonth - monthlyChurnPolicies;
-                          const isGrowing = netPoliciesPerMonth > 0;
-
-                          return (
-                            <div className="grid md:grid-cols-3 gap-4">
-                              <div className="bg-white p-4 rounded-lg">
-                                <div className="text-sm text-gray-600">Actual Acquisition Cost</div>
-                                <div className={`text-2xl font-bold ${actualCAC > 1200 ? 'text-red-600' : actualCAC > 800 ? 'text-amber-600' : 'text-green-600'}`}>
-                                  ${Math.round(actualCAC).toLocaleString()}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Industry target: $487-$900
-                                  {actualCAC > 900 && <span className="text-red-600 font-medium"> (Above range!)</span>}
-                                </div>
-                              </div>
-
-                              <div className="bg-white p-4 rounded-lg">
-                                <div className="text-sm text-gray-600">Monthly Net Growth</div>
-                                <div className={`text-2xl font-bold ${isGrowing ? 'text-green-600' : 'text-red-600'}`}>
-                                  {isGrowing ? '+' : ''}{Math.round(netPoliciesPerMonth)} policies
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                  +{paidLeadPolicies.toFixed(1)} paid + {organicPolicies.toFixed(1)} organic, -{monthlyChurnPolicies.toFixed(1)} churned
-                                </div>
-                              </div>
-
-                              <div className="bg-white p-4 rounded-lg">
-                                <div className="text-sm text-gray-600">Break-Even Lead Spend</div>
-                                <div className={`text-2xl font-bold ${totalLeadSpend >= breakEvenLeadSpend ? 'text-green-600' : 'text-red-600'}`}>
-                                  ${Math.round(breakEvenLeadSpend).toLocaleString()}/mo
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Need {breakEvenPolicies} policies/mo to offset churn
-                                  {totalLeadSpend < breakEvenLeadSpend && <span className="text-red-600 font-medium"> (Under-investing!)</span>}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })()}
-
-                        <div className="mt-4 p-3 bg-amber-100 rounded-lg text-sm text-amber-800">
-                          <strong>Key Insight:</strong> Industry benchmarks use quote conversion rates (10-15%), not bound rates.
-                          Actual data shows only ~4% of leads convert to customers. This dramatically affects acquisition cost and break-even calculations.
-                        </div>
-                      </div>
-
-                      {/* Interactive Growth Levers */}
-                      <div className="card p-6 mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Zap className="w-5 h-5 text-blue-700" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">Growth Levers Simulator</h3>
-                            <p className="text-sm text-gray-600">See real-time impact of improving key metrics</p>
-                          </div>
-                        </div>
-
-                        {(() => {
-                          // Current state calculations
-                          const currentPolicies = strategyInputs.currentPolicies;
-                          const currentCustomers = strategyInputs.currentCustomers;
-                          const ppc = currentPolicies / currentCustomers;
-
-                          // Current retention from slider (default 97.5%)
-                          const currentRetention = strategyInputs.targetRetentionRate / 100;
-                          // V5.1 FIX: Churn = customers leaving × their PPC
-                          const monthlyChurn = currentCustomers * (1 - Math.pow(currentRetention, 1/12)) * ppc;
-
-                          // Current new business from paid leads
-                          const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
-                          const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
-                          const currentConversion = strategyInputs.targetConversionRate / 100; // From slider (default 10%)
-                          const currentNewCustomers = monthlyLeads * currentConversion;
-                          const paidLeadPolicies = currentNewCustomers * ppc;
-
-                          // Add organic/walk-in sales (Derrick's typical 13/month)
-                          const organicPolicies = strategyInputs.organicSalesPerMonth;
-                          const currentNewPolicies = paidLeadPolicies + organicPolicies;
-
-                          // Net monthly change
-                          const currentNetChange = currentNewPolicies - monthlyChurn;
-
-                          // Calculate what-if scenarios using slider values as baseline
-                          const improvedConversion = Math.min(currentConversion * 1.5, 0.20); // 50% improvement, max 20%
-                          const scenarios = [
-                            {
-                              name: 'Elite Retention (99%)',
-                              description: 'Reduce losses to 0-1/month via bundling',
-                              newRetention: 0.99,
-                              newConversion: currentConversion,
-                              newLeadSpend: totalLeadSpend,
-                              color: 'emerald'
-                            },
-                            {
-                              name: `Improve Conversion (+50%)`,
-                              description: `Better lead quality & follow-up (${(improvedConversion * 100).toFixed(0)}%)`,
-                              newRetention: currentRetention,
-                              newConversion: improvedConversion,
-                              newLeadSpend: totalLeadSpend,
-                              color: 'blue'
-                            },
-                            {
-                              name: 'Increase Lead Spend to $10K',
-                              description: 'More aggressive marketing',
-                              newRetention: currentRetention,
-                              newConversion: currentConversion,
-                              newLeadSpend: 10000,
-                              color: 'purple'
-                            },
-                            {
-                              name: 'Combined: All Three',
-                              description: 'Maximum growth strategy',
-                              newRetention: 0.99,
-                              newConversion: improvedConversion,
-                              newLeadSpend: 10000,
-                              color: 'amber'
-                            }
-                          ];
-
-                          return (
-                            <div className="space-y-4">
-                              {/* Current State */}
-                              <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                <div className="text-sm font-medium text-gray-700 mb-2">Current State</div>
-                                <div className="grid grid-cols-4 gap-4 text-center">
-                                  <div>
-                                    <div className="text-lg font-bold text-gray-900">{currentRetention * 100}%</div>
-                                    <div className="text-xs text-gray-500">Retention</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-lg font-bold text-gray-900">{(currentConversion * 100).toFixed(0)}%</div>
-                                    <div className="text-xs text-gray-500">Conversion</div>
-                                  </div>
-                                  <div>
-                                    <div className="text-lg font-bold text-gray-900">${(totalLeadSpend/1000).toFixed(1)}K</div>
-                                    <div className="text-xs text-gray-500">Lead Spend</div>
-                                  </div>
-                                  <div>
-                                    <div className={`text-lg font-bold ${currentNetChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                      {currentNetChange >= 0 ? '+' : ''}{currentNetChange.toFixed(1)}
-                                    </div>
-                                    <div className="text-xs text-gray-500">Net/Month</div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Scenario Comparisons */}
-                              <div className="grid md:grid-cols-2 gap-3">
-                                {scenarios.map((scenario) => {
-                                  // V5.1 FIX: Churn = customers leaving × their PPC
-                                  const newMonthlyChurn = currentCustomers * (1 - Math.pow(scenario.newRetention, 1/12)) * ppc;
-                                  const newLeads = scenario.newLeadSpend / strategyInputs.costPerLead;
-                                  const newPaidPolicies = newLeads * scenario.newConversion * ppc;
-                                  // Include organic sales in all scenarios
-                                  const newNewPolicies = newPaidPolicies + organicPolicies;
-                                  const newNetChange = newNewPolicies - newMonthlyChurn;
-                                  const improvement = newNetChange - currentNetChange;
-                                  const annualGrowth = newNetChange * 12;
-                                  const growthRate = (annualGrowth / currentPolicies) * 100;
-
-                                  return (
-                                    <div key={scenario.name} className={`bg-white p-4 rounded-lg border-2 border-${scenario.color}-200 hover:border-${scenario.color}-400 transition-colors`}>
-                                      <div className={`text-sm font-semibold text-${scenario.color}-700 mb-1`}>{scenario.name}</div>
-                                      <div className="text-xs text-gray-500 mb-3">{scenario.description}</div>
-
-                                      <div className="flex justify-between items-center">
-                                        <div>
-                                          <div className={`text-2xl font-bold ${newNetChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {newNetChange >= 0 ? '+' : ''}{newNetChange.toFixed(1)}
-                                          </div>
-                                          <div className="text-xs text-gray-500">policies/month</div>
-                                        </div>
-                                        <div className="text-right">
-                                          <div className={`text-lg font-semibold ${improvement > 0 ? 'text-green-600' : 'text-gray-400'}`}>
-                                            {improvement > 0 ? '+' : ''}{improvement.toFixed(1)}
-                                          </div>
-                                          <div className="text-xs text-gray-500">vs current</div>
-                                        </div>
-                                      </div>
-
-                                      <div className="mt-3 pt-3 border-t border-gray-100">
-                                        <div className="flex justify-between text-xs">
-                                          <span className="text-gray-500">Annual growth:</span>
-                                          <span className={`font-medium ${growthRate > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {growthRate > 0 ? '+' : ''}{growthRate.toFixed(1)}%
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between text-xs mt-1">
-                                          <span className="text-gray-500">Year-end policies:</span>
-                                          <span className="font-medium">{Math.round(currentPolicies + annualGrowth).toLocaleString()}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Key Insight */}
-                              <div className="p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
-                                <strong>Key Insight:</strong> With {(currentRetention * 100).toFixed(1)}% retention, focus on conversion improvement
-                                has the biggest ROI. Improving from {(currentConversion * 100).toFixed(0)}% to {((currentConversion * 2) * 100).toFixed(0)}% adds more new policies than any other single lever!
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Custom Scenario Builder with Sliders */}
+                      {/* Build Your Growth Plan - Main Interactive Section */}
                       <div className="card p-6 mt-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200">
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -3011,7 +2904,7 @@ function App() {
                                 </div>
 
                                 {/* Additional metrics */}
-                                <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+                                <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-3 gap-4 text-center">
                                   <div>
                                     <div className="text-sm font-medium text-gray-900">{Math.round(monthlyLeads)}</div>
                                     <div className="text-xs text-gray-500">Leads/Month</div>
@@ -3097,7 +2990,7 @@ function App() {
                               </div>
 
                               {/* Growth Path Recommendations */}
-                              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-primary-200">
                                 <div className="text-sm font-medium text-blue-800 mb-3">Recommended Actions</div>
 
                                 {(() => {
@@ -3164,11 +3057,124 @@ function App() {
                                           }`} />
                                           <div className="flex-1">
                                             <div className="text-sm font-medium text-gray-900">{rec.action}</div>
-                                            <div className="text-xs text-blue-700">{rec.impact}</div>
+                                            <div className="text-xs text-primary-700">{rec.impact}</div>
                                             <div className="text-xs text-gray-500">{rec.how}</div>
                                           </div>
                                         </div>
                                       ))}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              {/* Variable Compensation Impact */}
+                              <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Award className="w-4 h-4 text-amber-600" />
+                                  <div className="text-sm font-medium text-amber-800">Variable Compensation Impact</div>
+                                </div>
+
+                                {(() => {
+                                  // Current PG (Portfolio Growth) based on actual data: -200 items
+                                  const currentPG = -200;
+                                  const writtenPremium = 4218886; // From actual data
+
+                                  // Calculate projected PG change
+                                  const projectedPGChange = Math.round(annualChange); // Annual net policy change
+                                  const projectedPG = currentPG + projectedPGChange;
+
+                                  // PG Tier thresholds and bonus percentages (from compensation2025.ts)
+                                  const pgTiers = [
+                                    { threshold: -877, bonus: 0.05, label: 'Tier 1' },
+                                    { threshold: -501, bonus: 0.55, label: 'Tier 2' },
+                                    { threshold: -274, bonus: 1.10, label: 'Tier 3' },
+                                    { threshold: -148, bonus: 2.00, label: 'Tier 4' },
+                                    { threshold: -22, bonus: 2.90, label: 'Tier 5' },
+                                    { threshold: 330, bonus: 3.50, label: 'Tier 6' },
+                                    { threshold: 706, bonus: 4.00, label: 'Tier 7' },
+                                    { threshold: 1656, bonus: 5.00, label: 'Exceptional' }
+                                  ];
+
+                                  // Find current and projected tiers
+                                  const findTier = (pg: number) => {
+                                    for (let i = pgTiers.length - 1; i >= 0; i--) {
+                                      if (pg >= pgTiers[i].threshold) return pgTiers[i];
+                                    }
+                                    return { threshold: -Infinity, bonus: 0, label: 'No Bonus' };
+                                  };
+
+                                  const currentTier = findTier(currentPG);
+                                  const projectedTier = findTier(projectedPG);
+
+                                  // Calculate bonus amounts
+                                  const currentBonus = writtenPremium * (currentTier.bonus / 100);
+                                  const projectedBonus = writtenPremium * (projectedTier.bonus / 100);
+                                  const bonusChange = projectedBonus - currentBonus;
+
+                                  // Find next tier for gap analysis
+                                  const currentTierIndex = pgTiers.findIndex(t => t.label === currentTier.label);
+                                  const nextTier = currentTierIndex < pgTiers.length - 1 ? pgTiers[currentTierIndex + 1] : null;
+                                  const gapToNextTier = nextTier ? nextTier.threshold - currentPG : 0;
+
+                                  return (
+                                    <div className="space-y-3">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="bg-white p-3 rounded border border-amber-100">
+                                          <div className="text-xs text-gray-500">Current PG</div>
+                                          <div className="text-lg font-bold text-gray-900">{currentPG}</div>
+                                          <div className="text-xs text-amber-600">{currentTier.label}</div>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-amber-100">
+                                          <div className="text-xs text-gray-500">Projected PG</div>
+                                          <div className={`text-lg font-bold ${projectedPG > currentPG ? 'text-green-600' : 'text-red-600'}`}>
+                                            {projectedPG > 0 ? '+' : ''}{projectedPG}
+                                          </div>
+                                          <div className={`text-xs ${projectedTier.label !== currentTier.label ? 'text-green-600 font-medium' : 'text-amber-600'}`}>
+                                            {projectedTier.label}
+                                          </div>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-amber-100">
+                                          <div className="text-xs text-gray-500">Current Bonus</div>
+                                          <div className="text-lg font-bold text-gray-900">{currentTier.bonus.toFixed(2)}%</div>
+                                          <div className="text-xs text-gray-500">${Math.round(currentBonus).toLocaleString()}</div>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border border-amber-100">
+                                          <div className="text-xs text-gray-500">Projected Bonus</div>
+                                          <div className={`text-lg font-bold ${projectedTier.bonus > currentTier.bonus ? 'text-green-600' : 'text-gray-900'}`}>
+                                            {projectedTier.bonus.toFixed(2)}%
+                                          </div>
+                                          <div className={`text-xs ${bonusChange > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                                            ${Math.round(projectedBonus).toLocaleString()}
+                                            {bonusChange !== 0 && ` (${bonusChange > 0 ? '+' : ''}$${Math.round(bonusChange).toLocaleString()})`}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Progress to next tier */}
+                                      {nextTier && gapToNextTier > 0 && (
+                                        <div className="bg-white p-3 rounded border border-amber-100">
+                                          <div className="flex justify-between text-xs mb-1">
+                                            <span className="text-gray-500">Progress to {nextTier.label} ({nextTier.bonus}%)</span>
+                                            <span className="font-medium">{gapToNextTier} policies needed</span>
+                                          </div>
+                                          <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div
+                                              className="bg-amber-500 h-2 rounded-full transition-all"
+                                              style={{ width: `${Math.min(100, Math.max(0, ((currentPG - pgTiers[currentTierIndex].threshold) / (nextTier.threshold - pgTiers[currentTierIndex].threshold)) * 100))}%` }}
+                                            />
+                                          </div>
+                                          <div className="text-xs text-amber-700 mt-2">
+                                            <strong>Value of next tier:</strong> +${Math.round(writtenPremium * ((nextTier.bonus - currentTier.bonus) / 100)).toLocaleString()}/year
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {bonusChange > 0 && (
+                                        <div className="text-xs text-green-700 bg-green-50 p-2 rounded border border-green-200">
+                                          <strong>Growth Impact:</strong> Adding {Math.round(annualChange)} policies moves you from {currentTier.label} to {projectedTier.label},
+                                          adding ${Math.round(bonusChange).toLocaleString()} to your annual variable compensation.
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })()}
@@ -3179,7 +3185,7 @@ function App() {
                       </div>
 
                       {/* Growth Strategy & Global Sensitivity Analysis */}
-                      <div className="card p-6 mt-6 bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200">
+                      <div className="card p-6 mt-6 bg-gradient-to-br from-gray-50 to-gray-100 border-slate-200">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
                             <TrendingUp className="w-5 h-5 text-white" />
@@ -3318,7 +3324,7 @@ function App() {
                                     <ul className="text-sm space-y-1">
                                       <li className="flex justify-between">
                                         <span className="text-gray-600">Monthly New Policies:</span>
-                                        <span className="font-medium text-blue-600">+{baseNewPolicies.toFixed(1)}</span>
+                                        <span className="font-medium text-primary-600">+{baseNewPolicies.toFixed(1)}</span>
                                       </li>
                                       <li className="flex justify-between">
                                         <span className="text-gray-600">Monthly Churn:</span>
@@ -3435,12 +3441,12 @@ function App() {
                                   return (
                                     <div className="space-y-3">
                                       {leverImpacts.map((item, idx) => (
-                                        <div key={item.lever} className="bg-white p-3 rounded border border-gray-100">
+                                        <div key={item.lever} className="bg-white p-3 rounded border border-gray-200">
                                           <div className="flex items-start justify-between">
                                             <div className="flex items-center gap-2">
                                               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                                idx === 0 ? 'bg-emerald-100 text-emerald-700' :
-                                                idx === 1 ? 'bg-blue-100 text-blue-700' :
+                                                idx === 0 ? 'bg-primary-100 text-emerald-700' :
+                                                idx === 1 ? 'bg-primary-100 text-primary-700' :
                                                 'bg-gray-100 text-gray-700'
                                               }`}>
                                                 {idx + 1}
@@ -3540,7 +3546,7 @@ function App() {
                       >
                         {isCalculating ? (
                           <>
-                            <span className="inline-block animate-spin">⚙️</span>
+                            <Settings className="w-4 h-4 animate-spin" />
                             Calculating...
                           </>
                         ) : (
@@ -3551,53 +3557,49 @@ function App() {
                         )}
                       </motion.button>
                     </motion.div>
-                  </div>
-                </Tabs.Content>
 
-                <Tabs.Content value="scenarios" role="tabpanel" id="tabpanel-scenarios" aria-labelledby="tab-scenarios">
-                  <div className="max-w-7xl mx-auto space-y-6">
-                    {!hasResults ? (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="card-lg p-8"
-                      >
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Scenario Comparison</h2>
-                        <p className="text-gray-600 mb-8">
-                          Compare multiple growth strategies to find the optimal balance of risk and return
-                        </p>
+                    {/* Growth Trajectory Chart - Always visible with preview or results */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="card-lg p-6"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="text-lg font-semibold text-gray-900">Policy Growth Trajectories</h2>
+                        {!hasResults && (
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Preview - Click Calculate for full analysis</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Projected growth over {strategyInputs.projectionMonths} months under different scenarios
+                      </p>
 
-                        <div className="bg-gray-50 rounded-xl p-8 text-center border border-gray-200">
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <BarChart3 className="w-6 h-6 text-gray-400" />
-                          </div>
-                          <p className="text-gray-600 font-medium mb-1">No scenarios generated yet</p>
-                          <p className="text-sm text-gray-500">
-                            Configure your strategy in the Strategy Builder tab and click Calculate
-                          </p>
-                          <button
-                            onClick={() => setActiveTab('strategy')}
-                            className="mt-4 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                          >
-                            Go to Strategy Builder →
-                          </button>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <>
-                        {/* Growth Trajectory Chart */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="card-lg p-6"
-                        >
-                          <h2 className="text-lg font-semibold text-gray-900 mb-1">Policy Growth Trajectories</h2>
-                          <p className="text-sm text-gray-600 mb-6">
-                            Projected growth over {strategyInputs.projectionMonths} months under different scenarios
-                          </p>
+                      <ResponsiveContainer width="100%" height={400}>
+                        <LineChart
+                          data={hasResults ? scenarioData : (() => {
+                            // Generate preview data based on current inputs
+                            const ppc = strategyInputs.currentPolicies / strategyInputs.currentCustomers;
+                            const retention = strategyInputs.targetRetentionRate / 100;
+                            const conversion = strategyInputs.targetConversionRate / 100;
+                            const totalLeadSpend = strategyInputs.marketing.traditional + strategyInputs.additionalLeadSpend;
+                            const monthlyLeads = totalLeadSpend / strategyInputs.costPerLead;
+                            const organicPolicies = strategyInputs.organicSalesPerMonth;
 
-                          <ResponsiveContainer width="100%" height={400}>
-                            <LineChart data={scenarioData} aria-label="Line chart showing policy growth trajectories over time for four scenarios">
+                            return Array.from({ length: strategyInputs.projectionMonths + 1 }, (_, month) => {
+                              const monthlyRetention = Math.pow(retention, 1/12);
+                              const churn = strategyInputs.currentPolicies * (1 - Math.pow(monthlyRetention, month));
+                              const newFromLeads = monthlyLeads * conversion * ppc * month;
+                              const newFromOrganic = organicPolicies * month;
+
+                              const baseline = Math.round(strategyInputs.currentPolicies - churn * 1.2);
+                              const conservative = Math.round(strategyInputs.currentPolicies - churn + (newFromLeads + newFromOrganic) * 0.7);
+                              const moderate = Math.round(strategyInputs.currentPolicies - churn + newFromLeads + newFromOrganic);
+                              const aggressive = Math.round(strategyInputs.currentPolicies - churn + (newFromLeads + newFromOrganic) * 1.3);
+
+                              return { month, baseline, conservative, moderate, aggressive, policiesPerCustomer: ppc };
+                            });
+                          })()}
+                          aria-label="Line chart showing policy growth trajectories over time for four scenarios">
                               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                               <XAxis
                                 dataKey="month"
@@ -3623,14 +3625,17 @@ function App() {
                               <Line type="monotone" dataKey="aggressive" stroke="#10b981" strokeWidth={3} name="Aggressive" />
                             </LineChart>
                           </ResponsiveContainer>
-                        </motion.div>
+                    </motion.div>
 
+                    {/* Remaining results only shown after calculation */}
+                    {hasResults && (
+                      <>
                         {/* Scenario Comparison Table */}
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
-                          className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                          className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                         >
                           <h2 className="text-2xl font-bold text-gray-900 mb-8">Scenario Metrics Comparison</h2>
 
@@ -3643,12 +3648,12 @@ function App() {
                                 transition={{ delay: 0.2 + idx * 0.1 }}
                                 className={`p-6 rounded-2xl border-2 ${
                                   scenario.name === 'Moderate'
-                                    ? 'border-blue-500 bg-blue-50'
+                                    ? 'border-primary-500 bg-primary-50'
                                     : 'border-gray-200 bg-gray-50'
                                 }`}
                               >
                                 {scenario.name === 'Moderate' && (
-                                  <div className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full mb-3">
+                                  <div className="inline-block px-3 py-1 bg-primary-600 text-white text-xs font-semibold rounded-full mb-3">
                                     RECOMMENDED
                                   </div>
                                 )}
@@ -3688,7 +3693,7 @@ function App() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
-                          className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                          className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                         >
                           <h2 className="text-2xl font-bold text-gray-900 mb-8">Return on Investment Comparison</h2>
 
@@ -3719,7 +3724,7 @@ function App() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.25 }}
-                          className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                          className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                         >
                           <h2 className="text-2xl font-bold text-gray-900 mb-3">Sensitivity Analysis</h2>
                           <p className="text-gray-700 mb-8">
@@ -3746,7 +3751,7 @@ function App() {
                                   const totalNewPolicies = Math.round(newPoliciesPerMonth * strategyInputs.projectionMonths);
                                   const isCurrent = rate === 0.10; // Assume 10% baseline
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'}`}>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-primary-100 border border-blue-300' : 'bg-white border border-gray-200'}`}>
                                       <span className={`text-sm ${isCurrent ? 'font-semibold text-blue-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
                                         <p className="text-sm font-semibold text-gray-900">+{totalNewPolicies.toLocaleString()} policies</p>
@@ -3815,7 +3820,7 @@ function App() {
                                                    (currentPPC >= 1.5 && currentPPC < 1.8 && rate === 0.91) ||
                                                    (currentPPC < 1.5 && rate === 0.67);
                                   return (
-                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-emerald-100 border border-emerald-300' : 'bg-white border border-gray-200'}`}>
+                                    <div key={label} className={`flex justify-between items-center p-3 rounded-lg ${isCurrent ? 'bg-primary-100 border border-emerald-300' : 'bg-white border border-gray-200'}`}>
                                       <span className={`text-sm ${isCurrent ? 'font-semibold text-emerald-900' : 'text-gray-700'}`}>{label}</span>
                                       <div className="text-right">
                                         <p className="text-sm font-semibold text-gray-900">{policiesRetained.toLocaleString()} retained</p>
@@ -3864,7 +3869,7 @@ function App() {
                           </div>
 
                           {/* Key Insights */}
-                          <div className="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
+                          <div className="mt-8 bg-primary-50 rounded-xl p-6 border border-primary-200">
                             <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
                               <Lightbulb className="w-5 h-5" />
                               Key Sensitivity Insights
@@ -3893,7 +3898,7 @@ function App() {
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.3 }}
-                              className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                              className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                             >
                               <h2 className="text-2xl font-bold text-gray-900 mb-3">Performance Benchmarks</h2>
                               <p className="text-gray-700 mb-8">
@@ -3905,7 +3910,7 @@ function App() {
                                 benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.TOP_PERFORMER
                                   ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-500'
                                   : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.HEALTHY
-                                  ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-500'
+                                  ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-primary-500'
                                   : benchmarkMetrics.ruleOf20Score >= BENCHMARKS.RULE_OF_20.NEEDS_IMPROVEMENT
                                   ? 'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-500'
                                   : 'bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-500'
@@ -3914,7 +3919,7 @@ function App() {
                                   <div>
                                     <h3 className="text-lg font-semibold text-gray-700 mb-2">Rule of 20 Score</h3>
                                     <div className="flex items-baseline gap-3">
-                                      <span className="text-5xl font-bold text-gray-900">
+                                      <span className="text-3xl font-bold text-gray-900">
                                         {benchmarkMetrics.ruleOf20Score.toFixed(1)}
                                       </span>
                                       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
@@ -3952,7 +3957,7 @@ function App() {
                                     benchmarkMetrics.ebitdaMargin >= BENCHMARKS.EBITDA.EXCELLENT * 100
                                       ? 'text-green-600'
                                       : benchmarkMetrics.ebitdaMargin >= BENCHMARKS.EBITDA.TARGET * 100
-                                      ? 'text-blue-600'
+                                      ? 'text-primary-600'
                                       : 'text-yellow-600'
                                   }`}>
                                     {benchmarkMetrics.ebitdaStatus}
@@ -3975,7 +3980,7 @@ function App() {
                                     benchmarkMetrics.ltvCacRatio >= BENCHMARKS.LTV_CAC.GREAT
                                       ? 'text-green-600'
                                       : benchmarkMetrics.ltvCacRatio >= BENCHMARKS.LTV_CAC.GOOD
-                                      ? 'text-blue-600'
+                                      ? 'text-primary-600'
                                       : 'text-yellow-600'
                                   }`}>
                                     {benchmarkMetrics.ltvCacStatus}
@@ -3998,7 +4003,7 @@ function App() {
                                     benchmarkMetrics.revenuePerEmployee >= BENCHMARKS.RPE.EXCELLENT
                                       ? 'text-green-600'
                                       : benchmarkMetrics.revenuePerEmployee >= BENCHMARKS.RPE.GOOD
-                                      ? 'text-blue-600'
+                                      ? 'text-primary-600'
                                       : 'text-yellow-600'
                                   }`}>
                                     {benchmarkMetrics.rpeRating}
@@ -4021,7 +4026,7 @@ function App() {
                                     benchmarkMetrics.policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.OPTIMAL
                                       ? 'text-green-600'
                                       : benchmarkMetrics.policiesPerCustomer >= BENCHMARKS.POLICIES_PER_CUSTOMER.BUNDLED
-                                      ? 'text-blue-600'
+                                      ? 'text-primary-600'
                                       : 'text-yellow-600'
                                   }`}>
                                     {benchmarkMetrics.ppcStatus}
@@ -4038,7 +4043,7 @@ function App() {
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: 0.4 }}
-                              className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                              className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                             >
                               <h2 className="text-2xl font-bold text-gray-900 mb-3">Policies Per Customer Trend</h2>
                               <p className="text-gray-700 mb-8">
@@ -4105,12 +4110,12 @@ function App() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                        className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                       >
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-10">Strategic Recommendations</h2>
 
                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-12 text-center border border-blue-100">
-                          <Lightbulb className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+                          <Lightbulb className="w-16 h-16 text-primary-600 mx-auto mb-4" />
                           <p className="text-gray-700 text-lg">
                             Strategic recommendations will appear here after calculation
                           </p>
@@ -4123,7 +4128,7 @@ function App() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-3xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-100"
+                        className="bg-white rounded-2xl p-8 lg:p-12 shadow-lg shadow-gray-200/50 border border-gray-200"
                       >
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-10">Strategic Recommendations</h2>
 
@@ -4166,10 +4171,10 @@ function App() {
                           ].map((metric) => (
                             <motion.div
                               key={metric.label}
-                              whileHover={{ scale: 1.05, y: -4 }}
-                              className="relative p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 text-center shadow-sm hover:shadow-lg transition-all duration-300"
+                              whileHover={{ scale: 1.02, y: -2 }}
+                              className="relative p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 text-center shadow-sm hover:shadow-lg transition-all duration-200"
                             >
-                              <div className="text-4xl font-bold text-gray-900 mb-2">{metric.value}</div>
+                              <div className="text-3xl font-bold text-gray-900 mb-2">{metric.value}</div>
                               <div className="text-sm font-medium text-gray-600 mb-2">{metric.label}</div>
                               <div className="text-xs text-green-600 bg-green-50 inline-block px-3 py-1 rounded-full font-medium">
                                 {metric.trend}
@@ -4194,7 +4199,7 @@ function App() {
                             {/* Customer Lifetime Value */}
                             <motion.div
                               whileHover={{ scale: 1.03, y: -2 }}
-                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="p-2 bg-green-100 rounded-lg">
@@ -4215,7 +4220,7 @@ function App() {
                             {/* Customer Acquisition Cost */}
                             <motion.div
                               whileHover={{ scale: 1.03, y: -2 }}
-                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="p-2 bg-orange-100 rounded-lg">
@@ -4236,25 +4241,25 @@ function App() {
                             {/* Lifetime Value : Acquisition Cost Ratio */}
                             <motion.div
                               whileHover={{ scale: 1.03, y: -2 }}
-                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className={`p-2 rounded-lg ${
                                   scenarioResults[1]?.ltvCacRatio && scenarioResults[1].ltvCacRatio >= 3
                                     ? 'bg-green-100'
-                                    : 'bg-blue-100'
+                                    : 'bg-primary-100'
                                 }`}>
                                   <TrendingUp className={`w-5 h-5 ${
                                     scenarioResults[1]?.ltvCacRatio && scenarioResults[1].ltvCacRatio >= 3
                                       ? 'text-green-600'
-                                      : 'text-blue-600'
+                                      : 'text-primary-600'
                                   }`} />
                                 </div>
                               </div>
                               <div className={`text-3xl font-bold mb-2 ${
                                 scenarioResults[1]?.ltvCacRatio && scenarioResults[1].ltvCacRatio >= 3
                                   ? 'text-green-600'
-                                  : 'text-blue-600'
+                                  : 'text-primary-600'
                               }`}>
                                 {scenarioResults[1]?.ltvCacRatio?.toFixed(1) || 0}:1
                               </div>
@@ -4269,7 +4274,7 @@ function App() {
                             {/* Break-Even Point */}
                             <motion.div
                               whileHover={{ scale: 1.03, y: -2 }}
-                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+                              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
                             >
                               <div className="flex items-start justify-between mb-3">
                                 <div className="p-2 bg-indigo-100 rounded-lg">
@@ -4355,7 +4360,7 @@ function App() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h4 className="font-bold text-gray-900">Marketing Spend</h4>
-                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">44.3% Impact</span>
+                                    <span className="text-xs bg-primary-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">44.3% Impact</span>
                                   </div>
                                   <p className="text-sm text-gray-700 mb-3">
                                     Current: ${strategyInputs.monthlyLeadSpend.toLocaleString()}/mo → {Math.round(strategyInputs.monthlyLeadSpend / strategyInputs.costPerLead)} leads.
@@ -4484,23 +4489,16 @@ function App() {
         </div>
       </nav>
 
-      {/* Premium Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-20" role="contentinfo" aria-label="Site footer">
-        <div className="container mx-auto px-6 lg:px-12 py-8">
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-12" role="contentinfo" aria-label="Site footer">
+        <div className="container mx-auto px-6 lg:px-12 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-600">
-              Model confidence: <span className="font-semibold text-gray-900">87% R²</span> •
-              Data: <span className="font-semibold text-gray-900">500+ agencies</span> •
-              Last calibrated: <span className="font-semibold text-gray-900">Q4 2024</span>
+            <p className="text-sm text-gray-500">
+              © 2025 Derrick Bealer Agency • Allstate Santa Barbara & Goleta
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05, x: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors duration-200"
-            >
-              Deploy with Vercel
-              <ArrowRight className="w-4 h-4" />
-            </motion.button>
+            <p className="text-xs text-gray-400">
+              Model confidence: 87% R² • Data: 500+ agencies • Last calibrated: Q4 2024
+            </p>
           </div>
         </div>
       </footer>

@@ -37,16 +37,30 @@ const BealerPlanningSection: React.FC = () => {
     }
   };
 
+  // Map icon names to Lucide components
+  const getIcon = (iconName: string, className: string = "w-6 h-6") => {
+    const iconMap: Record<string, React.ReactNode> = {
+      'target': <Target className={className} />,
+      'zap': <Zap className={className} />,
+      'bot': <Bot className={className} />,
+      'trending-up': <TrendingUp className={className} />,
+      'shield': <Shield className={className} />,
+      'settings': <Settings className={className} />,
+      'star': <Star className={className} />,
+    };
+    return iconMap[iconName] || <Lightbulb className={className} />;
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-xl p-8 text-white"
+        className="bg-gradient-to-r from-primary-800 to-primary-600 rounded-xl p-8 text-white"
       >
         <h1 className="text-3xl font-bold mb-2">{planningData.header.title}</h1>
-        <p className="text-blue-100 text-lg mb-4">{planningData.header.subtitle}</p>
+        <p className="text-primary-100 text-lg mb-4">{planningData.header.subtitle}</p>
         <div className="flex flex-wrap gap-4 text-sm text-blue-200">
           <span><strong>For:</strong> {planningData.header.meta.for}</span>
           <span><strong>By:</strong> {planningData.header.meta.by}</span>
@@ -64,30 +78,30 @@ const BealerPlanningSection: React.FC = () => {
         <h2 className="text-xl font-semibold mb-6">Executive Summary</h2>
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-            <div className="text-2xl mb-2">{planningData.executive.opportunity.icon}</div>
-            <h3 className="font-semibold text-blue-900 mb-2">{planningData.executive.opportunity.title}</h3>
+          <div className="bg-primary-50 rounded-xl p-4 border border-primary-100">
+            <div className="text-primary-600 mb-2">{getIcon(planningData.executive.opportunity.icon)}</div>
+            <h3 className="font-semibold text-primary-900 mb-2">{planningData.executive.opportunity.title}</h3>
             <p className="text-sm text-gray-600">{planningData.executive.opportunity.description}</p>
           </div>
-          <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
-            <div className="text-2xl mb-2">{planningData.executive.challenge.icon}</div>
+          <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+            <div className="text-amber-600 mb-2">{getIcon(planningData.executive.challenge.icon)}</div>
             <h3 className="font-semibold text-amber-900 mb-2">{planningData.executive.challenge.title}</h3>
             <p className="text-sm text-gray-600">{planningData.executive.challenge.description}</p>
           </div>
-          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-            <div className="text-2xl mb-2">{planningData.executive.solution.icon}</div>
+          <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+            <div className="text-green-600 mb-2">{getIcon(planningData.executive.solution.icon)}</div>
             <h3 className="font-semibold text-green-900 mb-2">{planningData.executive.solution.title}</h3>
             <p className="text-sm text-gray-600">{planningData.executive.solution.description}</p>
           </div>
         </div>
 
         {/* Growth Lifecycle */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-xl p-4">
           <h3 className="font-semibold text-center mb-4">Continuous Growth Lifecycle</h3>
           <div className="flex flex-wrap justify-center items-center gap-2">
             {planningData.executive.lifecycle.map((step, index) => (
               <React.Fragment key={step}>
-                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   {step}
                 </span>
                 {index < planningData.executive.lifecycle.length - 1 && (
@@ -111,13 +125,13 @@ const BealerPlanningSection: React.FC = () => {
 
         <div className="space-y-4">
           {planningData.projects.map((project) => (
-            <div key={project.id} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div key={project.id} className="border border-gray-200 rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleProject(project.id)}
                 className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 bg-primary-600 text-white rounded-xl flex items-center justify-center font-bold">
                     {project.id}
                   </div>
                   <div className="text-left">
@@ -161,7 +175,7 @@ const BealerPlanningSection: React.FC = () => {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-primary-700 mb-2 flex items-center gap-2">
                         <Database className="w-4 h-4" /> Key Data Needed
                       </h4>
                       <ul className="text-sm space-y-1">
@@ -190,14 +204,14 @@ const BealerPlanningSection: React.FC = () => {
 
         <div className="space-y-6">
           {planningData.timeline.phases.map((phase, index) => (
-            <div key={phase.number} className="relative pl-8 border-l-2 border-blue-200">
-              <div className="absolute -left-3 top-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+            <div key={phase.number} className="relative pl-8 border-l-2 border-primary-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                 {phase.number}
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-xl p-4">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <h3 className="font-semibold">{phase.title}</h3>
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                  <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded">
                     {phase.duration}
                   </span>
                 </div>
@@ -206,7 +220,7 @@ const BealerPlanningSection: React.FC = () => {
                     <li key={i}>• {task}</li>
                   ))}
                 </ul>
-                <div className="text-sm bg-blue-50 text-blue-800 p-2 rounded">
+                <div className="text-sm bg-primary-50 text-blue-800 p-2 rounded">
                   <strong>Deliverable:</strong> {phase.deliverable}
                 </div>
               </div>
@@ -215,7 +229,7 @@ const BealerPlanningSection: React.FC = () => {
         </div>
 
         {/* Success Metrics */}
-        <div className="mt-6 bg-gray-50 rounded-lg p-4">
+        <div className="mt-6 bg-gray-50 rounded-xl p-4">
           <h3 className="font-semibold mb-4">Success Metrics by Phase</h3>
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3">
             {planningData.timeline.metrics.map((metric) => (
@@ -239,8 +253,8 @@ const BealerPlanningSection: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {planningData.benefits.map((benefit) => (
-            <div key={benefit.title} className="bg-gray-50 rounded-lg p-4">
-              <div className="text-2xl mb-2">{benefit.icon}</div>
+            <div key={benefit.title} className="bg-gray-50 rounded-xl p-4">
+              <div className="text-primary-600 mb-2">{getIcon(benefit.icon)}</div>
               <h3 className="font-semibold mb-2">{benefit.title}</h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 {benefit.items.map((item, i) => (
@@ -264,7 +278,7 @@ const BealerPlanningSection: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {planningData.dataRequirements.map((category, catIndex) => (
-            <div key={category.category} className="bg-gray-50 rounded-lg p-4">
+            <div key={category.category} className="bg-gray-50 rounded-xl p-4">
               <h3 className="font-semibold mb-3">{catIndex + 1}. {category.category}</h3>
               <ul className="space-y-2">
                 {category.items.map((item) => {
@@ -311,7 +325,7 @@ const BealerPlanningSection: React.FC = () => {
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {planningData.nextSteps.map((step) => (
             <div key={step.number} className="text-center">
-              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold mx-auto mb-2">
+              <div className="w-10 h-10 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold mx-auto mb-2">
                 {step.number}
               </div>
               <h3 className="font-semibold mb-1">{step.title}</h3>
@@ -321,19 +335,11 @@ const BealerPlanningSection: React.FC = () => {
         </div>
 
         {/* CTA Box */}
-        <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-lg p-6 text-white text-center">
+        <div className="bg-gradient-to-r from-primary-800 to-primary-600 rounded-xl p-6 text-white text-center">
           <h3 className="text-xl font-bold mb-2">{planningData.cta.title}</h3>
-          <p className="text-blue-100 mb-4 max-w-3xl mx-auto text-sm">
+          <p className="text-primary-100 max-w-3xl mx-auto text-sm">
             {planningData.cta.description}
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <button className="bg-white text-blue-900 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-              {planningData.cta.primaryButton}
-            </button>
-            <button className="border border-white text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/10 transition-colors">
-              {planningData.cta.secondaryButton}
-            </button>
-          </div>
         </div>
       </motion.section>
 

@@ -40,27 +40,17 @@ interface CompensationDashboardProps {
   // Current agency metrics
   currentPBR?: number; // Policy Bundle Rate %
   currentPG?: number; // Portfolio Growth items
-  writtenPremium?: number; // Monthly written premium
+  writtenPremium?: number; // Written premium
   isElite?: boolean;
-
-  // Projection integration
-  onTargetUpdate?: (targets: ProjectionTargets) => void;
-}
-
-interface ProjectionTargets {
-  pbrTarget: number;
-  pgTarget: number;
-  monthlyNBTarget: number;
-  biggerBundleTarget: number;
+  // Placeholder for future projection integration
+  onTargetUpdate?: () => void;
 }
 
 export default function CompensationDashboard({
   currentPBR = 38.5,
   currentPG = -200,
-  writtenPremium = 4072346,
-  isElite = false,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onTargetUpdate: _onTargetUpdate
+  writtenPremium = 4218886, // ACTUAL from All Purpose Audit Nov 14, 2025
+  isElite = false
 }: CompensationDashboardProps) {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'tiers' | 'targets' | 'kpis'>('overview');
   const [projectedPBR, setProjectedPBR] = useState(currentPBR);
@@ -124,7 +114,7 @@ export default function CompensationDashboard({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-blue-600" />
+            <DollarSign className="w-6 h-6 text-primary-600" />
             {ACTIVE_YEAR} Compensation Structure
           </h2>
           <p className="text-sm text-gray-500 mt-1">
@@ -144,8 +134,8 @@ export default function CompensationDashboard({
       {/* Executive Summary & Glossary */}
       <div className="mb-6 space-y-4">
         {/* Key Goal */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-          <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl p-4 border border-primary-100">
+          <h3 className="font-semibold text-primary-900 mb-2 flex items-center gap-2">
             <Target className="w-5 h-5" />
             The Goal: Maximize Your Compensation
           </h3>
@@ -158,7 +148,7 @@ export default function CompensationDashboard({
         </div>
 
         {/* Glossary */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-xl p-4">
           <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <Info className="w-5 h-5 text-gray-600" />
             Key Terms
@@ -217,7 +207,7 @@ export default function CompensationDashboard({
             onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
             className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
               selectedTab === tab.id
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -236,14 +226,14 @@ export default function CompensationDashboard({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4"
+              className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-4"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-blue-700">Policy Bundle Rate</span>
-                <Shield className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-primary-700">Policy Bundle Rate</span>
+                <Shield className="w-4 h-4 text-primary-600" />
               </div>
-              <div className="text-2xl font-bold text-blue-900">{currentPBR.toFixed(1)}%</div>
-              <div className="text-sm text-blue-600 mt-1">
+              <div className="text-2xl font-bold text-primary-900">{currentPBR.toFixed(1)}%</div>
+              <div className="text-sm text-primary-600 mt-1">
                 {currentPBRTier?.label} • {formatPercent(currentPBRTier?.bonusPercent || 0)} bonus
               </div>
               {nextPBRTier && (
@@ -259,7 +249,7 @@ export default function CompensationDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4"
+              className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-green-700">Portfolio Growth</span>
@@ -284,7 +274,7 @@ export default function CompensationDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4"
+              className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-purple-700">Current Bonus</span>
@@ -306,7 +296,7 @@ export default function CompensationDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4"
+              className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Written Premium</span>
@@ -320,7 +310,7 @@ export default function CompensationDashboard({
           </div>
 
           {/* The Big Five */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-xl p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-500" />
               The Big Five for Max Payout
@@ -333,7 +323,7 @@ export default function CompensationDashboard({
                 { num: 4, title: "Maintain Bundles", desc: "Protect at renewal" },
                 { num: 5, title: "Achieve Elite", desc: "Higher renewal rates" }
               ].map(item => (
-                <div key={item.num} className="bg-white rounded-lg p-3 shadow-sm">
+                <div key={item.num} className="bg-white rounded-xl p-3 shadow-sm">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
                       {item.num}
@@ -408,7 +398,7 @@ export default function CompensationDashboard({
               {config.agencyBonus.policyBundleRate.tiers.map(tier => (
                 <div
                   key={tier.id}
-                  className={`p-3 rounded-lg text-sm ${
+                  className={`p-3 rounded-xl text-sm ${
                     tier.id === currentPBRTier?.id
                       ? 'bg-blue-100 border-2 border-blue-500'
                       : 'bg-gray-50'
@@ -418,7 +408,7 @@ export default function CompensationDashboard({
                   <div className="text-xs text-gray-500">
                     {typeof tier.threshold === 'number' ? `≥${tier.threshold}%` : tier.threshold}
                   </div>
-                  <div className="text-lg font-bold text-blue-600">{tier.bonusPercent}%</div>
+                  <div className="text-lg font-bold text-primary-600">{tier.bonusPercent}%</div>
                 </div>
               ))}
             </div>
@@ -452,7 +442,7 @@ export default function CompensationDashboard({
               {config.agencyBonus.portfolioGrowth.tiers.map(tier => (
                 <div
                   key={tier.id}
-                  className={`p-3 rounded-lg text-sm ${
+                  className={`p-3 rounded-xl text-sm ${
                     tier.id === currentPGTier?.id
                       ? 'bg-green-100 border-2 border-green-500'
                       : 'bg-gray-50'
@@ -471,7 +461,7 @@ export default function CompensationDashboard({
           </div>
 
           {/* Bonus Calculator */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-xl p-4">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-green-600" />
               Bonus Projection Calculator
@@ -485,7 +475,7 @@ export default function CompensationDashboard({
                   type="number"
                   value={projectedPBR}
                   onChange={(e) => setProjectedPBR(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-xl"
                   step="0.1"
                 />
               </div>
@@ -497,7 +487,7 @@ export default function CompensationDashboard({
                   type="number"
                   value={projectedPG}
                   onChange={(e) => setProjectedPG(parseInt(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="w-full px-3 py-2 border rounded-xl"
                 />
               </div>
               <div className="flex flex-col justify-end">
@@ -518,16 +508,16 @@ export default function CompensationDashboard({
       {selectedTab === 'targets' && (
         <div className="space-y-6">
           {/* Monthly Baseline Info */}
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-blue-50 rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-primary-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-blue-900">Monthly NB Baseline</h4>
-                <p className="text-sm text-blue-700 mt-1">{config.monthlyBaseline.description}</p>
-                <p className="text-sm text-blue-600 mt-1">
+                <h4 className="font-medium text-primary-900">Monthly NB Baseline</h4>
+                <p className="text-sm text-primary-700 mt-1">{config.monthlyBaseline.description}</p>
+                <p className="text-sm text-primary-600 mt-1">
                   Eligible lines: {config.monthlyBaseline.eligibleLines.join(', ')}
                 </p>
-                <p className="text-sm text-blue-600">
+                <p className="text-sm text-primary-600">
                   Target date: {config.monthlyBaseline.targetDate}th of each month
                 </p>
               </div>
@@ -553,15 +543,15 @@ export default function CompensationDashboard({
                   {config.monthlyTargets.map((target, idx) => (
                     <tr key={target.line} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                       <td className="p-3 font-medium">{target.line}</td>
-                      <td className="p-3 text-right font-bold text-blue-600">{target.target}</td>
+                      <td className="p-3 text-right font-bold text-primary-600">{target.target}</td>
                       <td className="p-3 text-right text-gray-600">{(target.target / 4).toFixed(1)}</td>
                       <td className="p-3 text-gray-500 text-xs">{target.role}</td>
                     </tr>
                   ))}
                   <tr className="bg-blue-50 font-bold">
                     <td className="p-3">Total</td>
-                    <td className="p-3 text-right text-blue-600">{totalMonthlyTarget}</td>
-                    <td className="p-3 text-right text-blue-600">{(totalMonthlyTarget / 4).toFixed(1)}</td>
+                    <td className="p-3 text-right text-primary-600">{totalMonthlyTarget}</td>
+                    <td className="p-3 text-right text-primary-600">{(totalMonthlyTarget / 4).toFixed(1)}</td>
                     <td className="p-3"></td>
                   </tr>
                 </tbody>
@@ -570,7 +560,7 @@ export default function CompensationDashboard({
           </div>
 
           {/* Bigger Bundle Bonus */}
-          <div className="bg-green-50 rounded-lg p-4">
+          <div className="bg-green-50 rounded-xl p-4">
             <h3 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-green-600" />
               Bigger Bundle Bonus
@@ -607,7 +597,7 @@ export default function CompensationDashboard({
           </div>
 
           {/* Elite Qualification */}
-          <div className="bg-yellow-50 rounded-lg p-4">
+          <div className="bg-yellow-50 rounded-xl p-4">
             <h3 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
               <Award className="w-5 h-5 text-yellow-600" />
               Elite Qualification
@@ -646,16 +636,16 @@ export default function CompensationDashboard({
           {/* Daily KPIs */}
           <div>
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-primary-600" />
               Daily KPIs
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {config.kpis.daily.map((kpi, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
                 >
-                  <input type="checkbox" className="w-4 h-4 text-blue-600 rounded" />
+                  <input type="checkbox" className="w-4 h-4 text-primary-600 rounded" />
                   <span className="text-sm">{kpi}</span>
                 </div>
               ))}
@@ -672,7 +662,7 @@ export default function CompensationDashboard({
               {config.kpis.weekly.map((kpi, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
                 >
                   <input type="checkbox" className="w-4 h-4 text-green-600 rounded" />
                   <span className="text-sm">{kpi}</span>
@@ -682,7 +672,7 @@ export default function CompensationDashboard({
           </div>
 
           {/* Coaching Focus */}
-          <div className="bg-purple-50 rounded-lg p-4">
+          <div className="bg-purple-50 rounded-xl p-4">
             <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
               <Users className="w-5 h-5 text-purple-600" />
               Weekly Coaching Focus
