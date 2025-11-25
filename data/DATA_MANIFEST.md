@@ -17,7 +17,7 @@ Examples:
 
 ## Lead Data (`data/06_lead_data/`)
 
-Call activity and lead tracking data from the agency CRM.
+Call activity and lead tracking data from the agency CRM. Used by `src/lead_analysis_api.py`.
 
 | Current File | Description | Update Pattern |
 |--------------|-------------|----------------|
@@ -28,12 +28,65 @@ Call activity and lead tracking data from the agency CRM.
 | `ch-1-250922-251117 5.csv` | Continuation (4,333 records) | |
 | `ch-1-250922-251117 6.csv` | Continuation (10,000 records) | |
 
-**Total Records:** 54,338
+**Total Records:** 64,332
 **Next Update:** `ch-1-251118-{YYMMDD}.csv` (for Nov 18 onwards)
 
 ### Data Fields
 - Date, Full name, User, From, To, Call Duration, Call Duration In Seconds
 - Current Status, Call Type, Call Status, Vendor Name, Team
+
+### Vendor Breakdown (from data)
+| Vendor | Leads | CPL (from invoices) |
+|--------|-------|---------------------|
+| QuoteWizard-Auto | 42,528 | $6 |
+| Imported-for-list-uploads | 7,716 | $0 |
+| EverQuote-LCS | 7,686 | $7 |
+| Lead-Clinic-Internet | 4,699 | $10 |
+| ALM-Internet | 989 | $19 |
+| Blue-Wave-Live-Call-Transfer | 202 | $55 (discontinued) |
+| Lead-Clinic-Live-Transfers | 34 | $60 (discontinued) |
+| Manually-Added-Leads | 18 | $0 |
+| Referrals | 12 | $0 |
+
+---
+
+## Brittney Bealer Agency Data (`data/07_brittney_bealer/`)
+
+Invoice data and lead vendor analysis for cousin agency (Woodland Hills, CA).
+**Used to derive vendor CPL values** in `src/lead_analysis_api.py` lines 369-414.
+
+### Source Files (PDFs/Excel)
+| File | Description | Status |
+|------|-------------|--------|
+| `ALM.pdf` | ALM billing statement Aug-Nov 2025 | Converted |
+| `Brittany Bealer- Elite Prime - COct.pdf` | QuoteWizard Oct 2025 invoice | Converted |
+| `Brittany Bealer- Elite Prime - Client Admin.pdf Sept.pdf` | QuoteWizard Sept 2025 invoice | Converted |
+| `New Business Details_1764017841226.xlsx` | New business policies written | Converted |
+
+### Converted Data Files
+| File | Description | Records |
+|------|-------------|---------|
+| `alm_leads_detailed.csv` | Itemized ALM lead purchases | 304 leads, $6,731 |
+| `quotewizard_channels.csv` | QW lead channels by month | Sept + Oct 2025 |
+| `quotewizard_payments.csv` | QW payment history | 14 payments |
+| `quotewizard_financial_summary.csv` | QW monthly financial summary | Sept + Oct |
+| `new_business_details.csv` | Policies written by agent | 153 policies |
+| `everquote-transactions_2025-11-24_12-59-09.csv` | EverQuote billing transactions | 1,989 transactions |
+| `vendor_spend_summary.csv` | All vendor spend summary | 12 line items |
+
+### Metadata Files
+| File | Description |
+|------|-------------|
+| `agency_profile.md` | Agency overview, team structure, workflow |
+| `invoice_details.md` | Complete vendor invoice analysis |
+
+### Key Vendor Cost Summary (Aug-Nov 2025)
+| Vendor | Total Spend | Net Leads | Avg CPL |
+|--------|-------------|-----------|---------|
+| QuoteWizard | $15,878 | 2,657 | $5.98 |
+| ALM | $6,896 | 307 | $22.46 |
+| EverQuote | ~$5,642 | ~806 | $7.00 |
+| **Total** | **~$28,416** | **~3,770** | **$7.54** |
 
 ---
 

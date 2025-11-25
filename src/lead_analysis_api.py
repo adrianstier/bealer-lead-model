@@ -366,20 +366,72 @@ def analyze_lead_quality(data):
         'by_vendor': vendor_quality
     }
 
-# Actual vendor lead costs (from Brittany's agency)
+# Actual vendor lead costs (from Brittney Bealer's agency - Nov 2025)
+# SOURCE: data/07_brittney_bealer/ (invoice PDFs converted to CSVs)
+#   - alm_leads_detailed.csv: 304 itemized ALM leads
+#   - quotewizard_channels.csv: QW Sept + Oct channel breakdown
+#   - quotewizard_financial_summary.csv: QW financial summary
+#   - invoice_details.md: Complete analysis documentation
+#
+# Team Roles:
+#   Telemarketers: Layne, Maicah (Maicah has longer calls before transfer)
+#   LSPs (Licensed): Karina, Amanda, Brandon, Samantha
+# Revenue: 9% base commission + up to 11% bonus for auto volume (~$1k avg premium)
+# Note: No-contact disposition stays while lead is worked for up to 75 days
+# Discontinued vendors: Blue Wave, Lead Clinic Live Transfers
+#
+# ALM Invoice Analysis (Aug-Nov 2025):
+#   - Web leads: 291 @ $8-$27 each (avg ~$19.22) = $5,592
+#   - Live transfers: 16 @ $66-$104 each (avg ~$81.50) = $1,304
+#   - Total: $6,896 for 307 leads = $22.46 blended avg
+#
+# QuoteWizard Invoices:
+#   Sept 2025: 909 net leads @ $7 avg = $6,393
+#   Oct 2025:  1,748 net leads (917 @ $4 + 831 @ $7) = $9,485 ($5.43 blended)
+#   Total: $15,878 for 2,657 leads (~$5.98 avg)
+#   Credit rate: ~15% (bad leads credited back)
+#
+# Vendor costs mapped to EXACT names in the data
+# Data shows: QuoteWizard-Auto, Imported-for-list-uploads, EverQuote-LCS,
+#             Lead-Clinic-Internet, ALM-Internet, Blue-Wave-Live-Call-Transfer,
+#             Lead-Clinic-Live-Transfers, Manually-Added-Leads, Referrals
 VENDOR_COSTS = {
-    'Blue Wave': 55,           # Live transfer - now closed
-    'Lead Clinic': 10,
-    'QuoteWizard': 4,
+    # Active vendors (from invoices)
+    'QuoteWizard-Auto': 6,              # 35,785 leads - Blended avg ~$6 (Sept $7, Oct $5.43)
+    'EverQuote-LCS': 7,                 # 6,303 leads - $7/lead confirmed
+    'ALM-Internet': 19,                 # 869 leads - Web leads avg ~$19 ($8-$27 range)
+
+    # Discontinued vendors
+    'Blue-Wave-Live-Call-Transfer': 55, # 171 leads - DISCONTINUED
+    'Lead-Clinic-Live-Transfers': 60,   # 35 leads - DISCONTINUED ($55 + $5 call center)
+    'Lead-Clinic-Internet': 10,         # 4,333 leads - Auto data leads
+
+    # No-cost sources
+    'Imported-for-list-uploads': 0,     # 6,366 leads - Old re-engaged leads (already paid ~$7 orig)
+    'Manually-Added-Leads': 0,          # 18 leads - Walk-ins/referrals
+    'Referrals': 0,                     # 12 leads - Referrals
+
+    # Legacy aliases for fuzzy matching
+    'QuoteWizard': 6,
     'EverQuote': 7,
-    'Allstate Lead Manager': 12,
+    'ALM': 19,
+    'Blue Wave': 55,
+    'Lead Clinic': 10,
+    'Imported': 0,
 }
 
 def get_vendor_cost(vendor_name):
     """Get the cost per lead for a vendor, with fuzzy matching"""
-    vendor_upper = vendor_name.upper()
+    if pd.isna(vendor_name):
+        return 0
 
-    # Direct matches first
+    vendor_upper = str(vendor_name).upper()
+
+    # Direct exact match first (handles hyphenated names like "QuoteWizard-Auto")
+    if vendor_name in VENDOR_COSTS:
+        return VENDOR_COSTS[vendor_name]
+
+    # Direct matches by substring
     for known_vendor, cost in VENDOR_COSTS.items():
         if known_vendor.upper() in vendor_upper or vendor_upper in known_vendor.upper():
             return cost
@@ -387,20 +439,31 @@ def get_vendor_cost(vendor_name):
     # Fuzzy matches for common variations
     if 'BLUE' in vendor_upper and 'WAVE' in vendor_upper:
         return 55
+    if 'CLINIC' in vendor_upper and 'LIVE' in vendor_upper:
+        return 60  # Lead Clinic Live Transfer
     if 'CLINIC' in vendor_upper:
-        return 10
+        return 10  # Lead Clinic internet leads
     if 'WIZARD' in vendor_upper or 'QUOTEWIZARD' in vendor_upper:
-        return 4
+        return 6  # Blended avg from invoices
     if 'EVER' in vendor_upper or 'EVERQUOTE' in vendor_upper:
         return 7
-    if 'ALLSTATE' in vendor_upper or 'ALM' in vendor_upper:
-        return 12
+    if 'ALM' in vendor_upper:
+        return 19  # ALM web leads (default)
+    if 'IMPORT' in vendor_upper or 'LIST' in vendor_upper or 'UPLOAD' in vendor_upper:
+        return 0  # Already paid for - no current cost
+    if 'MANUAL' in vendor_upper or 'REFERRAL' in vendor_upper:
+        return 0  # Organic/no cost
 
     # Default fallback for unknown vendors
     return 10  # Conservative estimate
 
-def analyze_roi_metrics(data, assumed_avg_premium=1200):
-    """Calculate ROI metrics - CPL, CPQ, CPB for each vendor using actual costs"""
+def analyze_roi_metrics(data, assumed_avg_premium=1000, commission_rate=0.09):
+    """Calculate ROI metrics - CPL, CPQ, CPB for each vendor using actual costs
+
+    Brittney Bealer's agency:
+    - Avg premium: ~$1,000/policy
+    - Commission: 9% base (can unlock +11% with volume)
+    """
     roi_data = []
     total_spend_all = 0
     total_leads_all = 0
@@ -426,8 +489,8 @@ def analyze_roi_metrics(data, assumed_avg_premium=1200):
         cpq = total_spend / quoted if quoted > 0 else 0
         cpb = total_spend / sold if sold > 0 else 0
 
-        # Estimated revenue (assuming avg premium and 15% commission)
-        estimated_revenue = sold * assumed_avg_premium * 0.15
+        # Estimated revenue (using Brittney's 9% base commission rate)
+        estimated_revenue = sold * assumed_avg_premium * commission_rate
         roi = ((estimated_revenue - total_spend) / total_spend * 100) if total_spend > 0 else 0
 
         roi_data.append({

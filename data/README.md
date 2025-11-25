@@ -5,6 +5,44 @@ This repository contains all critical agency performance data, strategic researc
 
 ## Directory Structure
 
+### 🔷 07_brittney_bealer/
+**Lead analysis data for Brittney Bealer's agency (cousin agency)**
+
+**Source files** providing vendor CPL data used in `src/lead_analysis_api.py`:
+
+| Source File | Converted To | Status |
+|-------------|--------------|--------|
+| `ALM.pdf` | `alm_leads_detailed.csv` | ✅ 304 leads |
+| `Brittany Bealer Elite Prime COct.pdf` | `quotewizard_*.csv` | ✅ Oct 2025 |
+| `Brittany Bealer Elite Prime Sept.pdf` | `quotewizard_*.csv` | ✅ Sept 2025 |
+| `New Business Details.xlsx` | `new_business_details.csv` | ✅ 153 policies |
+| `everquote-transactions.csv` | (already CSV) | ✅ 1,989 transactions |
+
+**Metadata Files:**
+| File | Description |
+|------|-------------|
+| `agency_profile.md` | Agency overview, team structure, revenue model |
+| `invoice_details.md` | Complete vendor invoice breakdown |
+| `vendor_spend_summary.csv` | Structured spend data by vendor/period |
+
+**Brittney Bealer Agency Summary:**
+- **Location:** Woodland Hills, CA (17203 Ventura Blvd)
+- **Team:** 2 Telemarketers (Layne, Maicah) + 4 LSPs (Karina, Amanda, Brandon, Samantha)
+- **Commission:** 9% base + up to 11% bonus
+- **Lead Data:** 64,332 call records (Sept 22 - Nov 17, 2025)
+
+**Vendor Spend (Aug-Nov 2025):**
+| Vendor | Spend | Leads | CPL |
+|--------|-------|-------|-----|
+| QuoteWizard | $15,878 | 2,657 | $5.98 |
+| ALM | $6,896 | 307 | $22.46 |
+| EverQuote | ~$5,642 | ~806 | $7.00 |
+| **Total** | **~$28,416** | **~3,770** | **$7.54** |
+
+**Integration:** Vendor CPL values are used in [lead_analysis_api.py](../src/lead_analysis_api.py) lines 369-414
+
+---
+
 ### 📊 01_current_performance/
 **Current agency performance metrics and business planning**
 
@@ -191,5 +229,5 @@ For questions about:
 
 ---
 
-**Last Updated:** November 15, 2025
+**Last Updated:** November 25, 2025
 **Repository Status:** ✅ Organized and Analysis-Ready

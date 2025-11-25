@@ -298,7 +298,7 @@ export default function LeadAnalysisDashboard() {
 
   if (error || !data) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="bg-red-50 border border-red-200 rounded-xl p-4">
         <div className="flex items-center gap-2 text-red-700">
           <AlertTriangle className="w-5 h-5" />
           <span>Error: {error || 'No data available'}</span>
@@ -322,14 +322,14 @@ export default function LeadAnalysisDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-gray-900">Lead Performance Analysis</h2>
               <button
                 onClick={() => generateLeadAnalysisPDF(data)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Export PDF
@@ -338,11 +338,11 @@ export default function LeadAnalysisDashboard() {
             <p className="text-sm text-gray-500">
               {data.summary.date_range.start} to {data.summary.date_range.end} • {data.summary.total_records.toLocaleString()} records
             </p>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-xs text-primary-600 mt-1">
               Use these insights to optimize vendor spend, agent performance, and call timing
             </p>
           </div>
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
             {viewTabs.map((tab) => (
               <button
                 key={tab.id}
@@ -363,9 +363,9 @@ export default function LeadAnalysisDashboard() {
       {activeView === 'overview' && (
         <>
           {/* Context Box - What is this data? */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-primary-200 p-5">
             <div className="flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Info className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-blue-900 mb-2">What am I looking at?</h3>
                 <p className="text-sm text-blue-800 mb-3">
@@ -374,15 +374,15 @@ export default function LeadAnalysisDashboard() {
                   and optimize your call schedule.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-blue-900">Lead</span>
                     <p className="text-blue-700">A potential customer who requested an insurance quote</p>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-blue-900">Vendor</span>
                     <p className="text-blue-700">Company that sells leads (e.g., QuoteWizard, EverQuote)</p>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-blue-900">Sale Rate</span>
                     <p className="text-blue-700">% of leads that became paying customers</p>
                   </div>
@@ -439,7 +439,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Sales Funnel */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Sales Funnel</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -457,7 +457,7 @@ export default function LeadAnalysisDashboard() {
                 label="Contacted"
                 value={data.funnel.contacted}
                 percentage={data.funnel.contacted_rate}
-                color="bg-blue-500"
+                color="bg-primary-500"
               />
               <FunnelBar
                 label="Quoted"
@@ -475,22 +475,22 @@ export default function LeadAnalysisDashboard() {
                 label="Sold"
                 value={data.funnel.sold}
                 percentage={data.funnel.sold_rate}
-                color="bg-emerald-500"
+                color="bg-emerald-1000"
               />
             </div>
           </div>
 
           {/* Recommendations */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recommendations</h3>
             <div className="space-y-3">
               {data.recommendations.map((rec, i) => (
                 <div
                   key={i}
-                  className={`p-4 rounded-lg border ${
+                  className={`p-4 rounded-xl border ${
                     rec.priority === 'high'
                       ? 'bg-red-50 border-red-200'
-                      : 'bg-blue-50 border-blue-200'
+                      : 'bg-primary-50 border-primary-200'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -517,12 +517,12 @@ export default function LeadAnalysisDashboard() {
 
           {/* Action Plan */}
           {data.action_plan && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Action Plan</h3>
 
               {/* Improvement Potential */}
               {data.action_plan.improvement_potential && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                <div className="bg-emerald-100 border border-emerald-200 rounded-xl p-4 mb-4">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
                     <span className="font-medium text-emerald-800">
@@ -537,7 +537,7 @@ export default function LeadAnalysisDashboard() {
 
               <div className="grid md:grid-cols-3 gap-4">
                 {/* Immediate Actions */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <h4 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
                     Immediate (This Week)
@@ -553,7 +553,7 @@ export default function LeadAnalysisDashboard() {
                 </div>
 
                 {/* Short-term Actions */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
                     <Target className="w-4 h-4" />
                     Short-term (This Month)
@@ -569,7 +569,7 @@ export default function LeadAnalysisDashboard() {
                 </div>
 
                 {/* Ongoing Actions */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
                   <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
                     Ongoing
@@ -587,7 +587,7 @@ export default function LeadAnalysisDashboard() {
 
               {/* Best Times Summary */}
               {(data.action_plan.best_hours.length > 0 || data.action_plan.best_days.length > 0) && (
-                <div className="mt-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <h4 className="font-medium text-gray-800 mb-2">Optimal Calling Times</h4>
                   <div className="flex flex-wrap gap-4 text-sm">
                     {data.action_plan.best_hours.length > 0 && (
@@ -616,6 +616,98 @@ export default function LeadAnalysisDashboard() {
 
       {activeView === 'diagnostics' && data.diagnostics && (
         <>
+          {/* Lead Investment Analysis */}
+          {(() => {
+            const paidVendors = data.diagnostics.roi_metrics.by_vendor.filter(v => v.total_spend > 0);
+            const totalSpend = paidVendors.reduce((sum, v) => sum + v.total_spend, 0);
+            const totalSales = paidVendors.reduce((sum, v) => sum + v.sales, 0);
+            const costPerSale = totalSales > 0 ? Math.round(totalSpend / totalSales) : 0;
+
+            // LTV calculation: avg premium $1,000 × 5 year retention × (9% new + 2.5% renewal avg)
+            const avgPremium = 1000;
+            const avgRetentionYears = 5;
+            const firstYearCommission = 0.09;
+            const renewalCommission = 0.025;
+            const estimatedLTV = Math.round(avgPremium * (firstYearCommission + (renewalCommission * (avgRetentionYears - 1))));
+            const ltvToCac = costPerSale > 0 ? (estimatedLTV / costPerSale).toFixed(2) : 0;
+
+            // Best and worst vendors by cost per sale
+            const vendorsWithSales = paidVendors.filter(v => v.sales > 0).sort((a, b) => (a.cpb || 999999) - (b.cpb || 999999));
+            const bestVendor = vendorsWithSales[0];
+            const worstVendor = vendorsWithSales[vendorsWithSales.length - 1];
+
+            return (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-6 shadow-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-blue-200 rounded-full">
+                    <TrendingUp className="w-6 h-6 text-blue-700" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-blue-900">Lead Investment Analysis</h3>
+                    <p className="text-sm text-blue-700">Measuring efficiency of lead spend for book growth</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-white rounded-xl p-4 border border-blue-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">Total Investment</p>
+                    <p className="text-2xl font-bold text-blue-700">${totalSpend.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">Lead acquisition cost</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-blue-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">New Customers</p>
+                    <p className="text-2xl font-bold text-emerald-600">{totalSales}</p>
+                    <p className="text-xs text-gray-500">Policies written</p>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-blue-200">
+                    <p className="text-xs text-gray-500 uppercase font-medium">Cost per Customer</p>
+                    <p className="text-2xl font-bold text-amber-600">${costPerSale}</p>
+                    <p className="text-xs text-gray-500">Customer acquisition cost</p>
+                  </div>
+                  <div className="bg-blue-100 rounded-xl p-4 border border-blue-300">
+                    <p className="text-xs text-blue-700 uppercase font-medium">Est. LTV:CAC Ratio</p>
+                    <p className="text-3xl font-bold text-blue-800">{ltvToCac}:1</p>
+                    <p className="text-xs text-blue-600 font-medium">{Number(ltvToCac) >= 3 ? 'Healthy' : Number(ltvToCac) >= 1 ? 'Break-even' : 'Below target'}</p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-2">Understanding the Investment</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600 mb-2">
+                        <strong>First-year commission:</strong> ~$90/policy (9% on $1,000 avg premium)
+                      </p>
+                      <p className="text-gray-600">
+                        <strong>Estimated lifetime value:</strong> ~${estimatedLTV}/customer over {avgRetentionYears} years
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">LTV includes:</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        <li>• Renewal commissions (2-3%/year)</li>
+                        <li>• Cross-sell opportunities (home, umbrella, life)</li>
+                        <li>• Book value growth (1.5-2x annual revenue)</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-emerald-50 rounded-lg p-2">
+                      <p className="text-xs text-emerald-800">
+                        <strong>Most efficient:</strong> {bestVendor?.vendor} @ ${bestVendor?.cpb}/customer
+                      </p>
+                    </div>
+                    <div className="bg-amber-50 rounded-lg p-2">
+                      <p className="text-xs text-amber-800">
+                        <strong>Least efficient:</strong> {worstVendor?.vendor} @ ${worstVendor?.cpb}/customer
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Diagnostics Header */}
           <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-5">
             <div className="flex gap-3">
@@ -631,7 +723,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Lead Quality Issues */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Lead Quality Issues</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -640,22 +732,22 @@ export default function LeadAnalysisDashboard() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-red-50 rounded-lg p-3">
+              <div className="bg-red-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-red-700">{data.diagnostics.lead_quality.overall.unreachable_rate}%</p>
                 <p className="text-xs text-red-600">Unreachable</p>
                 <p className="text-xs text-gray-500 mt-1">No contact, bad phone, left message</p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-3">
+              <div className="bg-orange-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-orange-700">{data.diagnostics.lead_quality.overall.bad_phone_rate}%</p>
                 <p className="text-xs text-orange-600">Bad Phone #</p>
                 <p className="text-xs text-gray-500 mt-1">Invalid or disconnected</p>
               </div>
-              <div className="bg-yellow-50 rounded-lg p-3">
+              <div className="bg-yellow-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-yellow-700">{data.diagnostics.lead_quality.overall.never_requested_rate}%</p>
                 <p className="text-xs text-yellow-600">Never Requested</p>
                 <p className="text-xs text-gray-500 mt-1">Didn't ask for quote</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-gray-700">{data.diagnostics.lead_quality.overall.not_interested_rate}%</p>
                 <p className="text-xs text-gray-600">Not Interested</p>
                 <p className="text-xs text-gray-500 mt-1">Changed their mind</p>
@@ -696,7 +788,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* ROI Analysis */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">ROI by Vendor</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -706,7 +798,7 @@ export default function LeadAnalysisDashboard() {
             </div>
 
             {/* Vendor Costs Reference */}
-            <div className="mb-4 bg-gray-50 rounded-lg p-3">
+            <div className="mb-4 bg-gray-50 rounded-xl p-3">
               <p className="text-xs font-medium text-gray-700 mb-2">Actual Lead Costs Used:</p>
               <div className="flex flex-wrap gap-3 text-xs">
                 {Object.entries(data.diagnostics.roi_metrics.vendor_costs).map(([vendor, cost]) => (
@@ -733,7 +825,7 @@ export default function LeadAnalysisDashboard() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {data.diagnostics.roi_metrics.by_vendor.map((v, i) => (
-                    <tr key={i} className={v.roi_percent > 0 ? 'bg-emerald-50' : v.roi_percent < -50 ? 'bg-red-50' : ''}>
+                    <tr key={i} className={v.roi_percent > 0 ? 'bg-emerald-100' : v.roi_percent < -50 ? 'bg-red-50' : ''}>
                       <td className="px-3 py-2 font-medium">{v.vendor}</td>
                       <td className="px-3 py-2 text-right text-gray-600">${v.cpl}</td>
                       <td className="px-3 py-2 text-right text-gray-600">${v.total_spend.toLocaleString()}</td>
@@ -750,7 +842,7 @@ export default function LeadAnalysisDashboard() {
               </table>
             </div>
 
-            <div className="mt-4 bg-amber-50 rounded-lg p-3">
+            <div className="mt-4 bg-amber-50 rounded-xl p-3">
               <div className="flex gap-2">
                 <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-800">
@@ -761,8 +853,220 @@ export default function LeadAnalysisDashboard() {
             </div>
           </div>
 
+          {/* Vendor Efficiency Rankings */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Vendor Efficiency Rankings</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Ranked by cost-per-customer - lower is better for growing your book efficiently
+              </p>
+            </div>
+
+            {(() => {
+              const paidVendors = data.diagnostics.roi_metrics.by_vendor.filter(v => v.total_spend > 0 && v.sales > 0);
+              const sortedByCPB = [...paidVendors].sort((a, b) => (a.cpb || 999999) - (b.cpb || 999999));
+
+              // Categorize vendors by cost efficiency
+              const tier1 = sortedByCPB.filter(v => (v.cpb || 0) <= 300); // Best: under $300/customer
+              const tier2 = sortedByCPB.filter(v => (v.cpb || 0) > 300 && (v.cpb || 0) <= 700); // Good: $300-700
+              const tier3 = sortedByCPB.filter(v => (v.cpb || 0) > 700); // Expensive: over $700
+
+              return (
+                <div className="space-y-4">
+                  {/* Tier 1 - Most Efficient */}
+                  {tier1.length > 0 && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-5 h-5 text-emerald-600" />
+                        <h4 className="font-semibold text-emerald-800">Most Efficient (under $300/customer)</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {tier1.map((v, i) => (
+                          <div key={i} className="flex justify-between items-center text-sm bg-white rounded p-2">
+                            <span className="font-medium text-gray-900">{v.vendor}</span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-600">{v.sales} customers</span>
+                              <span className="text-emerald-600 font-bold">${v.cpb}/customer</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-emerald-700">
+                        Best return on investment. Consider increasing budget if volume can scale without quality drop.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Tier 2 - Moderate */}
+                  {tier2.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-5 h-5 text-blue-600" />
+                        <h4 className="font-semibold text-blue-800">Moderate Efficiency ($300-700/customer)</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {tier2.map((v, i) => (
+                          <div key={i} className="flex justify-between items-center text-sm bg-white rounded p-2">
+                            <span className="font-medium text-gray-900">{v.vendor}</span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-600">{v.sales} customers</span>
+                              <span className="text-blue-600 font-bold">${v.cpb}/customer</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-blue-700">
+                        Reasonable acquisition cost. Focus on improving conversion rates to move into Tier 1.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Tier 3 - Expensive */}
+                  {tier3.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-5 h-5 text-amber-600" />
+                        <h4 className="font-semibold text-amber-800">High Cost (over $700/customer)</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {tier3.map((v, i) => (
+                          <div key={i} className="flex justify-between items-center text-sm bg-white rounded p-2">
+                            <span className="font-medium text-gray-900">{v.vendor}</span>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-600">{v.sales} customers</span>
+                              <span className="text-amber-600 font-bold">${v.cpb}/customer</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-amber-700">
+                        Expensive for book growth. Negotiate better CPL or shift budget to more efficient vendors.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Optimization Opportunity Box */}
+                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4">
+                    <h4 className="font-semibold text-purple-900 mb-2">Budget Optimization Opportunity</h4>
+                    <p className="text-sm text-purple-800">
+                      Shifting budget from high-cost vendors to efficient ones could acquire more customers for the same spend.
+                      {tier1.length > 0 && tier3.length > 0 && (
+                        <> For every ${tier3[0]?.cpb} spent on <strong>{tier3[0]?.vendor}</strong>,
+                        you could get <strong>{Math.round((tier3[0]?.cpb || 0) / (tier1[0]?.cpb || 1))} customers</strong> from <strong>{tier1[0]?.vendor}</strong>.</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* 90-Day Efficiency Plan */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">90-Day Book Growth Plan</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Maximize new customer acquisition with the same or lower budget
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Phase 1: Immediate */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-blue-200 text-blue-800 text-xs font-bold px-2 py-1 rounded">PHASE 1</span>
+                  <span className="text-sm font-semibold text-blue-900">Days 1-7</span>
+                </div>
+                <h4 className="font-semibold text-blue-800 mb-2">Optimize Vendor Mix</h4>
+                <ul className="space-y-2 text-sm text-blue-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-1">•</span>
+                    Shift budget toward lowest cost-per-customer vendors
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-1">•</span>
+                    Negotiate volume discounts with efficient vendors
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-blue-500 mt-1">•</span>
+                    Route leads to best-performing agents first
+                  </li>
+                </ul>
+              </div>
+
+              {/* Phase 2: Optimize */}
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-purple-200 text-purple-800 text-xs font-bold px-2 py-1 rounded">PHASE 2</span>
+                  <span className="text-sm font-semibold text-purple-900">Days 8-30</span>
+                </div>
+                <h4 className="font-semibold text-purple-800 mb-2">Improve Conversions</h4>
+                <ul className="space-y-2 text-sm text-purple-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500 mt-1">•</span>
+                    Match agents to vendors they convert best
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500 mt-1">•</span>
+                    Train team on successful call techniques
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-500 mt-1">•</span>
+                    Prioritize calling during peak hours (7AM, 5PM)
+                  </li>
+                </ul>
+              </div>
+
+              {/* Phase 3: Scale */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="bg-emerald-200 text-emerald-800 text-xs font-bold px-2 py-1 rounded">PHASE 3</span>
+                  <span className="text-sm font-semibold text-emerald-900">Days 31-90</span>
+                </div>
+                <h4 className="font-semibold text-emerald-800 mb-2">Scale for Growth</h4>
+                <ul className="space-y-2 text-sm text-emerald-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-1">•</span>
+                    Increase budget with most efficient vendors
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-1">•</span>
+                    Test new vendors with small pilot budgets
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-500 mt-1">•</span>
+                    Focus on cross-selling for customer LTV
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Target Metrics */}
+            <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Growth Metrics to Track</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div className="text-center">
+                  <p className="font-bold text-gray-900">{'>'} 1.5%</p>
+                  <p className="text-xs text-gray-600">Target Sale Rate</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-gray-900">{'<'} $500</p>
+                  <p className="text-xs text-gray-600">Target Cost/Customer</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-gray-900">{'>'} 40%</p>
+                  <p className="text-xs text-gray-600">Target Contact Rate</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-gray-900">{'>'} 3:1</p>
+                  <p className="text-xs text-gray-600">Target LTV:CAC</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Funnel Bottlenecks */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Where Are Leads Lost?</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -771,19 +1075,19 @@ export default function LeadAnalysisDashboard() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-blue-50 rounded-lg p-3 text-center">
+              <div className="bg-primary-50 rounded-xl p-3 text-center">
                 <p className="text-2xl font-bold text-blue-700">{data.diagnostics.funnel_bottlenecks.conversion_rates.lead_to_contact}%</p>
-                <p className="text-xs text-blue-600 font-medium">Lead → Contact</p>
+                <p className="text-xs text-primary-600 font-medium">Lead → Contact</p>
               </div>
-              <div className="bg-amber-50 rounded-lg p-3 text-center">
+              <div className="bg-amber-50 rounded-xl p-3 text-center">
                 <p className="text-2xl font-bold text-amber-700">{data.diagnostics.funnel_bottlenecks.conversion_rates.contact_to_quote}%</p>
                 <p className="text-xs text-amber-600 font-medium">Contact → Quote</p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-3 text-center">
+              <div className="bg-orange-50 rounded-xl p-3 text-center">
                 <p className="text-2xl font-bold text-orange-700">{data.diagnostics.funnel_bottlenecks.conversion_rates.quote_to_hot}%</p>
                 <p className="text-xs text-orange-600 font-medium">Quote → Hot</p>
               </div>
-              <div className="bg-emerald-50 rounded-lg p-3 text-center">
+              <div className="bg-emerald-100 rounded-xl p-3 text-center">
                 <p className="text-2xl font-bold text-emerald-700">{data.diagnostics.funnel_bottlenecks.conversion_rates.hot_to_sale}%</p>
                 <p className="text-xs text-emerald-600 font-medium">Hot → Sale</p>
               </div>
@@ -791,7 +1095,7 @@ export default function LeadAnalysisDashboard() {
 
             <h4 className="font-medium text-gray-900 mb-3">Biggest Loss Points</h4>
             <div className="space-y-3">
-              <div className="bg-red-50 rounded-lg p-3">
+              <div className="bg-red-50 rounded-xl p-3">
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-medium text-red-900">Before Contact</span>
                   <span className="text-red-700 font-bold">{data.diagnostics.funnel_bottlenecks.loss_reasons.before_contact.percentage}% lost</span>
@@ -802,7 +1106,7 @@ export default function LeadAnalysisDashboard() {
                   Left Message: {data.diagnostics.funnel_bottlenecks.loss_reasons.before_contact.breakdown.left_message?.toLocaleString() || 0}
                 </p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-3">
+              <div className="bg-orange-50 rounded-xl p-3">
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-medium text-orange-900">After Contact (No Quote)</span>
                   <span className="text-orange-700 font-bold">{data.diagnostics.funnel_bottlenecks.loss_reasons.after_contact.percentage}% lost</span>
@@ -817,7 +1121,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Call Persistence */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Call Persistence</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -826,26 +1130,26 @@ export default function LeadAnalysisDashboard() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-gray-900">{data.diagnostics.call_attempts.average_attempts}</p>
                 <p className="text-xs text-gray-600">Avg Attempts/Lead</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-gray-900">{data.diagnostics.call_attempts.persistence_rate}%</p>
                 <p className="text-xs text-gray-600">Multi-Attempt Rate</p>
               </div>
-              <div className="bg-red-50 rounded-lg p-3">
+              <div className="bg-red-50 rounded-xl p-3">
                 <p className="text-2xl font-bold text-red-700">{data.diagnostics.call_attempts.single_attempt_leads.toLocaleString()}</p>
                 <p className="text-xs text-red-600">One & Done Leads</p>
               </div>
-              <div className="bg-emerald-50 rounded-lg p-3">
+              <div className="bg-emerald-100 rounded-xl p-3">
                 <p className="text-2xl font-bold text-emerald-700">{data.diagnostics.call_attempts.multiple_attempt_leads.toLocaleString()}</p>
                 <p className="text-xs text-emerald-600">Worked Multiple Times</p>
               </div>
             </div>
 
             {data.diagnostics.call_attempts.average_attempts < 3 && (
-              <div className="bg-red-50 rounded-lg p-3">
+              <div className="bg-red-50 rounded-xl p-3">
                 <div className="flex gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-red-800">
@@ -859,7 +1163,7 @@ export default function LeadAnalysisDashboard() {
 
           {/* Best Agent-Vendor Combinations */}
           {data.diagnostics.agent_vendor_match.top_combinations.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Best Agent-Vendor Matches</h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -880,7 +1184,7 @@ export default function LeadAnalysisDashboard() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {data.diagnostics.agent_vendor_match.top_combinations.slice(0, 5).map((combo, i) => (
-                      <tr key={i} className="bg-emerald-50">
+                      <tr key={i} className="bg-emerald-100">
                         <td className="px-3 py-2 font-medium">{combo.agent}</td>
                         <td className="px-3 py-2">{combo.vendor}</td>
                         <td className="px-3 py-2 text-right text-gray-600">{combo.total_calls}</td>
@@ -896,7 +1200,7 @@ export default function LeadAnalysisDashboard() {
 
           {/* Call Duration vs Outcome */}
           {data.diagnostics.call_duration_outcomes && data.diagnostics.call_duration_outcomes.duration_brackets.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Call Duration Impact</h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -905,7 +1209,7 @@ export default function LeadAnalysisDashboard() {
               </div>
 
               {data.diagnostics.call_duration_outcomes.optimal_duration && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                <div className="bg-emerald-100 border border-emerald-200 rounded-xl p-4 mb-4">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                     <span className="font-medium text-emerald-800">
@@ -940,7 +1244,7 @@ export default function LeadAnalysisDashboard() {
               {Object.keys(data.diagnostics.call_duration_outcomes.avg_duration_by_outcome).length > 0 && (
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                   {Object.entries(data.diagnostics.call_duration_outcomes.avg_duration_by_outcome).map(([outcome, duration]) => (
-                    <div key={outcome} className="bg-gray-50 rounded-lg p-3 text-center">
+                    <div key={outcome} className="bg-gray-50 rounded-xl p-3 text-center">
                       <p className="text-lg font-bold text-gray-900">{Math.round(duration / 60)}:{String(Math.round(duration % 60)).padStart(2, '0')}</p>
                       <p className="text-xs text-gray-600">{outcome.replace('_', ' ')}</p>
                     </div>
@@ -952,7 +1256,7 @@ export default function LeadAnalysisDashboard() {
 
           {/* Weekly Trends */}
           {data.diagnostics.weekly_trends && data.diagnostics.weekly_trends.weekly_data.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Weekly Performance Trends</h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -961,8 +1265,8 @@ export default function LeadAnalysisDashboard() {
               </div>
 
               {/* Trend Summary */}
-              <div className={`rounded-lg p-4 mb-4 ${
-                data.diagnostics.weekly_trends.trend === 'improving' ? 'bg-emerald-50 border border-emerald-200' :
+              <div className={`rounded-xl p-4 mb-4 ${
+                data.diagnostics.weekly_trends.trend === 'improving' ? 'bg-emerald-100 border border-emerald-200' :
                 data.diagnostics.weekly_trends.trend === 'declining' ? 'bg-red-50 border border-red-200' :
                 'bg-gray-50 border border-gray-200'
               }`}>
@@ -1011,7 +1315,7 @@ export default function LeadAnalysisDashboard() {
 
           {/* Industry Benchmarks */}
           {data.industry_benchmarks && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Industry Benchmarks</h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -1021,13 +1325,13 @@ export default function LeadAnalysisDashboard() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Sale Rate Benchmark */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="font-medium text-gray-900 mb-2">Sale Rate</h4>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-bold text-gray-900">{data.summary.overall_sale_rate}%</span>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                       data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.excellent || 2) ? 'bg-emerald-100 text-emerald-700' :
-                      data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.good || 1.5) ? 'bg-blue-100 text-blue-700' :
+                      data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.good || 1.5) ? 'bg-primary-100 text-blue-700' :
                       data.summary.overall_sale_rate >= (data.industry_benchmarks.sale_rate?.average || 1) ? 'bg-amber-100 text-amber-700' :
                       'bg-red-100 text-red-700'
                     }`}>
@@ -1045,13 +1349,13 @@ export default function LeadAnalysisDashboard() {
                 </div>
 
                 {/* Contact Rate Benchmark */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="font-medium text-gray-900 mb-2">Contact Rate</h4>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl font-bold text-gray-900">{data.summary.overall_contact_rate}%</span>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                       data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.excellent || 80) ? 'bg-emerald-100 text-emerald-700' :
-                      data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.good || 65) ? 'bg-blue-100 text-blue-700' :
+                      data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.good || 65) ? 'bg-primary-100 text-blue-700' :
                       data.summary.overall_contact_rate >= (data.industry_benchmarks.contact_rate?.average || 50) ? 'bg-amber-100 text-amber-700' :
                       'bg-red-100 text-red-700'
                     }`}>
@@ -1086,11 +1390,11 @@ export default function LeadAnalysisDashboard() {
                   Each vendor has different quality levels and prices. <strong>Higher sale rate = better quality leads</strong>.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-emerald-900">What to look for</span>
                     <p className="text-emerald-700">Sale rate above 1% is good, above 2% is excellent</p>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-emerald-900">Contact Rate matters</span>
                     <p className="text-emerald-700">Low contact rate means bad phone numbers (wasted money)</p>
                   </div>
@@ -1102,7 +1406,7 @@ export default function LeadAnalysisDashboard() {
           {/* Top/Bottom Vendor Summary */}
           {data.vendors.length > 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4">
+              <div className="bg-emerald-100 rounded-xl border border-emerald-200 p-4">
                 <h4 className="font-medium text-emerald-900 mb-2">Best Performer</h4>
                 <p className="text-2xl font-bold text-emerald-700">{data.vendors[0].vendor}</p>
                 <p className="text-sm text-emerald-600">
@@ -1120,7 +1424,7 @@ export default function LeadAnalysisDashboard() {
           )}
 
           {/* Vendor Performance Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Vendor Sale Rates</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1144,7 +1448,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Vendor Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -1184,9 +1488,9 @@ export default function LeadAnalysisDashboard() {
       {activeView === 'agents' && (
         <>
           {/* Agent Explanation */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-primary-200 p-5">
             <div className="flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <Info className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-blue-900 mb-2">Understanding Agent Performance</h3>
                 <p className="text-sm text-blue-800 mb-3">
@@ -1194,11 +1498,11 @@ export default function LeadAnalysisDashboard() {
                   <strong> top performers to learn from</strong> and agents who may need additional training.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-blue-900">Sale Rate</span>
                     <p className="text-blue-700">% of their calls that resulted in a policy sale</p>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-blue-900">Talk Time</span>
                     <p className="text-blue-700">Total hours spent on calls (more isn't always better)</p>
                   </div>
@@ -1214,9 +1518,9 @@ export default function LeadAnalysisDashboard() {
             const best = significantAgents[0];
             const avgRate = significantAgents.reduce((sum, a) => sum + a.sale_rate, 0) / significantAgents.length;
             return (
-              <div className="bg-blue-50 rounded-xl border border-blue-200 p-4">
+              <div className="bg-primary-50 rounded-xl border border-primary-200 p-4">
                 <div className="flex gap-3">
-                  <Lightbulb className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Lightbulb className="w-5 h-5 text-primary-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-blue-900">Performance Gap</h4>
                     <p className="text-sm text-blue-800">
@@ -1230,7 +1534,7 @@ export default function LeadAnalysisDashboard() {
           })()}
 
           {/* Agent Performance Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Agent Sale Rates</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1254,7 +1558,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Agent Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -1302,11 +1606,11 @@ export default function LeadAnalysisDashboard() {
                   <strong> answer and buy at certain times</strong>. Schedule your best agents during peak hours.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-purple-900">Best Hours</span>
                     <p className="text-purple-700">Look for peaks in the green "Sale Rate" line</p>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2">
+                  <div className="bg-white/60 rounded-xl p-2">
                     <span className="font-medium text-purple-900">Contact vs Sale</span>
                     <p className="text-purple-700">High contact but low sale = people answer but don't buy</p>
                   </div>
@@ -1348,7 +1652,7 @@ export default function LeadAnalysisDashboard() {
           })()}
 
           {/* Hourly Performance */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Performance by Hour</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1381,7 +1685,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Daily Performance */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Performance by Day</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1408,7 +1712,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Call Type Performance */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Performance by Call Type</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1444,7 +1748,7 @@ export default function LeadAnalysisDashboard() {
                   <h3 className="font-semibold text-gray-900">Data Transparency</h3>
                   <button
                     onClick={() => generateDataDocumentationPDF(data)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
                   >
                     <Download className="w-4 h-4" />
                     Export Documentation
@@ -1458,11 +1762,11 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Data Summary Stats */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Dataset Summary</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {data.data_overview.data_notes.map((note, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                <div key={i} className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700">
                   {note}
                 </div>
               ))}
@@ -1470,7 +1774,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Column Definitions */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gray-600" />
@@ -1483,7 +1787,7 @@ export default function LeadAnalysisDashboard() {
 
             <div className="space-y-4">
               {Object.entries(data.data_overview.columns).map(([columnName, info]) => (
-                <div key={columnName} className="border border-gray-200 rounded-lg p-4">
+                <div key={columnName} className="border border-gray-200 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="font-medium text-gray-900">{columnName}</h4>
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
@@ -1515,7 +1819,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Status Classification */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Code className="w-5 h-5 text-gray-600" />
@@ -1569,7 +1873,7 @@ export default function LeadAnalysisDashboard() {
           </div>
 
           {/* Calculated Metrics */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Calculated Metrics</h3>
               <p className="text-sm text-gray-500 mt-1">
@@ -1579,7 +1883,7 @@ export default function LeadAnalysisDashboard() {
 
             <div className="space-y-3">
               {data.data_overview.calculated_metrics.map((metric, i) => (
-                <div key={i} className="border border-gray-200 rounded-lg p-3">
+                <div key={i} className="border border-gray-200 rounded-xl p-3">
                   <div className="flex items-start justify-between">
                     <h4 className="font-medium text-gray-900">{metric.metric}</h4>
                   </div>
@@ -1613,16 +1917,16 @@ function StatCard({
   tooltip?: string;
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+    blue: 'bg-primary-50 text-primary-600',
+    emerald: 'bg-emerald-100 text-emerald-600',
     amber: 'bg-amber-50 text-amber-600',
     purple: 'bg-purple-50 text-purple-600',
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+        <div className={`p-2 rounded-xl ${colorClasses[color]}`}>
           <Icon className="w-5 h-5" />
         </div>
         <div>

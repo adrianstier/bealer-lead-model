@@ -8,7 +8,7 @@
     "overall_sale_rate": 0.93,
     "overall_contact_rate": 31.22,
     "overall_quote_rate": 2.84,
-    "generated_at": "2025-11-23T12:03:35.493587"
+    "generated_at": "2025-11-25T06:19:27.465013"
   },
   "vendors": [
     {
@@ -881,63 +881,73 @@
     },
     "roi_metrics": {
       "vendor_costs": {
+        "QuoteWizard-Auto": 6,
+        "EverQuote-LCS": 7,
+        "ALM-Internet": 19,
+        "Blue-Wave-Live-Call-Transfer": 55,
+        "Lead-Clinic-Live-Transfers": 60,
+        "Lead-Clinic-Internet": 10,
+        "Imported-for-list-uploads": 0,
+        "Manually-Added-Leads": 0,
+        "Referrals": 0,
+        "QuoteWizard": 6,
+        "EverQuote": 7,
+        "ALM": 19,
         "Blue Wave": 55,
         "Lead Clinic": 10,
-        "QuoteWizard": 4,
-        "EverQuote": 7,
-        "Allstate Lead Manager": 12
+        "Imported": 0
       },
-      "avg_cpl": 5.84,
-      "total_spend": 314734,
-      "assumed_avg_premium": 1200,
+      "avg_cpl": 6.13,
+      "total_spend": 330177,
+      "assumed_avg_premium": 1000,
       "by_vendor": [
         {
-          "vendor": "Lead-Clinic-Live-Transfers",
-          "total_leads": 35,
-          "total_spend": 350,
-          "sales": 10,
-          "cpl": 10,
-          "cpq": 29.17,
-          "cpb": 35.0,
-          "leads_per_sale": 3.5,
-          "estimated_revenue": 1800.0,
-          "roi_percent": 414.3
+          "vendor": "Imported-for-list-uploads",
+          "total_leads": 6366,
+          "total_spend": 0,
+          "sales": 73,
+          "cpl": 0,
+          "cpq": null,
+          "cpb": null,
+          "leads_per_sale": 87.2,
+          "estimated_revenue": 6570.0,
+          "roi_percent": 0
         },
         {
           "vendor": "Manually-Added-Leads",
           "total_leads": 18,
-          "total_spend": 180,
+          "total_spend": 0,
           "sales": 1,
-          "cpl": 10,
-          "cpq": 180.0,
-          "cpb": 180.0,
+          "cpl": 0,
+          "cpq": null,
+          "cpb": null,
           "leads_per_sale": 18.0,
-          "estimated_revenue": 180.0,
-          "roi_percent": 0.0
+          "estimated_revenue": 90.0,
+          "roi_percent": 0
         },
         {
-          "vendor": "ALM-Internet",
-          "total_leads": 869,
-          "total_spend": 10428,
-          "sales": 27,
-          "cpl": 12,
-          "cpq": 212.82,
-          "cpb": 386.22,
-          "leads_per_sale": 32.2,
-          "estimated_revenue": 4860.0,
-          "roi_percent": -53.4
+          "vendor": "Referrals",
+          "total_leads": 12,
+          "total_spend": 0,
+          "sales": 0,
+          "cpl": 0,
+          "cpq": null,
+          "cpb": null,
+          "leads_per_sale": null,
+          "estimated_revenue": 0.0,
+          "roi_percent": 0
         },
         {
-          "vendor": "QuoteWizard-Auto",
-          "total_leads": 35785,
-          "total_spend": 143140,
-          "sales": 259,
-          "cpl": 4,
-          "cpq": 155.42,
-          "cpb": 552.66,
-          "leads_per_sale": 138.2,
-          "estimated_revenue": 46620.0,
-          "roi_percent": -67.4
+          "vendor": "Lead-Clinic-Live-Transfers",
+          "total_leads": 35,
+          "total_spend": 2100,
+          "sales": 10,
+          "cpl": 60,
+          "cpq": 175.0,
+          "cpb": 210.0,
+          "leads_per_sale": 3.5,
+          "estimated_revenue": 900.0,
+          "roi_percent": -57.1
         },
         {
           "vendor": "Lead-Clinic-Internet",
@@ -948,8 +958,20 @@
           "cpq": 275.99,
           "cpb": 593.56,
           "leads_per_sale": 59.4,
-          "estimated_revenue": 13140.0,
-          "roi_percent": -69.7
+          "estimated_revenue": 6570.0,
+          "roi_percent": -84.8
+        },
+        {
+          "vendor": "ALM-Internet",
+          "total_leads": 869,
+          "total_spend": 16511,
+          "sales": 27,
+          "cpl": 19,
+          "cpq": 336.96,
+          "cpb": 611.52,
+          "leads_per_sale": 32.2,
+          "estimated_revenue": 2430.0,
+          "roi_percent": -85.3
         },
         {
           "vendor": "Blue-Wave-Live-Call-Transfer",
@@ -960,20 +982,20 @@
           "cpq": 313.5,
           "cpb": 783.75,
           "leads_per_sale": 14.2,
-          "estimated_revenue": 2160.0,
-          "roi_percent": -77.0
+          "estimated_revenue": 1080.0,
+          "roi_percent": -88.5
         },
         {
-          "vendor": "Imported-for-list-uploads",
-          "total_leads": 6366,
-          "total_spend": 63660,
-          "sales": 73,
-          "cpl": 10,
-          "cpq": 433.06,
-          "cpb": 872.05,
-          "leads_per_sale": 87.2,
-          "estimated_revenue": 13140.0,
-          "roi_percent": -79.4
+          "vendor": "QuoteWizard-Auto",
+          "total_leads": 35785,
+          "total_spend": 214710,
+          "sales": 259,
+          "cpl": 6,
+          "cpq": 233.13,
+          "cpb": 829.0,
+          "leads_per_sale": 138.2,
+          "estimated_revenue": 23310.0,
+          "roi_percent": -89.1
         },
         {
           "vendor": "EverQuote-LCS",
@@ -984,20 +1006,8 @@
           "cpq": 216.28,
           "cpb": 900.43,
           "leads_per_sale": 128.6,
-          "estimated_revenue": 8820.0,
-          "roi_percent": -80.0
-        },
-        {
-          "vendor": "Referrals",
-          "total_leads": 12,
-          "total_spend": 120,
-          "sales": 0,
-          "cpl": 10,
-          "cpq": null,
-          "cpb": null,
-          "leads_per_sale": null,
-          "estimated_revenue": 0.0,
-          "roi_percent": -100.0
+          "estimated_revenue": 4410.0,
+          "roi_percent": -90.0
         }
       ]
     },
