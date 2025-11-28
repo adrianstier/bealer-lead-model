@@ -113,10 +113,13 @@ export default {
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
       },
       spacing: {
-        // Consistent spacing scale
-        '18': '4.5rem',
-        '88': '22rem',
-        '128': '32rem',
+        // Consistent spacing scale (8px base)
+        '13': '3.25rem',  // 52px
+        '15': '3.75rem',  // 60px
+        '18': '4.5rem',   // 72px
+        '88': '22rem',    // 352px
+        '100': '25rem',   // 400px
+        '128': '32rem',   // 512px
       },
       borderRadius: {
         // Standardized border radius
@@ -176,6 +179,13 @@ export default {
         'fast': '150ms',
         'normal': '200ms',
         'slow': '300ms',
+        'slower': '500ms',
+      },
+      transitionTimingFunction: {
+        // Custom easing functions for professional feel
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'bounce-in': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'ease-out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
       },
     },
   },

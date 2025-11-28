@@ -105,7 +105,7 @@ const BealerPlanningSection: React.FC = () => {
                   {step}
                 </span>
                 {index < planningData.executive.lifecycle.length - 1 && (
-                  <ArrowRight className="w-4 h-4 text-gray-400" />
+                  <ArrowRight className="w-4 h-4 text-gray-500" />
                 )}
               </React.Fragment>
             ))}
@@ -140,9 +140,9 @@ const BealerPlanningSection: React.FC = () => {
                   </div>
                 </div>
                 {expandedProject === project.id ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                  <ChevronUp className="w-5 h-5 text-gray-500" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-gray-500" />
                 )}
               </button>
 

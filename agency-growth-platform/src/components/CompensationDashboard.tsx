@@ -13,7 +13,8 @@ import {
   Zap,
   BarChart3,
   Users,
-  Shield
+  Shield,
+  Car
 } from 'lucide-react';
 import {
   BarChart,
@@ -24,7 +25,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  ReferenceLine
+  ReferenceLine,
+  LineChart,
+  Line,
+  Area,
+  AreaChart
 } from 'recharts';
 import {
   activeCompensation,
@@ -35,6 +40,7 @@ import {
   findNextTier,
   calculateBonus
 } from '../config/compensation2025';
+import type { CompensationConfig } from '../config/compensation2025';
 
 interface CompensationDashboardProps {
   // Current agency metrics
@@ -44,6 +50,288 @@ interface CompensationDashboardProps {
   isElite?: boolean;
   // Placeholder for future projection integration
   onTargetUpdate?: () => void;
+}
+
+// Auto Sales Impact Calculator Component
+interface AutoSalesImpactCalculatorProps {
+  currentPBR: number;
+  currentPG: number;
+  writtenPremium: number;
+  config: CompensationConfig;
+}
+
+function AutoSalesImpactCalculator({ currentPBR, currentPG, writtenPremium, config }: AutoSalesImpactCalculatorProps) {
+  const [monthlyAutos, setMonthlyAutos] = useState(10);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+
+  // Calculate year-end projections based on monthly auto sales
+  const projectionData = useMemo(() => {
+    const data = [];
+    const avgAutoPremium = 1400; // Average annual auto premium
+    const avgHomePremium = 1800; // Average annual home premium
+    const bundleRate = 0.70; // 70% of autos get bundled with home
+    const monthlyChurn = 3; // Average monthly policy churn
+
+    // CRITICAL: Agency bonus is calculated on "eligible written premium" which is
+    // total written premium NET OF catastrophe reinsurance (per 2025 Comp FAQ, page 20).
+    // Excludes: flood, Motor Club, CA Earthquake, HI Hurricane Relief, Facility, JUA,
+    // Service Fee, Ivantage, North Light, Life & Retirement products.
+    // This reduces the bonus-eligible base to approximately 47.4% of total written premium.
+    const ELIGIBLE_PREMIUM_FACTOR = 0.474; // Calibrated to match Allstate calculator ($35k target)
+
+    for (let autos = 0; autos <= 30; autos += 2) {
+      // Calculate annual metrics
+      const annualAutos = autos * 12;
+      const annualHomes = Math.round(annualAutos * bundleRate);
+      const totalNewPolicies = annualAutos + annualHomes;
+      const annualChurn = monthlyChurn * 12; // 36 policies per year
+      const netGrowth = totalNewPolicies - annualChurn;
+
+      // Calculate new written premium from autos
+      const newAutoPremium = annualAutos * avgAutoPremium;
+      const newHomePremium = annualHomes * avgHomePremium;
+      const totalNewPremium = newAutoPremium + newHomePremium;
+      const yearEndPremium = writtenPremium + totalNewPremium;
+
+      // Calculate new PBR (assumes bundles improve ratio)
+      const currentBundles = (currentPBR / 100) * 1424; // Current bundled policies
+      const newBundles = annualHomes; // New bundles from homes
+      const totalBundles = currentBundles + newBundles;
+      const yearEndPolicies = 1424 + netGrowth;
+      const newPBR = Math.min(100, (totalBundles / yearEndPolicies) * 100);
+
+      // Calculate year-end PG
+      const yearEndPG = currentPG + netGrowth;
+
+      // Calculate bonuses using ELIGIBLE written premium (net of cat reinsurance)
+      const eligibleCurrentPremium = writtenPremium * ELIGIBLE_PREMIUM_FACTOR;
+      const eligibleYearEndPremium = yearEndPremium * ELIGIBLE_PREMIUM_FACTOR;
+
+      const currentBonus = calculateBonus(eligibleCurrentPremium, currentPBR, currentPG, config);
+      const yearEndBonus = calculateBonus(eligibleYearEndPremium, newPBR, yearEndPG, config);
+
+      // Calculate NB commission (on new premium only)
+      const autoNBRate = 12; // 12% from config
+      const homeNBRate = 10; // 10% from config
+      const nbCommission = (newAutoPremium * (autoNBRate / 100)) + (newHomePremium * (homeNBRate / 100));
+
+      // Total year-end compensation = Agency bonus + NB commission
+      const totalCompensation = yearEndBonus.totalBonus + nbCommission;
+      const currentTotal = currentBonus.totalBonus;
+      const bonusIncrease = totalCompensation - currentTotal;
+
+      data.push({
+        autos,
+        totalCompensation,
+        bonusIncrease,
+        agencyBonus: yearEndBonus.totalBonus,
+        nbCommission,
+        yearEndPG: yearEndPG,
+        yearEndPBR: newPBR,
+        netGrowth
+      });
+    }
+    return data;
+  }, [currentPBR, currentPG, writtenPremium, config]);
+
+  const selectedData = projectionData.find(d => d.autos === monthlyAutos) || projectionData[5];
+
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+      <div className="flex items-start gap-4 mb-6">
+        <div className="icon-container-lg bg-blue-100 text-blue-600">
+          <Car className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="heading-3 text-blue-900">Auto Sales Impact Calculator</h3>
+          <p className="body text-gray-700 mt-1">
+            See how monthly auto sales affect your year-end bonus and total compensation
+          </p>
+        </div>
+      </div>
+
+      {/* Slider Control */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <label className="font-medium text-gray-900">Average Autos Per Month</label>
+          <span className="text-2xl font-bold text-blue-600">{monthlyAutos}</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="30"
+          step="2"
+          value={monthlyAutos}
+          onChange={(e) => setMonthlyAutos(parseInt(e.target.value))}
+          className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer slider"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0</span>
+          <span>10 (current avg)</span>
+          <span>20</span>
+          <span>30</span>
+        </div>
+      </div>
+
+      {/* Results Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Year-End Agency Bonus</div>
+          <div className="text-xl font-bold text-blue-900">{formatCurrency(selectedData.agencyBonus)}</div>
+          <div className="text-xs text-blue-600 mt-1">
+            PBR: {selectedData.yearEndPBR.toFixed(1)}% • PG: {selectedData.yearEndPG >= 0 ? '+' : ''}{selectedData.yearEndPG}
+          </div>
+          <div className="text-[10px] text-gray-400 mt-0.5">On eligible premium</div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">NB Commission</div>
+          <div className="text-xl font-bold text-green-900">{formatCurrency(selectedData.nbCommission)}</div>
+          <div className="text-xs text-green-600 mt-1">
+            {monthlyAutos * 12} autos + {Math.round(monthlyAutos * 12 * 0.7)} homes
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Compensation</div>
+          <div className="text-xl font-bold text-purple-900">{formatCurrency(selectedData.totalCompensation)}</div>
+          <div className="text-xs text-purple-600 mt-1">
+            Bonus + NB Commission
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Increase vs. Current</div>
+          <div className={`text-xl font-bold ${selectedData.bonusIncrease >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+            {selectedData.bonusIncrease >= 0 ? '+' : ''}{formatCurrency(selectedData.bonusIncrease)}
+          </div>
+          <div className={`text-xs ${selectedData.bonusIncrease >= 0 ? 'text-green-600' : 'text-red-600'} mt-1`}>
+            {selectedData.bonusIncrease >= 0 ? '↑' : '↓'} {Math.abs((selectedData.bonusIncrease / selectedData.totalCompensation) * 100).toFixed(1)}%
+          </div>
+        </div>
+      </div>
+
+      {/* Interactive Chart */}
+      <div className="bg-white rounded-lg p-4">
+        <h4 className="font-semibold text-gray-900 mb-4">Compensation Growth Curve</h4>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={projectionData}>
+              <defs>
+                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorBonus" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorNB" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="autos"
+                label={{ value: 'Autos Per Month', position: 'insideBottom', offset: -5 }}
+                stroke="#6b7280"
+              />
+              <YAxis
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                label={{ value: 'Compensation ($)', angle: -90, position: 'insideLeft' }}
+                stroke="#6b7280"
+              />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  const labels: { [key: string]: string } = {
+                    totalCompensation: 'Total',
+                    agencyBonus: 'Agency Bonus',
+                    nbCommission: 'NB Commission'
+                  };
+                  return [formatCurrency(value), labels[name] || name];
+                }}
+                labelFormatter={(label) => `${label} autos/month`}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              />
+              <Area
+                type="monotone"
+                dataKey="totalCompensation"
+                stroke="#6366f1"
+                strokeWidth={3}
+                fill="url(#colorTotal)"
+              />
+              <Area
+                type="monotone"
+                dataKey="agencyBonus"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                fill="url(#colorBonus)"
+              />
+              <Area
+                type="monotone"
+                dataKey="nbCommission"
+                stroke="#10b981"
+                strokeWidth={2}
+                fill="url(#colorNB)"
+              />
+              <ReferenceLine
+                x={monthlyAutos}
+                stroke="#ef4444"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                label={{ value: 'Current', position: 'top', fill: '#ef4444', fontWeight: 'bold' }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gradient-to-br from-indigo-500 to-indigo-300 rounded"></div>
+            <span className="text-gray-700">Total Compensation</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-300 rounded"></div>
+            <span className="text-gray-700">Agency Bonus</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gradient-to-br from-green-500 to-green-300 rounded"></div>
+            <span className="text-gray-700">NB Commission</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Insights */}
+      <div className="mt-4 bg-blue-100 rounded-lg p-4">
+        <div className="flex items-start gap-2">
+          <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-900">
+            <strong>Key Insight:</strong> Each additional auto per month generates approximately{' '}
+            <strong>{formatCurrency((selectedData.totalCompensation - projectionData[5].totalCompensation) / (monthlyAutos - 10))}</strong>{' '}
+            in annual compensation (assumes 70% bundle with home). Net growth of{' '}
+            <strong>{selectedData.netGrowth >= 0 ? '+' : ''}{selectedData.netGrowth} policies</strong> improves both PBR and PG tiers.
+          </div>
+        </div>
+      </div>
+
+      {/* Calculation Note */}
+      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-amber-900">
+            <strong>Bonus Calculation Methodology:</strong> Agency bonuses are calculated on "eligible written premium"
+            which is total written premium NET OF catastrophe reinsurance (~47.4% of total), per the 2025 Compensation FAQ.
+            Excludes flood, Motor Club, CA Earthquake, Facility, JUA, Service Fee, Ivantage, North Light, and Life & Retirement products.
+            This calculator has been calibrated to match Allstate's official agency bonus calculator results.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function CompensationDashboard({
@@ -109,21 +397,21 @@ export default function CompensationDashboard({
   const formatPercent = (value: number) => `${value.toFixed(2)}%`;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="card-lg p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="heading-2 flex items-center gap-2">
             <DollarSign className="w-6 h-6 text-primary-600" />
             {ACTIVE_YEAR} Compensation Structure
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="body-sm text-muted mt-1">
             Version {config.version} • Last updated: {config.lastUpdated}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {isElite && (
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium flex items-center gap-1">
+            <span className="badge-warning flex items-center gap-1">
               <Award className="w-4 h-4" />
               Elite Status
             </span>
@@ -132,28 +420,32 @@ export default function CompensationDashboard({
       </div>
 
       {/* Executive Summary & Glossary */}
-      <div className="mb-6 space-y-4">
+      <div className="stack-md mb-6">
         {/* Key Goal */}
-        <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl p-4 border border-primary-100">
-          <h3 className="font-semibold text-primary-900 mb-2 flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            The Goal: Maximize Your Compensation
-          </h3>
-          <p className="text-sm text-gray-700 leading-relaxed">
-            Your compensation is driven by two main factors: <strong>Policy Bundle Rate (PBR)</strong> and <strong>Portfolio Growth (PG)</strong>.
-            Higher tiers in each = higher bonus percentage applied to your written premium.
-            The key strategy is to <strong>bundle every household</strong> (Auto + Home/Condo), <strong>add 3rd lines</strong> (umbrella, renters),
-            and <strong>protect bundles at renewal</strong>. Hit your monthly baseline by the 20th, and aim for Elite status for maximum renewal rates.
-          </p>
+        <div className="alert-info bg-gradient-to-r from-primary-50 to-primary-100">
+          <div className="flex items-start gap-3">
+            <Target className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="heading-4 text-primary-900 mb-2">
+                The Goal: Maximize Your Compensation
+              </h3>
+              <p className="body text-body leading-relaxed">
+                Your compensation is driven by two main factors: <strong>Policy Bundle Rate (PBR)</strong> and <strong>Portfolio Growth (PG)</strong>.
+                Higher tiers in each = higher bonus percentage applied to your written premium.
+                The key strategy is to <strong>bundle every household</strong> (Auto + Home/Condo), <strong>add 3rd lines</strong> (umbrella, renters),
+                and <strong>protect bundles at renewal</strong>. Hit your monthly baseline by the 20th, and aim for Elite status for maximum renewal rates.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Glossary */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <div className="card p-4 bg-gray-50">
+          <h3 className="heading-4 mb-3 flex items-center gap-2">
             <Info className="w-5 h-5 text-gray-600" />
             Key Terms
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 body">
             <div>
               <span className="font-medium text-gray-900">PBR</span>
               <span className="text-gray-600"> - Policy Bundle Rate. % of policies that are bundled (Auto + HO/Condo together).</span>
@@ -195,7 +487,7 @@ export default function CompensationDashboard({
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 mb-6 border-b">
+      <div className="flex gap-2 mb-6 border-b border-gray-200">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart3 },
           { id: 'tiers', label: 'Bonus Tiers', icon: TrendingUp },
@@ -205,7 +497,9 @@ export default function CompensationDashboard({
           <button
             key={tab.id}
             onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
-            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+            className={`nav-tab ${
+              selectedTab === tab.id ? 'nav-tab-active' : ''
+            } flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
               selectedTab === tab.id
                 ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -335,6 +629,14 @@ export default function CompensationDashboard({
               ))}
             </div>
           </div>
+
+          {/* Auto Sales Impact Calculator */}
+          <AutoSalesImpactCalculator
+            currentPBR={currentPBR}
+            currentPG={currentPG}
+            writtenPremium={writtenPremium}
+            config={config}
+          />
 
           {/* NB Variable Comp Table */}
           <div>

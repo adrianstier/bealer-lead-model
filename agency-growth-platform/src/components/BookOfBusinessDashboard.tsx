@@ -616,39 +616,41 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, subtitle, icon: Icon, trend, trendValue }: MetricCardProps) {
   return (
-    <div className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 bg-blue-100 rounded-xl">
-          <Icon className="w-5 h-5 text-primary-600" />
+    <div className="stat-card">
+      <div className="stat-card-header">
+        <div className="icon-container-md bg-primary-100 text-primary-600">
+          <Icon className="w-5 h-5" />
         </div>
         {trend && (
-          <span className={`text-sm flex items-center ${trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-500'}`}>
+          <span className={`body-sm flex items-center ${
+            trend === 'up' ? 'stat-card-trend-up' : trend === 'down' ? 'stat-card-trend-down' : 'text-muted'
+          }`}>
             {trendValue}
             {trend === 'up' && <ArrowUpRight className="w-4 h-4 ml-1" />}
           </span>
         )}
       </div>
-      <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+      <h3 className="stat-card-label">{title}</h3>
+      <p className="stat-card-value">{value}</p>
+      {subtitle && <p className="caption text-muted mt-1">{subtitle}</p>}
     </div>
   );
 }
 
 // Progress bar component
-function ProgressBar({ value, max, color = "bg-blue-500", label }: { value: number; max: number; color?: string; label?: string }) {
+function ProgressBar({ value, max, color = "bg-primary-600", label }: { value: number; max: number; color?: string; label?: string }) {
   const percentage = (value / max) * 100;
   return (
     <div className="w-full">
       {label && (
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-gray-600">{label}</span>
-          <span className="font-medium">{value.toFixed(1)}%</span>
+        <div className="flex justify-between caption mb-1">
+          <span className="text-muted">{label}</span>
+          <span className="font-medium text-gray-900">{value.toFixed(1)}%</span>
         </div>
       )}
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="progress-bar">
         <div
-          className={`${color} h-2 rounded-full transition-all duration-500`}
+          className={`progress-bar-fill ${color !== "bg-primary-600" ? color : ''}`}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
@@ -661,27 +663,27 @@ export function BookOfBusinessDashboard() {
   const data = bookOfBusinessData;
 
   return (
-    <div className="space-y-6">
+    <div className="stack-lg">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">Book of Business Analytics</h2>
-        <p className="text-blue-100">Comprehensive analysis of your insurance portfolio - Santa Barbara County</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div className="section-header">
+        <h2 className="section-header-title">Book of Business Analytics</h2>
+        <p className="section-header-subtitle">Comprehensive analysis of your insurance portfolio - Santa Barbara County</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 grid-gap-md mt-6">
           <div>
-            <p className="text-blue-200 text-sm">Total Premium</p>
-            <p className="text-2xl font-bold">${(data.overview.writtenPremium / 1000000).toFixed(2)}M</p>
+            <p className="text-primary-200 body-sm">Total Premium</p>
+            <p className="text-3xl font-bold text-white">${(data.overview.writtenPremium / 1000000).toFixed(2)}M</p>
           </div>
           <div>
-            <p className="text-blue-200 text-sm">Customers</p>
-            <p className="text-2xl font-bold">{data.overview.uniqueCustomers}</p>
+            <p className="text-primary-200 body-sm">Customers</p>
+            <p className="text-3xl font-bold text-white">{data.overview.uniqueCustomers}</p>
           </div>
           <div>
-            <p className="text-blue-200 text-sm">Policies</p>
-            <p className="text-2xl font-bold">{data.overview.totalPolicies}</p>
+            <p className="text-primary-200 body-sm">Policies</p>
+            <p className="text-3xl font-bold text-white">{data.overview.totalPolicies}</p>
           </div>
           <div>
-            <p className="text-blue-200 text-sm">Avg Premium</p>
-            <p className="text-2xl font-bold">${data.overview.avgPremiumPerCustomer.toFixed(0)}</p>
+            <p className="text-primary-200 body-sm">Avg Premium</p>
+            <p className="text-3xl font-bold text-white">${data.overview.avgPremiumPerCustomer.toFixed(0)}</p>
           </div>
         </div>
       </div>

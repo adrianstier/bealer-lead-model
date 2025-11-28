@@ -496,7 +496,7 @@ export default function CustomerLookupDashboard() {
       {/* Search Box */}
       <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
           <input
             type="text"
             placeholder="Search by name, phone, or ZIP code..."
@@ -546,7 +546,7 @@ export default function CustomerLookupDashboard() {
                       </span>
                       <p className="text-xs text-gray-500">Score</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-gray-500" />
                   </div>
                 </button>
               );
@@ -860,7 +860,7 @@ export default function CustomerLookupDashboard() {
                               +${opp.potentialPremium.toLocaleString()}/yr
                             </span>
                           )}
-                          <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${expandedOpportunity === i ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${expandedOpportunity === i ? 'rotate-90' : ''}`} />
                         </div>
                       </div>
                       <h5 className="font-medium text-gray-900">{opp.title}</h5>
